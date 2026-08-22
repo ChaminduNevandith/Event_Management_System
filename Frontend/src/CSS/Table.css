@@ -1,0 +1,38 @@
+/* For mobile devices */
+@media (max-width: 640px) {
+    .table-row {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      background-color: #FDFAFE;
+    }
+  
+    .table-row td {
+      width: 100%;
+      display: flex;
+      padding: 10px 0;
+      position: relative;
+      padding-left: 120px; /* Space for labels */
+      justify-content: flex-start;
+    }
+  
+    .table-row td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 10px;
+      font-weight: bold;
+      color: #333;
+    }
+  
+    .table-row .actions {
+      justify-content: flex-end;
+      margin-top: 10px;
+      padding-left: 0;
+    }
+  
+    /* thead {
+      display: none;
+    } */
+  }
