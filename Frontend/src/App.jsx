@@ -5,6 +5,7 @@ import BuyTicket from './Pages/BuyTicket/BuyTicket';
 import LoginForm from './Pages/AddCustomer/LoginForm';
 import RegisterForm from './Pages/AddCustomer/RegisterForm'
 import Navbar from './Componets/Navbar';
+import EventView from './Pages/EventView/EventView';
 
 function App() {
  
@@ -14,9 +15,10 @@ function App() {
     <Routes>
       <Route path='/' element={<LoginForm/>}/>
       <Route path='/show' element={<EventDetails/>}/>
-      <Route path='/event' element={<AddEvent/>}/>
+      <Route path='/add-event' element={<AddEvent/>}/>
       <Route path='/BuyTicket' element={<BuyTicket/>}/>    
       <Route path='/Register' element={<RegisterForm/>}/>
+      <Route path="/view-event/:id" element={<EventView />} />
     </Routes>
     </BrowserRouter>
   )
