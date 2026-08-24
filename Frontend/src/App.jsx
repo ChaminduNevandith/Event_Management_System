@@ -6,6 +6,7 @@ import LoginForm from './Pages/AddCustomer/LoginForm';
 import RegisterForm from './Pages/AddCustomer/RegisterForm'
 import Navbar from './Componets/Navbar';
 import EventView from './Pages/EventView/EventView';
+import Eventcalendar from './Pages/EventCalendar/EventCalendar';
 
 function App() {
  
@@ -19,6 +20,7 @@ function App() {
       <Route path='/BuyTicket' element={<BuyTicket/>}/>    
       <Route path='/Register' element={<RegisterForm/>}/>
       <Route path="/view-event/:id" element={<EventView />} />
+      <Route path="/calendar" element={<Eventcalendar />} />
     </Routes>
     </BrowserRouter>
   )
