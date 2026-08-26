@@ -37,7 +37,10 @@ model User {
   // Relations
   tripMemberships TripMember[]
   expensesPaid    Expense[]      @relation("ExpensePayer")
-  expensesOwed    ExpenseSplit[]
+  ExpenseSplit    ExpenseSplit[]
+
+  tasksAssigned Task[] @relation("Assignee")
+
   messages        Message[]
 
   friendships Friendship[] @relation("UserFriendships")
@@ -79,6 +82,9 @@ model Trip {
   activityLogs TripActivityLog[]
   places       Place[]
   polls        Poll[]
+  accommodations Accommodation[]
+  transports     Transport[]
+  tasks          Task[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -432,4 +438,65 @@ model PollComment {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+}
+
+model Accommodation {
+  id           String    @id @default(uuid())
+  tripId       String
+  name         String
+  address      String?
+  checkIn      DateTime?
+  checkOut     DateTime?
+  bookingRef   String?
+  contactEmail String?
+  contactPhone String?
+  notes        String?
+
+  trip         Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Transport {
+  id            String    @id @default(uuid())
+  tripId        String
+  type          TransportType @default(FLIGHT)
+  departureTime DateTime?
+  arrivalTime   DateTime?
+  origin        String?
+  destination   String?
+  bookingRef    String?
+  seatNumber    String?
+  notes         String?
+
+  trip          Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum TransportType {
+  FLIGHT
+  TRAIN
+  BUS
+  FERRY
+  CAR
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  status      String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  category    String    @default("GENERAL") // GENERAL, PACKING, BOOKING, VISA, SHOPPING
+  dueDate     DateTime?
+
+  tripId      String
+  trip        Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  assigneeId  String?
+  assignee    User?     @relation("Assignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

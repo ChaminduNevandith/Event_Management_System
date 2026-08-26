@@ -90,6 +90,45 @@ export class ExpensesService {
     });
   }
 
+  async getBalances(userId: string, tripId: string) {
+    const trip = await this.prisma.client.trip.findUnique({
+      where: { id: tripId },
+      include: { members: { include: { user: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } } } } },
+    });
+
+    if (!trip) {
+      throw new NotFoundException('Trip not found');
+    }
+
+    const isMember = trip.members.some((m: any) => m.userId === userId);
+    if (!isMember) {
+      throw new ForbiddenException('You do not have access to this trip');
+    }
+
+    const expenses = await this.prisma.client.expense.findMany({
+      where: { tripId },
+      include: { splits: true },
+    });
+
+    const balances: Record<string, { user: any; amount: number }> = {};
+    for (const member of trip.members) {
+      balances[member.userId] = { user: member.user, amount: 0 };
+    }
+
+    for (const expense of expenses) {
+      if (balances[expense.payerId]) {
+        balances[expense.payerId].amount += expense.amount;
+      }
+      for (const split of expense.splits) {
+        if (balances[split.userId]) {
+          balances[split.userId].amount -= split.amount;
+        }
+      }
+    }
+
+    return Object.values(balances);
+  }
+
   async remove(userId: string, tripId: string, expenseId: string) {
     const expense = await this.prisma.client.expense.findUnique({
       where: { id: expenseId },

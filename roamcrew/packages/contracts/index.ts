@@ -167,3 +167,38 @@ export type CreateItineraryItemRequest = z.infer<typeof CreateItineraryItemSchem
 
 export const UpdateItineraryItemSchema = CreateItineraryItemSchema.partial();
 export type UpdateItineraryItemRequest = z.infer<typeof UpdateItineraryItemSchema>;
+
+// --- ACCOMMODATIONS ---
+export const CreateAccommodationSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  address: z.string().optional(),
+  checkIn: z.string().datetime().optional(),
+  checkOut: z.string().datetime().optional(),
+  bookingRef: z.string().optional(),
+  contactEmail: z.string().email().optional().or(z.literal("")),
+  contactPhone: z.string().optional(),
+  notes: z.string().optional(),
+});
+export type CreateAccommodationRequest = z.infer<typeof CreateAccommodationSchema>;
+
+export const UpdateAccommodationSchema = CreateAccommodationSchema.partial();
+export type UpdateAccommodationRequest = z.infer<typeof UpdateAccommodationSchema>;
+
+// --- TRANSPORT ---
+export const TransportTypeSchema = z.enum(["FLIGHT", "TRAIN", "BUS", "FERRY", "CAR"]);
+export type TransportType = z.infer<typeof TransportTypeSchema>;
+
+export const CreateTransportSchema = z.object({
+  type: TransportTypeSchema.default("FLIGHT"),
+  departureTime: z.string().datetime().optional(),
+  arrivalTime: z.string().datetime().optional(),
+  origin: z.string().optional(),
+  destination: z.string().optional(),
+  bookingRef: z.string().optional(),
+  seatNumber: z.string().optional(),
+  notes: z.string().optional(),
+});
+export type CreateTransportRequest = z.infer<typeof CreateTransportSchema>;
+
+export const UpdateTransportSchema = CreateTransportSchema.partial();
+export type UpdateTransportRequest = z.infer<typeof UpdateTransportSchema>;

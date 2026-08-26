@@ -24,7 +24,7 @@ export default function DecisionsPage() {
     try {
       const [pollsData, userProfile] = await Promise.all([
         fetchApi(`/trips/${params.id}/polls`),
-        fetchApi('/auth/me')
+        fetchApi('/users/me')
       ]);
       setPolls(pollsData);
       setCurrentUser(userProfile);

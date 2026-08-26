@@ -136,9 +136,13 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
 
   const tabs = [
     { name: "Itinerary", href: `/trips/${params.id}` },
+    { name: "Map", href: `/trips/${params.id}/map` },
     { name: "Destinations", href: `/trips/${params.id}/destinations` },
+    { name: "Accommodations", href: `/trips/${params.id}/accommodations` },
+    { name: "Transport", href: `/trips/${params.id}/transport` },
     { name: "Places", href: `/trips/${params.id}/places` },
     { name: "Decisions", href: `/trips/${params.id}/decisions` },
+    { name: "Tasks", href: `/trips/${params.id}/tasks` },
     { name: "Budget", href: `/trips/${params.id}/budget` },
     { name: "Chat", href: `/trips/${params.id}/chat` },
     { name: "Activity", href: `/trips/${params.id}/activity` },
@@ -209,14 +213,14 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex space-x-2 mt-8 bg-white/40 p-1.5 rounded-2xl border border-white inline-flex shadow-sm backdrop-blur-md">
+          <div className="flex flex-wrap gap-2 mt-8 bg-white/40 p-1.5 rounded-2xl border border-white shadow-sm backdrop-blur-md">
             {tabs.map((tab) => {
               const isActive = pathname === tab.href;
               return (
                 <Link
                   key={tab.name}
                   href={tab.href}
-                  className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                  className={`whitespace-nowrap shrink-0 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
                     isActive
                       ? "bg-white text-[#0EA5E9] shadow-sm border border-white"
                       : "text-[#486581] hover:text-[#0C4A6E] hover:bg-white/50"

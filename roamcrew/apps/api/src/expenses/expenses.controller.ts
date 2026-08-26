@@ -17,6 +17,14 @@ export class ExpensesController {
     return this.expensesService.findAllForTrip(req.user.userId, tripId);
   }
 
+  @Get('balances')
+  getBalances(
+    @Request() req: any,
+    @Param('tripId') tripId: string,
+  ) {
+    return this.expensesService.getBalances(req.user.userId, tripId);
+  }
+
   @Post()
   create(
     @Request() req: any,

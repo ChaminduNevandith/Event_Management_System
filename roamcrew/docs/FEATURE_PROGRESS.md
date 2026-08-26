@@ -170,13 +170,22 @@
 | 31.8.27 | Calendar import | Not started | |
 | 31.8.28 | External free/busy connection | Not started | |
 | 31.8.29 | Change summary | Not started | |
-| 31.9.1 | Accommodation record | Not started | |
+
+## Phase 7: Accommodations & Transport (Sprints 15 & 16)
+**Status:** Completed 🟢
+
+### ✅ 1. Sprints 15 & 16: Accommodations & Transport
+- [x] Create `Accommodation` and `Transport` Prisma models.
+- [x] Build backend APIs for CRUD operations.
+- [x] Integrate Frontend UI tabs on trip dashboard.
+
+| 31.9.1 | Accommodation record | Done | |
 | 31.9.2 | Accommodation candidate list | Not started | |
 | 31.9.3 | Stay comparison | Not started | |
-| 31.9.4 | Check-in and check-out | Not started | |
-| 31.9.5 | Property address and map | Not started | |
-| 31.9.6 | Property contact details | Not started | |
-| 31.9.7 | Booking reference | Not started | |
+| 31.9.4 | Check-in and check-out | Done | |
+| 31.9.5 | Property address and map | Done | |
+| 31.9.6 | Property contact details | Done | |
+| 31.9.7 | Booking reference | Done | |
 | 31.9.8 | Booking document | Not started | |
 | 31.9.9 | Cancellation deadline | Not started | |
 | 31.9.10 | Deposit record | Not started | |
@@ -185,43 +194,60 @@
 | 31.9.13 | Stay coverage warning | Not started | |
 | 31.9.14 | Arrival transport link | Not started | |
 | 31.9.15 | Stay itinerary link | Not started | |
-| 31.10.1 | Flight record | Not started | |
-| 31.10.2 | Train record | Not started | |
-| 31.10.3 | Bus record | Not started | |
-| 31.10.4 | Ferry record | Not started | |
-| 31.10.5 | Taxi or ride record | Not started | |
-| 31.10.6 | Rental vehicle record | Not started | |
-| 31.10.7 | Private vehicle | Not started | |
+| 31.10.1 | Flight record | Done | |
+| 31.10.2 | Train record | Done | |
+| 31.10.3 | Bus record | Done | |
+| 31.10.4 | Ferry record | Done | |
+| 31.10.5 | Taxi or ride record | Done | |
+| 31.10.6 | Rental vehicle record | Done | |
+| 31.10.7 | Private vehicle | Done | |
 | 31.10.8 | Walking or local transit leg | Not started | |
 | 31.10.9 | Multi-leg journey | Not started | |
-| 31.10.10 | Origin and destination | Not started | |
-| 31.10.11 | Local time and timezone | Not started | |
+| 31.10.10 | Origin and destination | Done | |
+| 31.10.11 | Local time and timezone | Done | |
 | 31.10.12 | Traveler assignment | Not started | |
-| 31.10.13 | Seat assignment | Not started | |
+| 31.10.13 | Seat assignment | Done | |
 | 31.10.14 | Baggage information | Not started | |
-| 31.10.15 | Booking reference and files | Not started | |
+| 31.10.15 | Booking reference and files | Done | |
 | 31.10.16 | Transport status | Not started | |
 | 31.10.17 | Status source and time | Not started | |
 | 31.10.18 | Connection warning | Not started | |
 | 31.10.19 | External booking link | Not started | |
 | 31.10.20 | Navigation link | Not started | |
-| 31.11.1 | Interactive trip map | Not started | |
-| 31.11.2 | Numbered itinerary pins | Not started | |
-| 31.11.3 | Map clustering | Not started | |
-| 31.11.4 | Map filters | Not started | |
-| 31.11.5 | Map and itinerary synchronization | Not started | |
-| 31.11.6 | Place search on map | Not started | |
-| 31.11.7 | Route estimate | Not started | |
-| 31.11.8 | Travel-mode routes | Not started | |
-| 31.11.9 | Route optimization preview | Not started | |
-| 31.11.10 | Old and new route comparison | Not started | |
-| 31.11.11 | Manual travel duration | Not started | |
-| 31.11.12 | Weather summary | Not started | |
-| 31.11.13 | Weather refresh time | Not started | |
-| 31.11.14 | Stale weather warning | Not started | |
-| 31.11.15 | Local destination time | Not started | |
-| 31.11.16 | Map attribution | Not started | |
-| 31.12.1 | Trip budget | Not started | |
+
+## Phase 8: Interactive Trip Map (Sprint 18)
+**Status:** In Progress 🟡
+
+### 🚧 Sprint 18: Map View
+- [ ] Install leaflet and react-leaflet
+- [ ] Build Frontend Map View with markers
+
+| 31.11.1 | Interactive trip map | Done | |
+| 31.11.2 | Numbered itinerary pins | Done | |
+| 31.11.3 | Map clustering | Deferred | |
+| 31.11.4 | Map filters | Deferred | |
+| 31.11.5 | Map and itinerary synchronization | Deferred | |
+| 31.11.6 | Place search on map | Deferred | |
+| 31.11.7 | Route estimate | Deferred | |
+| 31.11.8 | Travel-mode routes | Deferred | |
+| 31.11.9 | Route optimization preview | Deferred | |
+| 31.11.10 | Old and new route comparison | Deferred | |
+| 31.11.11 | Manual travel duration | Deferred | |
+| 31.11.12 | Weather summary | Deferred | |
+| 31.11.13 | Weather refresh time | Deferred | |
+| 31.11.14 | Stale weather warning | Deferred | |
+| 31.11.15 | Local destination time | Deferred | |
+| 31.11.16 | Map attribution | Deferred | |
+
+## Phase 9: Trip Budget & Ledger (Sprint 17)
+**Status:** In Progress 🟡
+
+### 🚧 Sprint 17: Trip Budget
+- [ ] Create `ExpensesModule` in NestJS
+- [ ] Build Frontend Budget tab
+- [ ] Implement group balance calculations
+
+| 31.12.1 | Trip budget | Done | |
 | 31.12.2 | Per-person budget | Not started | |
 | 31.12.3 | Category budgets | Not started | |
 | 31.12.4 | Destination budgets | Not started | |
@@ -235,42 +261,50 @@
 | 31.12.12 | Contribution pledge | Not started | |
 | 31.12.13 | Contribution record | Not started | |
 | 31.12.14 | Private budget band | Not started | |
-| 31.12.15 | Add expense | Not started | |
+| 31.12.15 | Add expense | Done | |
 | 31.12.16 | Multiple currencies | Not started | |
 | 31.12.17 | Stored exchange rate | Not started | |
 | 31.12.18 | Manual exchange rate | Not started | |
-| 31.12.19 | Single payer | Not started | |
+| 31.12.19 | Single payer | Done | |
 | 31.12.20 | Multiple payers | Not started | |
-| 31.12.21 | Equal split | Not started | |
+| 31.12.21 | Equal split | Done | |
 | 31.12.22 | Exact amount split | Not started | |
 | 31.12.23 | Percentage split | Not started | |
 | 31.12.24 | Share-based split | Not started | |
 | 31.12.25 | Itemized split | Not started | |
-| 31.12.26 | Excluded participant | Not started | |
+| 31.12.26 | Excluded participant | Done | |
 | 31.12.27 | Couple or unit split | Not started | |
-| 31.12.28 | Expense category | Not started | |
+| 31.12.28 | Expense category | Done | |
 | 31.12.29 | Receipt attachment | Not started | |
 | 31.12.30 | Expense comments | Not started | |
 | 31.12.31 | Expense edit history | Not started | |
 | 31.12.32 | Expense reversal | Not started | |
-| 31.12.33 | Personal balance | Not started | |
-| 31.12.34 | Group balance | Not started | |
+| 31.12.33 | Personal balance | Done | |
+| 31.12.34 | Group balance | Done | |
 | 31.12.35 | Simplified settlements | Not started | |
 | 31.12.36 | External settlement record | Not started | |
 | 31.12.37 | Settlement confirmation | Not started | |
 | 31.12.38 | Close ledger | Not started | |
 | 31.12.39 | Reopen ledger | Not started | |
 | 31.12.40 | Financial export | Not started | |
-| 31.13.1 | Trip tasks | Not started | |
-| 31.13.2 | Task assignment | Not started | |
-| 31.13.3 | Task priority | Not started | |
-| 31.13.4 | Task status | Not started | |
-| 31.13.5 | Task reminder | Not started | |
-| 31.13.6 | Packing list | Not started | |
-| 31.13.7 | Booking checklist | Not started | |
-| 31.13.8 | Visa and document checklist | Not started | |
-| 31.13.9 | Shopping list | Not started | |
-| 31.13.10 | Reusable checklist template | Not started | |
+## Phase 10: Trip Tasks & Checklists (Sprint 19)
+**Status:** In Progress 🟡
+
+### 🚧 Sprint 19: Tasks & Checklists
+- [ ] Create `Task` Prisma Model
+- [ ] Build `TasksModule` in Backend
+- [ ] Build Frontend Tasks Dashboard
+
+| 31.13.1 | Trip tasks | Done | |
+| 31.13.2 | Task assignment | Done | |
+| 31.13.3 | Task priority | Done | |
+| 31.13.4 | Task status | Done | |
+| 31.13.5 | Task reminder | Deferred | |
+| 31.13.6 | Packing list | Done | |
+| 31.13.7 | Booking checklist | Done | |
+| 31.13.8 | Visa and document checklist | Done | |
+| 31.13.9 | Shopping list | Done | |
+| 31.13.10 | Reusable checklist template | Deferred | |
 | 31.13.11 | Secure file upload | Not started | |
 | 31.13.12 | File preview | Not started | |
 | 31.13.13 | File visibility | Not started | |
