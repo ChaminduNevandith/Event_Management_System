@@ -9,7 +9,7 @@
 | 31.1.5 | Password strength guidance | Not started | |
 | 31.1.6 | Show or hide password | Not started | |
 | 31.1.7 | Forgot password | Not started | |
-| 31.1.8 | Change password | Not started | |
+| 31.1.8 | Change password | Done | |
 | 31.1.9 | Active session list | Not started | |
 | 31.1.10 | Remote session logout | Not started | |
 | 31.1.11 | Optional multi-factor authentication | Deferred | |
@@ -17,15 +17,15 @@
 | 31.1.13 | Automatic session expiry | Not started | |
 | 31.1.14 | Account deactivation | Not started | |
 | 31.1.15 | Account deletion | Not started | |
-| 31.2.1 | Profile photo | Not started | |
-| 31.2.2 | Display name | Not started | |
-| 31.2.3 | Unique username | Not started | |
-| 31.2.4 | Short biography | Not started | |
-| 31.2.5 | Home timezone | Not started | |
-| 31.2.6 | Preferred currency | Not started | |
-| 31.2.7 | Measurement units | Not started | |
-| 31.2.8 | Date and time format | Not started | |
-| 31.2.9 | Language preference | Not started | |
+| 31.2.1 | Profile photo | Done | |
+| 31.2.2 | Display name | Done | |
+| 31.2.3 | Unique username | Done | |
+| 31.2.4 | Short biography | Done | |
+| 31.2.5 | Home timezone | Done | |
+| 31.2.6 | Preferred currency | Done | |
+| 31.2.7 | Measurement units | Done | |
+| 31.2.8 | Date and time format | Done | |
+| 31.2.9 | Language preference | Done | |
 | 31.2.10 | Light and dark themes | Not started | |
 | 31.2.11 | Reduced motion | Not started | |
 | 31.2.12 | Travel interests | Not started | |

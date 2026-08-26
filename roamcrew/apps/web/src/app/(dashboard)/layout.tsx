@@ -49,6 +49,17 @@ export default function DashboardLayout({
               <LayoutDashboard className="h-5 w-5" />
               <span>Dashboard</span>
             </Link>
+            <Link
+              href="/settings"
+              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
+                pathname.startsWith("/settings") 
+                  ? "bg-[#0EA5E9] text-white font-bold shadow-md shadow-[#0EA5E9]/20" 
+                  : "text-[#486581] hover:bg-white/80 hover:text-[#0C4A6E] font-medium"
+              }`}
+            >
+              <Settings className="h-5 w-5" />
+              <span>Settings</span>
+            </Link>
           </div>
         </div>
 
