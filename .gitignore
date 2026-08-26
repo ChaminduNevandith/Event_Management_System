@@ -146,3 +146,5 @@ vite.config.ts.timestamp-*
 serviceAccountKey.json
 *serviceAccountKey*.json
 
+# Turbo cache
+.turbo/

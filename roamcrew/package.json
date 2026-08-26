@@ -1,0 +1,22 @@
+{
+  "name": "roamcrew-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "npm@10.2.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "prettier": "^3.0.0",
+    "turbo": "^2.10.12",
+    "typescript": "^5.0.0"
+  }
+}

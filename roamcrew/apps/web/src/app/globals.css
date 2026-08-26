@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy-50: #f0f4f8;
+  --color-navy-100: #d9e2ec;
+  --color-navy-200: #bcccdc;
+  --color-navy-300: #9fb3c8;
+  --color-navy-400: #829ab1;
+  --color-navy-500: #627d98;
+  --color-navy-600: #486581;
+  --color-navy-700: #334e68;
+  --color-navy-800: #243b53;
+  --color-navy-900: #102a43;
+  --color-navy-950: #0a1b2b;
+  
+  --color-teal-50: #e0fcff;
+  --color-teal-100: #bef8fd;
+  --color-teal-200: #87eaf2;
+  --color-teal-300: #54d1db;
+  --color-teal-400: #38bec9;
+  --color-teal-500: #14919b;
+  --color-teal-600: #0d7f88;
+  --color-teal-700: #045d65;
+  --color-teal-800: #00444c;
+  --color-teal-900: #00282e;
+
+  --color-coral-50: #ffe8e3;
+  --color-coral-100: #ffc9be;
+  --color-coral-200: #ff9b86;
+  --color-coral-300: #ff7257;
+  --color-coral-400: #ff5436;
+  --color-coral-500: #fa3c1b;
+  --color-coral-600: #da2405;
+  --color-coral-700: #b51a00;
+  --color-coral-800: #8f1200;
+  --color-coral-900: #6b0c00;
+}
+
+/* Base custom properties */
+:root {
+  --background: var(--color-white);
+  --foreground: var(--color-navy-950);
+  
+  --primary: var(--color-navy-900);
+  --primary-foreground: var(--color-white);
+  
+  --secondary: var(--color-teal-500);
+  --secondary-foreground: var(--color-white);
+  
+  --accent: var(--color-coral-500);
+  --accent-foreground: var(--color-white);
+  
+  --muted: var(--color-navy-50);
+  --muted-foreground: var(--color-navy-500);
+
+  --border: var(--color-navy-200);
+  --input: var(--color-navy-200);
+  --ring: var(--color-navy-900);
+  
+  --card: var(--color-white);
+  --card-foreground: var(--color-navy-950);
+  
+  --destructive: var(--color-coral-600);
+  --destructive-foreground: var(--color-white);
+  
+  --radius: 0.5rem;
+}
+
+
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
