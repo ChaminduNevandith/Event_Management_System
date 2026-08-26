@@ -25,6 +25,14 @@ export class ExpensesController {
     return this.expensesService.getBalances(req.user.userId, tripId);
   }
 
+  @Get('settlements')
+  getSettlements(
+    @Request() req: any,
+    @Param('tripId') tripId: string,
+  ) {
+    return this.expensesService.getSettlements(req.user.userId, tripId);
+  }
+
   @Post()
   create(
     @Request() req: any,

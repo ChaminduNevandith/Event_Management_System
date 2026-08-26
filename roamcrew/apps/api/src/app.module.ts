@@ -19,6 +19,8 @@ import { ItineraryModule } from './itinerary/itinerary.module';
 import { AccommodationsModule } from './accommodations/accommodations.module';
 import { TransportModule } from './transport/transport.module';
 import { TasksModule } from './tasks/tasks.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { ActivityLogsModule } from './activity-logs/activity-logs.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { TasksModule } from './tasks/tasks.module';
     AccommodationsModule,
     TransportModule,
     TasksModule,
+    NotificationsModule,
+    ActivityLogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -7,11 +7,12 @@ export class TasksService {
 
   async create(tripId: string, userId: string, data: any) {
     const member = await (this.prisma as any).tripMember.findUnique({
-      where: { userId_tripId: { userId, tripId } }
+      where: { userId_tripId: { userId, tripId } },
+      include: { user: true }
     });
     if (!member) throw new ForbiddenException("You do not have access to this trip");
 
-    return (this.prisma as any).task.create({
+    const task = await (this.prisma as any).task.create({
       data: {
         title: data.title,
         description: data.description,
@@ -28,6 +29,32 @@ export class TasksService {
         }
       }
     });
+
+    // Add activity log
+    await (this.prisma as any).tripActivityLog.create({
+      data: {
+        tripId,
+        userId,
+        action: 'TASK_CREATED',
+        details: `${member.user.firstName} created task: ${data.title}`
+      }
+    });
+
+    // Notify assignee if it's someone else
+    if (data.assigneeId && data.assigneeId !== userId) {
+      await (this.prisma as any).notification.create({
+        data: {
+          userId: data.assigneeId,
+          tripId,
+          title: "New Task Assigned",
+          message: `${member.user.firstName} assigned you a task: ${data.title}`,
+          type: "TASK",
+          link: `/trips/${tripId}/tasks`
+        }
+      });
+    }
+
+    return task;
   }
 
   async findAll(tripId: string, userId: string) {

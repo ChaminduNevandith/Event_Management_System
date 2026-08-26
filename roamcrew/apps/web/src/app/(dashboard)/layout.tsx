@@ -4,6 +4,7 @@ import { useAuth } from "@/components/auth-provider";
 import { LogOut, Map, LayoutDashboard, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { NotificationsBell } from "@/components/notifications-bell";
 
 export default function DashboardLayout({
   children,
@@ -27,13 +28,14 @@ export default function DashboardLayout({
     <div className="flex min-h-[100dvh] bg-[#F0F9FF] text-[#0C4A6E]">
       {/* Sidebar Navigation */}
       <aside className="w-64 border-r border-[#0EA5E9]/10 bg-white/50 backdrop-blur-md hidden md:flex flex-col relative z-20">
-        <div className="h-20 flex items-center px-6 border-b border-[#0EA5E9]/10">
+        <div className="h-20 flex items-center justify-between px-6 border-b border-[#0EA5E9]/10">
           <Link href="/" className="flex items-center group">
             <div className="bg-[#0EA5E9] p-2 rounded-xl group-hover:bg-[#38BDF8] transition-colors shadow-sm shadow-[#0EA5E9]/20">
               <Map className="h-5 w-5 text-white" />
             </div>
             <span className="ml-3 font-bold text-xl tracking-tight text-[#0C4A6E]">RoamCrew</span>
           </Link>
+          <NotificationsBell align="left" />
         </div>
         
         <div className="p-4 flex-1">
@@ -101,9 +103,12 @@ export default function DashboardLayout({
             <Map className="h-6 w-6 text-[#0EA5E9]" />
             <span className="ml-2 font-bold text-lg text-[#0C4A6E]">RoamCrew</span>
           </Link>
-          <button onClick={logout} className="p-2 text-[#829ab1] hover:text-[#fa3c1b]">
-            <LogOut className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <NotificationsBell />
+            <button onClick={logout} className="p-2 text-[#829ab1] hover:text-[#fa3c1b]">
+              <LogOut className="h-5 w-5" />
+            </button>
+          </div>
         </header>
 
         {/* Dynamic Page Content */}
