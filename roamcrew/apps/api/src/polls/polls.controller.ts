@@ -17,7 +17,7 @@ export class PollsController {
     @Param('tripId') tripId: string,
     @Body() dto: CreatePollRequest
   ) {
-    return this.pollsService.createPoll(req.user.id, tripId, dto);
+    return this.pollsService.createPoll(req.user.userId, tripId, dto);
   }
 
   @Get()
@@ -25,7 +25,7 @@ export class PollsController {
     @Request() req: any,
     @Param('tripId') tripId: string
   ) {
-    return this.pollsService.getPolls(req.user.id, tripId);
+    return this.pollsService.getPolls(req.user.userId, tripId);
   }
 
   @Post(':pollId/vote')
@@ -36,7 +36,7 @@ export class PollsController {
     @Param('pollId') pollId: string,
     @Body() dto: PollVoteRequest
   ) {
-    return this.pollsService.vote(req.user.id, tripId, pollId, dto);
+    return this.pollsService.vote(req.user.userId, tripId, pollId, dto);
   }
 
   @Post(':pollId/comments')
@@ -47,6 +47,6 @@ export class PollsController {
     @Param('pollId') pollId: string,
     @Body() dto: PollCommentRequest
   ) {
-    return this.pollsService.addComment(req.user.id, tripId, pollId, dto);
+    return this.pollsService.addComment(req.user.userId, tripId, pollId, dto);
   }
 }

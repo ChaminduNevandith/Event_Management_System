@@ -16,6 +16,10 @@ import { PlacesModule } from './places/places.module';
 import { PollsModule } from './polls/polls.module';
 import { ItineraryModule } from './itinerary/itinerary.module';
 
+import { AccommodationsModule } from './accommodations/accommodations.module';
+import { TransportModule } from './transport/transport.module';
+import { TasksModule } from './tasks/tasks.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -32,6 +36,9 @@ import { ItineraryModule } from './itinerary/itinerary.module';
     PlacesModule,
     PollsModule,
     ItineraryModule,
+    AccommodationsModule,
+    TransportModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
