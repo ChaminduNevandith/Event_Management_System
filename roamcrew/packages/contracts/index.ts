@@ -47,16 +47,51 @@ export const CreateDestinationSchema = z.object({
 export type CreateDestinationRequest = z.infer<typeof CreateDestinationSchema>;
 
 // --- EXPENSES ---
+export const ExpenseCategorySchema = z.enum([
+  "TRANSPORT",
+  "ACCOMMODATION",
+  "FOOD",
+  "ACTIVITIES",
+  "SHOPPING",
+  "OTHER",
+]);
+
 export const CreateExpenseSchema = z.object({
   title: z.string().min(1, "Title is required"),
   amount: z.number().positive("Amount must be positive"),
   currency: z.string().length(3).default("USD"),
   date: z.string().datetime().optional(),
-  category: z.enum(["TRANSPORT", "ACCOMMODATION", "FOOD", "ACTIVITIES", "SHOPPING", "OTHER"]).default("OTHER"),
+  category: ExpenseCategorySchema.optional(),
   payerId: z.string().uuid("Invalid payer ID"),
   splits: z.array(z.object({
     userId: z.string().uuid(),
     amount: z.number().positive(),
   })).min(1, "At least one split is required"),
 });
+
 export type CreateExpenseRequest = z.infer<typeof CreateExpenseSchema>;
+
+// --- Itinerary Item Schemas ---
+export const ItemTypeSchema = z.enum([
+  "FLIGHT",
+  "TRANSPORT",
+  "ACCOMMODATION",
+  "ACTIVITY",
+  "DINING",
+  "NOTE",
+]);
+export type ItemType = z.infer<typeof ItemTypeSchema>;
+
+export const CreateItineraryItemSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  startTime: z.string().datetime().optional(),
+  endTime: z.string().datetime().optional(),
+  isAllDay: z.boolean().optional(),
+  type: ItemTypeSchema.optional(),
+});
+
+export type CreateItineraryItemRequest = z.infer<typeof CreateItineraryItemSchema>;
+
+export const UpdateItineraryItemSchema = CreateItineraryItemSchema.partial();
+export type UpdateItineraryItemRequest = z.infer<typeof UpdateItineraryItemSchema>;
