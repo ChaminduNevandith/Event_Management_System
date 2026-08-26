@@ -19,6 +19,8 @@ export type RegisterRequest = z.infer<typeof RegisterSchema>;
 export const CreateTripSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title is too long"),
   description: z.string().max(500, "Description is too long").optional(),
+  coverImageUrl: z.string().url("Must be a valid URL").optional(),
+  status: z.enum(["PLANNING", "UPCOMING", "ACTIVE", "COMPLETED", "CANCELLED"]).optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
   timezone: z.string().default("UTC"),

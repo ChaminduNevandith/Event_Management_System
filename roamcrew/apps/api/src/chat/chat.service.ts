@@ -58,3 +58,5 @@ export class ChatService {
     });
   }
 }
+
+// Force TS reload

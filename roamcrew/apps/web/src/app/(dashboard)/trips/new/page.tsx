@@ -12,6 +12,8 @@ export default function NewTripPage() {
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [coverImageUrl, setCoverImageUrl] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,8 +28,10 @@ export default function NewTripPage() {
         body: JSON.stringify({
           title,
           description: description || undefined,
+          coverImageUrl: coverImageUrl || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop",
           startDate: startDate ? new Date(startDate).toISOString() : undefined,
           endDate: endDate ? new Date(endDate).toISOString() : undefined,
+          timezone,
         }),
       });
       router.push(`/trips/${response.id}`);
@@ -56,34 +60,55 @@ export default function NewTripPage() {
         )}
 
         <div className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-[#243b53] flex items-center" htmlFor="title">
-              <Type className="h-4 w-4 mr-2 text-[#0EA5E9]" /> Trip Title <span className="text-[#fa3c1b] ml-1">*</span>
-            </label>
-            <input
-              id="title"
-              required
-              className="flex h-14 w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-2 text-base text-[#0C4A6E] font-medium placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/50 focus:border-[#0EA5E9] transition-all shadow-sm"
-              placeholder="e.g. Summer in Japan"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-bold text-[#243b53] flex items-center" htmlFor="title">
+                <Type className="h-4 w-4 mr-2 text-[#0EA5E9]" /> Trip Title <span className="text-[#fa3c1b] ml-1">*</span>
+              </label>
+              <input
+                id="title"
+                required
+                className="flex h-14 w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-2 text-base text-[#0C4A6E] font-medium placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/50 focus:border-[#0EA5E9] transition-all shadow-sm"
+                placeholder="e.g. Summer in Japan"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-bold text-[#243b53] flex items-center" htmlFor="description">
+                <AlignLeft className="h-4 w-4 mr-2 text-[#0EA5E9]" /> Description
+              </label>
+              <textarea
+                id="description"
+                className="flex min-h-[100px] w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-3 text-base text-[#0C4A6E] font-medium placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/50 focus:border-[#0EA5E9] transition-all shadow-sm resize-y"
+                placeholder="What's the vibe? Share some thoughts with your crew..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-bold text-[#243b53] flex items-center" htmlFor="coverImageUrl">
+                <Type className="h-4 w-4 mr-2 text-[#0EA5E9]" /> Cover Image URL
+              </label>
+              <input
+                id="coverImageUrl"
+                type="url"
+                className="flex h-14 w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-2 text-base text-[#0C4A6E] font-medium placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/50 focus:border-[#0EA5E9] transition-all shadow-sm"
+                placeholder="Leave blank for a beautiful default image..."
+                value={coverImageUrl}
+                onChange={(e) => setCoverImageUrl(e.target.value)}
+              />
+              {coverImageUrl && (
+                <div className="mt-2 h-32 w-full rounded-xl overflow-hidden border border-white/50">
+                  <img src={coverImageUrl} alt="Cover Preview" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-[#243b53] flex items-center" htmlFor="description">
-              <AlignLeft className="h-4 w-4 mr-2 text-[#0EA5E9]" /> Description
-            </label>
-            <textarea
-              id="description"
-              className="flex min-h-[120px] w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-3 text-base text-[#0C4A6E] font-medium placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/50 focus:border-[#0EA5E9] transition-all shadow-sm resize-y"
-              placeholder="What's the vibe? Share some thoughts with your crew..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6 bg-white/40 p-6 rounded-2xl border border-white/40">
+          <div className="grid md:grid-cols-3 gap-6 bg-white/40 p-6 rounded-2xl border border-white/40">
             <div className="space-y-2">
               <label className="text-sm font-bold text-[#243b53] flex items-center" htmlFor="startDate">
                 <CalendarDays className="h-4 w-4 mr-2 text-[#F97316]" /> Start Date
@@ -108,6 +133,21 @@ export default function NewTripPage() {
                 onChange={(e) => setEndDate(e.target.value)}
                 min={startDate}
               />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-[#243b53] flex items-center" htmlFor="timezone">
+                Timezone
+              </label>
+              <select
+                id="timezone"
+                className="flex h-12 w-full rounded-xl border border-white bg-white/70 backdrop-blur-sm px-4 py-2 text-sm text-[#0C4A6E] font-medium focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] transition-all shadow-sm"
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+              >
+                {Intl.supportedValuesOf('timeZone').map(tz => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>

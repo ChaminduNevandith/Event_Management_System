@@ -20,7 +20,12 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch('me')
   async updateProfile(@Request() req: any, @Body() body: any) {
-    const allowedFields = ['firstName', 'lastName', 'displayName', 'avatarUrl', 'timezone', 'currency', 'language', 'username', 'bio', 'measurementUnits', 'dateFormat'];
+    const allowedFields = [
+      'firstName', 'lastName', 'displayName', 'avatarUrl', 'timezone', 
+      'currency', 'language', 'username', 'bio', 'measurementUnits', 'dateFormat',
+      'theme', 'reducedMotion', 'travelInterests', 'travelPace', 'dietaryPreferences',
+      'accessibilityPrefs', 'isPrivate'
+    ];
     const updateData: any = {};
     for (const field of allowedFields) {
       if (body[field] !== undefined) {

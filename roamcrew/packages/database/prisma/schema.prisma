@@ -19,17 +19,35 @@ model User {
   currency        String  @default("USD")
   language        String  @default("en")
   isEmailVerified Boolean @default(false)
-  
+
   username         String? @unique
   bio              String?
   measurementUnits String  @default("metric")
   dateFormat       String  @default("MM/DD/YYYY")
+
+  // Extended Preferences (Sprint 9)
+  theme              String   @default("light")
+  reducedMotion      Boolean  @default(false)
+  travelInterests    String[]
+  travelPace         String?
+  dietaryPreferences String[]
+  accessibilityPrefs String[]
+  isPrivate          Boolean  @default(false)
 
   // Relations
   tripMemberships TripMember[]
   expensesPaid    Expense[]      @relation("ExpensePayer")
   expensesOwed    ExpenseSplit[]
   messages        Message[]
+
+  friendships Friendship[] @relation("UserFriendships")
+  friendsOf   Friendship[] @relation("FriendUser")
+
+  ownedCircles      TravelCircle[] @relation("CircleOwner")
+  circleMemberships CircleMember[]
+
+  sentInvitations     TripInvitation[] @relation("Inviter")
+  receivedInvitations TripInvitation[] @relation("Invitee")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -42,15 +60,18 @@ model Trip {
   coverImageUrl String?
   status        TripStatus @default(PLANNING)
 
-  startDate DateTime?
-  endDate   DateTime?
-  timezone  String    @default("UTC")
+  startDate  DateTime?
+  endDate    DateTime?
+  timezone   String    @default("UTC")
+  isArchived Boolean   @default(false)
 
   // Relations
   members      TripMember[]
   destinations Destination[]
   expenses     Expense[]
   messages     Message[]
+  invitations  TripInvitation[]
+  activityLogs TripActivityLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -172,14 +193,111 @@ enum ExpenseCategory {
 }
 
 model Message {
-  id        String   @id @default(uuid())
-  tripId    String
-  userId    String
-  content   String
+  id      String @id @default(uuid())
+  tripId  String
+  userId  String
+  content String
 
   trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Friendship {
+  id       String           @id @default(uuid())
+  userId   String
+  friendId String
+  status   FriendshipStatus @default(PENDING)
+
+  user   User @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendUser", fields: [friendId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, friendId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  BLOCKED
+}
+
+model TravelCircle {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  imageUrl    String?
+  ownerId     String
+
+  owner   User           @relation("CircleOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members CircleMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CircleMember {
+  id       String     @id @default(uuid())
+  userId   String
+  circleId String
+  role     CircleRole @default(MEMBER)
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  circle TravelCircle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, circleId])
+}
+
+enum CircleRole {
+  ADMIN
+  MEMBER
+}
+
+model TripInvitation {
+  id        String           @id @default(uuid())
+  tripId    String
+  inviterId String
+  inviteeId String? // Null if sending via generic link instead of in-app
+  token     String           @unique @default(uuid())
+  role      TripRole         @default(MEMBER)
+  status    InvitationStatus @default(PENDING)
+
+  maxUses   Int? // For reusable links (null = infinite)
+  uses      Int       @default(0)
+  expiresAt DateTime?
+
+  trip    Trip  @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  inviter User  @relation("Inviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee User? @relation("Invitee", fields: [inviteeId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+  EXPIRED
+}
+
+model TripActivityLog {
+  id      String  @id @default(uuid())
+  tripId  String
+  userId  String? // Null if system action
+  action  String
+  details String?
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }

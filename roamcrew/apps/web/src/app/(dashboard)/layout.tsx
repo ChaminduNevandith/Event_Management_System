@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, Map, LayoutDashboard, Settings } from "lucide-react";
+import { LogOut, Map, LayoutDashboard, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -48,6 +48,17 @@ export default function DashboardLayout({
             >
               <LayoutDashboard className="h-5 w-5" />
               <span>Dashboard</span>
+            </Link>
+            <Link
+              href="/friends"
+              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
+                pathname.startsWith("/friends") 
+                  ? "bg-[#0EA5E9] text-white font-bold shadow-md shadow-[#0EA5E9]/20" 
+                  : "text-[#486581] hover:bg-white/80 hover:text-[#0C4A6E] font-medium"
+              }`}
+            >
+              <Users className="h-5 w-5" />
+              <span>Friends</span>
             </Link>
             <Link
               href="/settings"
