@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-
+import { TripsService } from '../trips/trips.service';
+// Force TS cache refresh
 
 @Injectable()
 export class ChatService {

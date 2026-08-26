@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+// Force TS cache refresh
 @Injectable()
 export class CirclesService {
   constructor(private prisma: PrismaService) {}

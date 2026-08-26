@@ -49,6 +49,11 @@ model User {
   sentInvitations     TripInvitation[] @relation("Inviter")
   receivedInvitations TripInvitation[] @relation("Invitee")
 
+  destinationVotes DestinationVote[]
+  pollsCreated     Poll[]            @relation("PollCreator")
+  pollVotes        PollVote[]
+  pollComments     PollComment[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -72,6 +77,8 @@ model Trip {
   messages     Message[]
   invitations  TripInvitation[]
   activityLogs TripActivityLog[]
+  places       Place[]
+  polls        Poll[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -111,19 +118,30 @@ model Destination {
   id            String  @id @default(uuid())
   tripId        String
   name          String
+  description   String?
+  imageUrl      String?
   googlePlaceId String?
   latitude      Float?
   longitude     Float?
 
+  status     DestinationStatus @default(PROPOSED)
   startDate  DateTime?
   endDate    DateTime?
-  orderIndex Int       @default(0)
+  orderIndex Int               @default(0)
 
-  trip           Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  trip           Trip              @relation(fields: [tripId], references: [id], onDelete: Cascade)
   itineraryItems ItineraryItem[]
+  votes          DestinationVote[]
+  places         Place[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum DestinationStatus {
+  PROPOSED
+  APPROVED
+  REJECTED
 }
 
 model ItineraryItem {
@@ -298,6 +316,120 @@ model TripActivityLog {
   details String?
 
   trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model DestinationVote {
+  id            String   @id @default(uuid())
+  destinationId String
+  userId        String
+  voteType      VoteType // UP or DOWN
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([destinationId, userId])
+}
+
+enum VoteType {
+  UP
+  DOWN
+}
+
+model Place {
+  id            String  @id @default(uuid())
+  tripId        String
+  destinationId String?
+  name          String
+  googlePlaceId String?
+  latitude      Float?
+  longitude     Float?
+  address       String?
+
+  category  PlaceCategory @default(OTHER)
+  notes     String?
+  tags      String[]
+  imageUrls String[]
+
+  trip        Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  destination Destination? @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum PlaceCategory {
+  ACCOMMODATION
+  FOOD
+  ATTRACTION
+  ACTIVITY
+  TRANSPORT
+  OTHER
+}
+
+model Poll {
+  id          String   @id @default(uuid())
+  tripId      String
+  creatorId   String
+  title       String
+  description String?
+  isMultipleChoice Boolean @default(false)
+  deadline    DateTime?
+  status      PollStatus @default(OPEN)
+
+  trip    Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  creator User         @relation("PollCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  options PollOption[]
+  comments PollComment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum PollStatus {
+  OPEN
+  CLOSED
+  RESOLVED
+}
+
+model PollOption {
+  id       String  @id @default(uuid())
+  pollId   String
+  text     String
+  imageUrl String?
+
+  poll  Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes PollVote[]
+
+  createdAt DateTime @default(now())
+}
+
+model PollVote {
+  id       String @id @default(uuid())
+  pollId   String
+  optionId String
+  userId   String
+
+  option PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([pollId, userId, optionId])
+}
+
+model PollComment {
+  id      String @id @default(uuid())
+  pollId  String
+  userId  String
+  content String
+
+  poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
