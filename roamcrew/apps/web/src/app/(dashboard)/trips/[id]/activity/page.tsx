@@ -14,7 +14,7 @@ export default function TripActivityPage() {
   useEffect(() => {
     async function loadActivity() {
       try {
-        const data = await fetchApi(`/trips/${params.id}/activity`);
+        const data = await fetchApi(`/trips/${params.id}/activity-logs`);
         setActivities(data);
       } catch (err) {
         console.error(err);

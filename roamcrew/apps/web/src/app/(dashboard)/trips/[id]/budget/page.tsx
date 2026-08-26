@@ -12,7 +12,9 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
   const [trip, setTrip] = useState<any>(null);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [balances, setBalances] = useState<any[]>([]);
+  const [settlements, setSettlements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'balances' | 'settlements'>('balances');
   
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [newExpense, setNewExpense] = useState({
@@ -24,14 +26,16 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
 
   const loadData = async () => {
     try {
-      const [tripData, expensesData, balancesData] = await Promise.all([
+      const [tripData, expensesData, balancesData, settlementsData] = await Promise.all([
         fetchApi(`/trips/${tripId}`),
         fetchApi(`/trips/${tripId}/expenses`),
-        fetchApi(`/trips/${tripId}/expenses/balances`)
+        fetchApi(`/trips/${tripId}/expenses/balances`),
+        fetchApi(`/trips/${tripId}/expenses/settlements`)
       ]);
       setTrip(tripData);
       setExpenses(expensesData);
       setBalances(balancesData);
+      setSettlements(settlementsData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -119,29 +123,90 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
         
         {/* Balances View */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-slate-800">Who owes whom</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-slate-800">Overview</h2>
+            <div className="bg-slate-100 rounded-lg p-1 flex items-center">
+              <button 
+                onClick={() => setActiveTab('balances')}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-all ${activeTab === 'balances' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Balances
+              </button>
+              <button 
+                onClick={() => setActiveTab('settlements')}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-all ${activeTab === 'settlements' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Settle Up
+              </button>
+            </div>
+          </div>
+          
           <div className="bg-white/40 backdrop-blur-md border border-white/40 shadow-sm rounded-2xl p-6 space-y-4">
-            {balances.length === 0 && (
-              <div className="text-slate-500 text-center py-4">No balances yet.</div>
-            )}
-            {balances.map((b, i) => (
-              <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/50 border border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-medium">
-                    {b.user.firstName[0]}
-                  </div>
-                  <div>
-                    <div className="font-medium text-slate-800">{b.user.firstName} {b.user.lastName}</div>
-                    <div className="text-xs text-slate-500">
-                      {b.amount > 0 ? "Owed money" : b.amount < 0 ? "Owes money" : "Settled up"}
+            
+            {activeTab === 'balances' && (
+              <>
+                {balances.length === 0 && (
+                  <div className="text-slate-500 text-center py-4">No balances yet.</div>
+                )}
+                {balances.map((b: any, i: number) => (
+                  <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/50 border border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-medium">
+                        {b.user.firstName[0]}
+                      </div>
+                      <div>
+                        <div className="font-medium text-slate-800">{b.user.firstName} {b.user.lastName}</div>
+                        <div className="text-xs text-slate-500">
+                          {b.amount > 0 ? "Owed money" : b.amount < 0 ? "Owes money" : "Settled up"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`font-bold text-lg ${b.amount > 0 ? "text-emerald-500" : b.amount < 0 ? "text-rose-500" : "text-slate-400"}`}>
+                      {b.amount > 0 ? "+" : ""}{b.amount.toFixed(2)} USD
                     </div>
                   </div>
-                </div>
-                <div className={`font-bold text-lg ${b.amount > 0 ? "text-emerald-500" : b.amount < 0 ? "text-rose-500" : "text-slate-400"}`}>
-                  {b.amount > 0 ? "+" : ""}{b.amount.toFixed(2)} USD
-                </div>
-              </div>
-            ))}
+                ))}
+              </>
+            )}
+
+            {activeTab === 'settlements' && (
+              <>
+                {settlements.length === 0 ? (
+                  <div className="text-slate-500 text-center py-4 flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center">
+                      <Receipt className="w-6 h-6" />
+                    </div>
+                    <span>Everyone is perfectly settled up!</span>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {settlements.map((s, i) => (
+                      <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-orange-50 to-rose-50 border border-orange-100">
+                        <div className="flex items-center gap-3">
+                          <div className="flex -space-x-2">
+                            <div className="w-8 h-8 rounded-full bg-rose-200 border-2 border-white flex items-center justify-center text-rose-700 text-xs font-medium z-10">
+                              {s.from.firstName[0]}
+                            </div>
+                            <div className="w-8 h-8 rounded-full bg-emerald-200 border-2 border-white flex items-center justify-center text-emerald-700 text-xs font-medium z-0">
+                              {s.to.firstName[0]}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-800">
+                              <span className="font-bold">{s.from.firstName}</span> owes <span className="font-bold">{s.to.firstName}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="font-bold text-slate-800 text-lg">
+                          ${s.amount.toFixed(2)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
           </div>
         </div>
 

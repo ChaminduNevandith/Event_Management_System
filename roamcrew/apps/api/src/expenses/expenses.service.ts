@@ -38,7 +38,7 @@ export class ExpensesService {
   async create(userId: string, tripId: string, dto: CreateExpenseRequest) {
     const trip = await this.prisma.client.trip.findUnique({
       where: { id: tripId },
-      include: { members: true },
+      include: { members: { include: { user: true } } },
     });
 
     if (!trip) {
@@ -67,7 +67,7 @@ export class ExpensesService {
       throw new BadRequestException('Splits do not sum up to the total expense amount');
     }
 
-    return this.prisma.client.expense.create({
+    const expense = await this.prisma.client.expense.create({
       data: {
         title: dto.title,
         amount: dto.amount,
@@ -88,6 +88,36 @@ export class ExpensesService {
         splits: { include: { user: { select: { id: true, firstName: true, lastName: true } } } },
       },
     });
+
+    const actor = trip.members.find((m: any) => m.userId === userId);
+    const actorName = actor?.user?.firstName || 'A member';
+    
+    // Add activity log
+    await this.prisma.client.tripActivityLog.create({
+      data: {
+        tripId,
+        userId,
+        action: 'EXPENSE_ADDED',
+        details: `${actorName} added an expense: ${dto.title} (${dto.amount})`
+      }
+    });
+
+    // Notify users involved in the split (except the one who added it)
+    const splitUsers = dto.splits.map(s => s.userId).filter(id => id !== userId);
+    for (const splitUserId of splitUsers) {
+      await this.prisma.client.notification.create({
+        data: {
+          userId: splitUserId,
+          tripId,
+          title: "New Expense",
+          message: `${actorName} added an expense you are part of: ${dto.title}`,
+          type: "EXPENSE",
+          link: `/trips/${tripId}/budget`
+        }
+      });
+    }
+
+    return expense;
   }
 
   async getBalances(userId: string, tripId: string) {
@@ -127,6 +157,39 @@ export class ExpensesService {
     }
 
     return Object.values(balances);
+  }
+
+  async getSettlements(userId: string, tripId: string) {
+    const balances = await this.getBalances(userId, tripId);
+    
+    // Separate into debtors (balance < 0) and creditors (balance > 0)
+    const debtors = balances.filter(b => b.amount < -0.01).map(b => ({ ...b, amount: Math.abs(b.amount) })).sort((a, b) => b.amount - a.amount);
+    const creditors = balances.filter(b => b.amount > 0.01).sort((a, b) => b.amount - a.amount);
+    
+    const settlements = [];
+    let i = 0; // debtors index
+    let j = 0; // creditors index
+    
+    while (i < debtors.length && j < creditors.length) {
+      const debtor = debtors[i];
+      const creditor = creditors[j];
+      
+      const amount = Math.min(debtor.amount, creditor.amount);
+      
+      settlements.push({
+        from: debtor.user,
+        to: creditor.user,
+        amount: parseFloat(amount.toFixed(2)),
+      });
+      
+      debtor.amount -= amount;
+      creditor.amount -= amount;
+      
+      if (debtor.amount < 0.01) i++;
+      if (creditor.amount < 0.01) j++;
+    }
+    
+    return settlements;
   }
 
   async remove(userId: string, tripId: string, expenseId: string) {

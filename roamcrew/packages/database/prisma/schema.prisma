@@ -57,6 +57,8 @@ model User {
   pollVotes        PollVote[]
   pollComments     PollComment[]
 
+  notifications    Notification[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -85,6 +87,7 @@ model Trip {
   accommodations Accommodation[]
   transports     Transport[]
   tasks          Task[]
+  notifications  Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -499,4 +502,29 @@ model Task {
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  tripId    String?
+  title     String
+  message   String
+  type      NotificationType @default(SYSTEM)
+  isRead    Boolean  @default(false)
+  link      String?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip      Trip?    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+enum NotificationType {
+  SYSTEM
+  TRIP_UPDATE
+  CHAT
+  TASK
+  EXPENSE
+  POLL
 }

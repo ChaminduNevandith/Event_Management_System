@@ -1,6 +1,6 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect } from "react";
@@ -53,11 +53,16 @@ export default function TripMap({
 }) {
   
   // Filter out items without coordinates
-  const validDestinations = destinations.filter(d => d.latitude && d.longitude);
+  const validDestinations = destinations
+    .filter(d => d.latitude && d.longitude)
+    .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+    
   const validPlaces = places.filter(p => p.latitude && p.longitude);
 
+  const destinationPath: [number, number][] = validDestinations.map(d => [d.latitude, d.longitude]);
+
   const allPositions: [number, number][] = [
-    ...validDestinations.map(d => [d.latitude, d.longitude] as [number, number]),
+    ...destinationPath,
     ...validPlaces.map(p => [p.latitude, p.longitude] as [number, number])
   ];
 
@@ -79,6 +84,17 @@ export default function TripMap({
         />
         
         {allPositions.length > 0 && <MapBounds positions={allPositions} />}
+
+        {destinationPath.length > 1 && (
+          <Polyline 
+            positions={destinationPath} 
+            color="#0EA5E9" 
+            weight={4} 
+            opacity={0.8}
+            dashArray="10, 10" 
+            lineCap="round"
+          />
+        )}
 
         {validDestinations.map(dest => (
           <Marker 

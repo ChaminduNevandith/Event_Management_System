@@ -202,3 +202,27 @@ export type CreateTransportRequest = z.infer<typeof CreateTransportSchema>;
 
 export const UpdateTransportSchema = CreateTransportSchema.partial();
 export type UpdateTransportRequest = z.infer<typeof UpdateTransportSchema>;
+
+// --- NOTIFICATIONS ---
+export const NotificationTypeSchema = z.enum(["SYSTEM", "TRIP_UPDATE", "CHAT", "TASK", "EXPENSE", "POLL"]);
+export type NotificationType = z.infer<typeof NotificationTypeSchema>;
+
+export const CreateNotificationSchema = z.object({
+  userId: z.string().uuid(),
+  tripId: z.string().uuid().optional(),
+  title: z.string().min(1, "Title is required"),
+  message: z.string().min(1, "Message is required"),
+  type: NotificationTypeSchema.default("SYSTEM"),
+  link: z.string().optional(),
+});
+export type CreateNotificationRequest = z.infer<typeof CreateNotificationSchema>;
+
+// --- ACTIVITY LOGS ---
+export const CreateActivityLogSchema = z.object({
+  tripId: z.string().uuid(),
+  userId: z.string().uuid().optional().nullable(),
+  action: z.string().min(1, "Action is required"),
+  details: z.string().optional().nullable(),
+});
+export type CreateActivityLogRequest = z.infer<typeof CreateActivityLogSchema>;
+

@@ -216,11 +216,11 @@
 | 31.10.20 | Navigation link | Not started | |
 
 ## Phase 8: Interactive Trip Map (Sprint 18)
-**Status:** In Progress 🟡
+**Status:** Completed 🟢
 
-### 🚧 Sprint 18: Map View
-- [ ] Install leaflet and react-leaflet
-- [ ] Build Frontend Map View with markers
+### ✅ Sprint 18: Map View
+- [x] Install leaflet and react-leaflet
+- [x] Build Frontend Map View with markers and route polyline
 
 | 31.11.1 | Interactive trip map | Done | |
 | 31.11.2 | Numbered itinerary pins | Done | |
@@ -240,12 +240,12 @@
 | 31.11.16 | Map attribution | Deferred | |
 
 ## Phase 9: Trip Budget & Ledger (Sprint 17)
-**Status:** In Progress 🟡
+**Status:** Completed 🟢
 
-### 🚧 Sprint 17: Trip Budget
-- [ ] Create `ExpensesModule` in NestJS
-- [ ] Build Frontend Budget tab
-- [ ] Implement group balance calculations
+### ✅ Sprint 17: Trip Budget
+- [x] Create `ExpensesModule` in NestJS
+- [x] Build Frontend Budget tab
+- [x] Implement group balance calculations and settlements
 
 | 31.12.1 | Trip budget | Done | |
 | 31.12.2 | Per-person budget | Not started | |
@@ -288,12 +288,12 @@
 | 31.12.39 | Reopen ledger | Not started | |
 | 31.12.40 | Financial export | Not started | |
 ## Phase 10: Trip Tasks & Checklists (Sprint 19)
-**Status:** In Progress 🟡
+**Status:** Completed 🟢
 
-### 🚧 Sprint 19: Tasks & Checklists
-- [ ] Create `Task` Prisma Model
-- [ ] Build `TasksModule` in Backend
-- [ ] Build Frontend Tasks Dashboard
+### ✅ Sprint 19: Tasks & Checklists
+- [x] Create `Task` Prisma Model
+- [x] Build `TasksModule` in Backend
+- [x] Build Frontend Tasks Dashboard with due dates
 
 | 31.13.1 | Trip tasks | Done | |
 | 31.13.2 | Task assignment | Done | |
