@@ -34,7 +34,7 @@ export class ChatGateway implements OnGatewayConnection {
       }
 
       // Verify the token
-      const secret = this.configService.get<string>('JWT_SECRET');
+      const secret = this.configService.get<string>('JWT_SECRET') || 'fallback_secret_do_not_use_in_prod';
       const decoded = this.jwtService.verify(token, { secret });
       
       // Attach user info to socket client object
@@ -50,7 +50,7 @@ export class ChatGateway implements OnGatewayConnection {
     @ConnectedSocket() client: Socket,
     @MessageBody('tripId') tripId: string,
   ) {
-    const userId = client.data.user?.userId;
+    const userId = client.data.user?.sub;
     if (!userId) return;
 
     try {
@@ -69,7 +69,7 @@ export class ChatGateway implements OnGatewayConnection {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: { tripId: string; content: string },
   ) {
-    const userId = client.data.user?.userId;
+    const userId = client.data.user?.sub;
     if (!userId) return;
 
     try {

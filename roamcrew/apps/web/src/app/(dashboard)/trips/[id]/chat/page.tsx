@@ -1,137 +1,168 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import { fetchApi } from "@/lib/api";
-import { useParams } from "next/navigation";
-import { MessageSquare, Send, User } from "lucide-react";
+import { Send, Image as ImageIcon, Smile, MoreVertical } from "lucide-react";
+import { io, Socket } from "socket.io-client";
 import { format } from "date-fns";
-import io, { Socket } from "socket.io-client";
 
-export default function TripChatPage() {
-  const params = useParams();
+export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = use(params);
+  const tripId = unwrappedParams.id;
+
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   
-  const [me, setMe] = useState<any>(null); // We need our own user ID to style messages differently
-  
+  const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch initial history
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
-    async function loadData() {
+    // 1. Fetch initial messages
+    const loadMessages = async () => {
       try {
-        const [tripData, messagesData] = await Promise.all([
-          fetchApi(`/trips/${params.id}`),
-          fetchApi(`/trips/${params.id}/messages`),
-        ]);
+        const data = await fetchApi(`/trips/${tripId}/messages`);
+        setMessages(data);
         
-        // Find 'me' using the token implicitly or just by checking which member I am
-        // For MVP, since we don't have a /users/me endpoint handy here easily, 
-        // we might not perfectly align left/right unless we decode the JWT or have context.
-        // I will just use the token from localStorage to initialize socket.
-        
-        setMessages(messagesData);
+        // Also get current user info from local storage or API
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          setCurrentUser(JSON.parse(userStr));
+        }
+      } catch (err) {
+        console.error("Failed to load messages", err);
       } finally {
         setIsLoading(false);
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        setTimeout(scrollToBottom, 100);
       }
-    }
-    loadData();
-  }, [params.id]);
+    };
 
-  // Connect to Socket.IO
-  useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) return;
+    loadMessages();
 
-    // We can decode payload to get our own user ID for UI styling
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setMe(payload.userId);
-    } catch(e) {}
-
-    const newSocket = io("http://localhost:3001", {
+    // 2. Setup Socket.IO connection
+    const token = localStorage.getItem("access_token");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    
+    // Connect to the WebSocket Gateway
+    const socket = io(apiUrl, {
       auth: { token }
     });
+    
+    socketRef.current = socket;
 
-    newSocket.on("connect", () => {
-      console.log("Connected to chat socket");
-      newSocket.emit("joinTrip", { tripId: params.id });
+    socket.on("connect", () => {
+      console.log("Connected to chat server");
+      // Join the trip's chat room
+      socket.emit("joinTrip", { tripId });
     });
 
-    newSocket.on("newMessage", (message: any) => {
-      setMessages((prev) => [...prev, message]);
+    socket.on("newMessage", (message: any) => {
+      setMessages(prev => {
+        // Prevent duplicate messages if we already have it
+        if (prev.some(m => m.id === message.id)) return prev;
+        return [...prev, message];
+      });
+      setTimeout(scrollToBottom, 100);
     });
 
-    setSocket(newSocket);
+    socket.on("error", (error: any) => {
+      console.error("Socket error:", error);
+    });
 
     return () => {
-      newSocket.disconnect();
+      socket.disconnect();
     };
-  }, [params.id]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [tripId]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !socket) return;
+    if (!newMessage.trim() || !socketRef.current) return;
 
-    socket.emit("sendMessage", {
-      tripId: params.id,
+    socketRef.current.emit("sendMessage", {
+      tripId,
       content: newMessage.trim(),
     });
 
     setNewMessage("");
   };
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0EA5E9] border-t-transparent"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-[600px] bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
+    <div className="flex flex-col h-[calc(100vh-250px)] bg-white/60 backdrop-blur-md rounded-3xl border border-white shadow-sm overflow-hidden">
       {/* Chat Header */}
-      <div className="bg-white/40 p-4 border-b border-white flex items-center justify-between">
-        <div className="flex items-center">
-          <MessageSquare className="mr-3 h-6 w-6 text-[#10B981]" />
-          <div>
-            <h2 className="text-xl font-extrabold tracking-tight text-[#0C4A6E]">Trip Chat</h2>
-            <p className="text-xs font-bold text-[#10B981]">Live</p>
-          </div>
+      <div className="px-6 py-4 border-b border-white/60 bg-white/40 flex justify-between items-center z-10 shrink-0">
+        <div>
+          <h3 className="font-extrabold text-[#0C4A6E] text-lg">Crew Chat</h3>
+          <p className="text-xs font-bold text-[#486581]">Real-time encrypted connection</p>
         </div>
+        <button className="p-2 hover:bg-white/50 rounded-xl transition-colors">
+          <MoreVertical className="w-5 h-5 text-[#486581]" />
+        </button>
       </div>
 
-      {/* Message List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center">
-            <MessageSquare className="h-12 w-12 text-[#10B981]/20 mb-3" />
-            <p className="text-[#486581] font-medium text-sm max-w-xs">Start the conversation! Drop an idea or say hi to the crew.</p>
+          <div className="flex flex-col items-center justify-center h-full text-center opacity-70">
+            <div className="w-16 h-16 bg-[#0EA5E9]/10 rounded-full flex items-center justify-center mb-4">
+              <Smile className="w-8 h-8 text-[#0EA5E9]" />
+            </div>
+            <h4 className="text-[#0C4A6E] font-bold text-lg mb-1">It's quiet here...</h4>
+            <p className="text-[#486581] text-sm">Send the first message to kick off the conversation!</p>
           </div>
         ) : (
           messages.map((msg, index) => {
-            const isMe = msg.userId === me;
-            const showName = !isMe && (index === 0 || messages[index - 1].userId !== msg.userId);
-
+            const isMe = currentUser && msg.user.id === currentUser.id;
+            const showAvatar = index === messages.length - 1 || messages[index + 1]?.user.id !== msg.user.id;
+            
             return (
-              <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                {showName && (
-                  <span className="text-xs font-bold text-[#829ab1] ml-2 mb-1">
-                    {msg.user?.firstName || "Crew Member"}
-                  </span>
-                )}
-                <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
-                  isMe 
-                    ? 'bg-[#10B981] text-white rounded-br-sm shadow-md shadow-[#10B981]/20' 
-                    : 'bg-white border border-[#10B981]/10 text-[#0C4A6E] rounded-bl-sm shadow-sm'
-                }`}>
-                  <p className="text-sm font-medium leading-relaxed break-words">{msg.content}</p>
+              <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} group`}>
+                <div className={`flex max-w-[75%] ${isMe ? 'flex-row-reverse' : 'flex-row'} items-end gap-2`}>
+                  
+                  {/* Avatar */}
+                  {!isMe && (
+                    <div className="w-8 shrink-0">
+                      {showAvatar && (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0EA5E9] to-[#38BDF8] flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                          {msg.user.firstName[0]}{msg.user.lastName[0]}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Message Bubble */}
+                  <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                    {!isMe && showAvatar && (
+                      <span className="text-[10px] font-bold text-[#486581] ml-1 mb-1">{msg.user.firstName}</span>
+                    )}
+                    
+                    <div 
+                      className={`px-4 py-2.5 rounded-2xl shadow-sm text-sm ${
+                        isMe 
+                          ? 'bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] text-white rounded-br-sm' 
+                          : 'bg-white border border-white/60 text-[#0C4A6E] rounded-bl-sm'
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
+                    
+                    <span className={`text-[10px] font-bold text-slate-400 mt-1 ${isMe ? 'mr-1' : 'ml-1'} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                      {format(new Date(msg.createdAt), "h:mm a")}
+                    </span>
+                  </div>
                 </div>
-                <span className={`text-[10px] font-bold text-[#829ab1] mt-1 ${isMe ? 'mr-1' : 'ml-1'}`}>
-                  {format(new Date(msg.createdAt), "h:mm a")}
-                </span>
               </div>
             );
           })
@@ -140,21 +171,31 @@ export default function TripChatPage() {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-white/40 border-t border-white">
-        <form onSubmit={handleSendMessage} className="flex gap-2">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 h-12 rounded-xl border border-white bg-white/70 px-4 text-sm focus:ring-2 focus:ring-[#10B981]/50 shadow-sm"
-          />
-          <button
-            type="submit"
-            disabled={!newMessage.trim() || !socket}
-            className="h-12 px-6 rounded-xl bg-[#10B981] text-white flex items-center justify-center shadow-md shadow-[#10B981]/20 hover:bg-[#059669] transition-all disabled:opacity-50 hover:-translate-y-0.5"
+      <div className="p-4 bg-white/40 border-t border-white/60 shrink-0">
+        <form onSubmit={handleSendMessage} className="flex items-end gap-2">
+          <button type="button" className="p-3 text-[#486581] hover:text-[#0EA5E9] hover:bg-white/50 rounded-xl transition-colors shrink-0">
+            <ImageIcon className="w-5 h-5" />
+          </button>
+          
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type your message..."
+              className="w-full bg-white/70 border border-white focus:border-[#0EA5E9]/30 rounded-2xl py-3 pl-4 pr-10 text-sm text-[#0C4A6E] placeholder-[#486581]/50 outline-none shadow-inner"
+            />
+            <button type="button" className="absolute right-3 top-3 text-[#486581]/50 hover:text-[#F97316] transition-colors">
+              <Smile className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <button 
+            type="submit" 
+            disabled={!newMessage.trim()}
+            className="p-3 bg-[#0EA5E9] hover:bg-[#0284c7] disabled:opacity-50 disabled:hover:bg-[#0EA5E9] text-white rounded-2xl shadow-md transition-all shrink-0"
           >
-            <Send className="h-4 w-4" />
+            <Send className="w-5 h-5 ml-0.5" />
           </button>
         </form>
       </div>
