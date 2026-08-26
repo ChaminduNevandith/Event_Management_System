@@ -9,6 +9,7 @@ import { DestinationsModule } from './destinations/destinations.module';
 import { ConfigModule } from '@nestjs/config';
 import { ItineraryItemsModule } from './itinerary-items/itinerary-items.module';
 import { ExpensesModule } from './expenses/expenses.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ExpensesModule } from './expenses/expenses.module';
     DestinationsModule,
     ItineraryItemsModule,
     ExpensesModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
