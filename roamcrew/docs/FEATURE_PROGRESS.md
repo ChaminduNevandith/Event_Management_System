@@ -315,9 +315,17 @@
 | 31.13.18 | Offline essential files | Not started | |
 | 31.13.19 | Redacted trip summary | Not started | |
 | 31.13.20 | Printable travel pack | Not started | |
-| 31.14.1 | Trip group chat | Not started | |
-| 31.14.2 | Contextual comments | Not started | |
-| 31.14.3 | Threaded replies | Not started | |
+## Phase 11: Trip Group Chat (Sprint 20)
+**Status:** Completed 🟢
+
+### ✅ Sprint 20: Group Chat
+- [x] Implement `ChatModule` Backend
+- [x] Build Frontend Chat UI
+- [x] Test Socket.io real-time chat
+
+| 31.14.1 | Trip group chat | Done | |
+| 31.14.2 | Contextual comments | Deferred | |
+| 31.14.3 | Threaded replies | Deferred | |
 | 31.14.4 | User mentions | Not started | |
 | 31.14.5 | Message reactions | Not started | |
 | 31.14.6 | Edit message | Not started | |
