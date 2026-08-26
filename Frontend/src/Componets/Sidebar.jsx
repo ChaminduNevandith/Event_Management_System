@@ -55,6 +55,19 @@ const Sidebar = () => {
           Add Event
         </button>
 
+         <button 
+          onClick={() => navigate('/My Events')}
+          className={`w-full flex items-center px-4 py-3 rounded-xl transition-colors ${
+            location.pathname === '/My Events' 
+              ? 'bg-indigo-50 text-indigo-700 font-medium' 
+              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+          }`}
+        >
+          <PlusCircle className="w-5 h-5 mr-3" />
+          My Events
+        </button>
+
+
         <button 
           onClick={() => navigate('/calendar')}
           className={`w-full flex items-center px-4 py-3 rounded-xl transition-colors ${
@@ -66,7 +79,35 @@ const Sidebar = () => {
           <CalendarDays className="w-5 h-5 mr-3" />
           Event Calendar
         </button>
+
+        <button 
+          onClick={() => navigate('/Friends')}
+          className={`w-full flex items-center px-4 py-3 rounded-xl transition-colors ${
+            location.pathname === '/Friends' 
+              ? 'bg-indigo-50 text-indigo-700 font-medium' 
+              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+          }`}
+        >
+          <CalendarDays className="w-5 h-5 mr-3" />
+          Friends
+        </button>
+
+        <button 
+          onClick={() => navigate('/Hotels')}
+          className={`w-full flex items-center px-4 py-3 rounded-xl transition-colors ${
+            location.pathname === '/Hotels' 
+              ? 'bg-indigo-50 text-indigo-700 font-medium' 
+              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+          }`}
+        >
+          <PlusCircle className="w-5 h-5 mr-3" />
+          Hotels
+        </button>
+
+
       </nav>
+
+       
 
       {/* Sidebar Footer (User Info & Logout) */}
       <div className="p-4 border-t border-gray-100">
