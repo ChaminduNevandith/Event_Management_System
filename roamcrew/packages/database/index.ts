@@ -12,4 +12,4 @@ export const prisma =
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-// Force TS server to reload
+// Force TS Server reload 2

@@ -38,8 +38,12 @@ export const InviteMemberSchema = z.object({
 export type InviteMemberRequest = z.infer<typeof InviteMemberSchema>;
 
 // --- DESTINATIONS ---
+export const DestinationStatusSchema = z.enum(["PROPOSED", "APPROVED", "REJECTED"]);
+
 export const CreateDestinationSchema = z.object({
   name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  imageUrl: z.string().url().optional(),
   googlePlaceId: z.string().optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
@@ -47,6 +51,71 @@ export const CreateDestinationSchema = z.object({
   endDate: z.string().datetime().optional(),
 });
 export type CreateDestinationRequest = z.infer<typeof CreateDestinationSchema>;
+
+export const UpdateDestinationSchema = CreateDestinationSchema.partial().extend({
+  status: DestinationStatusSchema.optional(),
+  orderIndex: z.number().int().min(0).optional(),
+});
+export type UpdateDestinationRequest = z.infer<typeof UpdateDestinationSchema>;
+
+export const DestinationVoteSchema = z.object({
+  voteType: z.enum(["UP", "DOWN"]),
+});
+export type DestinationVoteRequest = z.infer<typeof DestinationVoteSchema>;
+
+// --- PLACES (Saved Places) ---
+export const PlaceCategorySchema = z.enum([
+  "ACCOMMODATION",
+  "FOOD",
+  "ATTRACTION",
+  "ACTIVITY",
+  "TRANSPORT",
+  "OTHER",
+]);
+
+export const CreatePlaceSchema = z.object({
+  destinationId: z.string().uuid().optional(),
+  name: z.string().min(1, "Name is required"),
+  googlePlaceId: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  address: z.string().optional(),
+  category: PlaceCategorySchema.optional(),
+  notes: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  imageUrls: z.array(z.string().url()).optional(),
+});
+export type CreatePlaceRequest = z.infer<typeof CreatePlaceSchema>;
+
+export const UpdatePlaceSchema = CreatePlaceSchema.partial();
+export type UpdatePlaceRequest = z.infer<typeof UpdatePlaceSchema>;
+
+// Polls / Decision Room
+export const CreatePollSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  isMultipleChoice: z.boolean().default(false),
+  options: z.array(z.object({
+    text: z.string().min(1, "Option text is required"),
+    imageUrl: z.string().url().optional(),
+  })).min(2, "At least two options are required"),
+  deadline: z.string().datetime().optional(),
+});
+export type CreatePollRequest = z.infer<typeof CreatePollSchema>;
+
+export const PollVoteSchema = z.object({
+  optionId: z.string().uuid(),
+});
+export type PollVoteRequest = z.infer<typeof PollVoteSchema>;
+
+export const PollCommentSchema = z.object({
+  content: z.string().min(1, "Comment cannot be empty"),
+});
+export type PollCommentRequest = z.infer<typeof PollCommentSchema>;
+
+
+
+
 
 // --- EXPENSES ---
 export const ExpenseCategorySchema = z.enum([
@@ -87,10 +156,11 @@ export type ItemType = z.infer<typeof ItemTypeSchema>;
 export const CreateItineraryItemSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
+  type: ItemTypeSchema.default("ACTIVITY"),
   startTime: z.string().datetime().optional(),
   endTime: z.string().datetime().optional(),
   isAllDay: z.boolean().optional(),
-  type: ItemTypeSchema.optional(),
+  destinationId: z.string().uuid(),
 });
 
 export type CreateItineraryItemRequest = z.infer<typeof CreateItineraryItemSchema>;

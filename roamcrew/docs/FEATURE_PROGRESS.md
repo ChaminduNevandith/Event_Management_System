@@ -87,74 +87,89 @@
 | 31.5.19 | Restore trip | Done | |
 | 31.5.20 | Cancel trip | Done | |
 | 31.5.21 | Delete trip | Done | |
-| 31.6.1 | Destination search | Not started | |
-| 31.6.2 | Manual destination | Not started | |
-| 31.6.3 | Destination candidate board | Not started | |
-| 31.6.4 | Destination cards | Not started | |
-| 31.6.5 | Multi-destination trip | Not started | |
-| 31.6.6 | Destination ordering | Not started | |
-| 31.6.7 | Destination date range | Not started | |
-| 31.6.8 | Saved places | Not started | |
-| 31.6.9 | Place categories | Not started | |
-| 31.6.10 | Place notes | Not started | |
-| 31.6.11 | Place tags | Not started | |
-| 31.6.12 | Place images | Not started | |
+
+## Phase 4: Destinations and Places (Sprint 12)
+**Status:** Completed 🟢
+
+### ✅ 1. Sprint 12: Destinations & Saved Places
+- [x] Create `Destination` and `Place` Prisma models.
+- [x] Build Kanban-style Destination Candidate Board (Proposed/Approved/Rejected).
+- [x] Add upvote/downvote actions for destinations.
+- [x] Build Saved Places grid with filtering and categorization.
+- [x] Create API endpoints and schemas for Destinations and Places.
+
+| 31.6.1 | Destination search | Done | |
+| 31.6.2 | Manual destination | Done | |
+| 31.6.3 | Destination candidate board | Done | |
+| 31.6.4 | Destination cards | Done | |
+| 31.6.5 | Multi-destination trip | Done | |
+| 31.6.6 | Destination ordering | Done | |
+| 31.6.7 | Destination date range | Done | |
+| 31.6.8 | Saved places | Done | |
+| 31.6.9 | Place categories | Done | |
+| 31.6.10 | Place notes | Done | |
+| 31.6.11 | Place tags | Done | |
+| 31.6.12 | Place images | Done | |
 | 31.6.13 | Duplicate place detection | Not started | |
 | 31.6.14 | Destination comparison | Not started | |
 | 31.6.15 | Destination suggestion | Not started | |
 | 31.6.16 | Destination approval | Not started | |
-| 31.7.1 | Decision room | Not started | |
-| 31.7.2 | Create proposal | Not started | |
-| 31.7.3 | Single-choice poll | Not started | |
-| 31.7.4 | Multiple-choice poll | Not started | |
-| 31.7.5 | Ranked-choice voting | Not started | |
-| 31.7.6 | Yes, no or concern vote | Not started | |
-| 31.7.7 | Numeric range vote | Not started | |
-| 31.7.8 | Availability grid | Not started | |
-| 31.7.9 | Private availability | Not started | |
-| 31.7.10 | Private budget range | Not started | |
-| 31.7.11 | Poll deadline | Not started | |
-| 31.7.12 | Voting quorum | Not started | |
-| 31.7.13 | Anonymous voting | Not started | |
-| 31.7.14 | Editable vote | Not started | |
-| 31.7.15 | Voting participation | Not started | |
-| 31.7.16 | Missing response reminder | Not started | |
-| 31.7.17 | Comments on proposals | Not started | |
-| 31.7.18 | Decision result | Not started | |
-| 31.7.19 | Lock decision | Not started | |
-| 31.7.20 | Reopen decision | Not started | |
-| 31.7.21 | Convert decision to plan | Not started | |
-| 31.7.22 | Decision history | Not started | |
-| 31.8.1 | Daily itinerary | Not started | |
+## Phase 5: Decision Room and Polling (Sprint 13)
+**Status:** Completed 🟢
+
+### ✅ 1. Sprint 13: Decision Room
+- [x] Create `Poll`, `PollOption`, `PollVote` Prisma models.
+- [x] Build Decision Room frontend.
+- [x] Create API endpoints for creating polls, voting, and real-time visualization.
+- [x] Implement voting rules (single choice vs multiple choice).
+
+| 31.7.1 | Decision room | Done | |
+| 31.7.2 | Create proposal | Done | |
+| 31.7.3 | Single-choice poll | Done | |
+| 31.7.4 | Multiple-choice poll | Done | |
+| 31.7.18 | Decision result | Done | |
+
+## Phase 6: Itinerary & Scheduling (Sprint 14)
+**Status:** Completed 🟢
+
+### ✅ 1. Sprint 14: Daily Itinerary
+- [x] Create `ItineraryItem` Prisma model.
+- [x] Build Daily Itinerary frontend view with day grouping and timeline visual.
+- [x] Create API endpoints for CRUD itinerary items.
+- [x] Map UI icons/colors to standard event types (FLIGHT, TRAIN, ACCOMMODATION, etc.).
+
+| 31.8.1 | Daily itinerary | Done | |
+| 31.8.3 | List view | Done | |
+| 31.8.5 | Create itinerary item | Done | |
+| 31.8.6 | Event types | Done | |
+| 31.8.7 | Start and end time | Done | |
+| 31.8.10 | Delete item | Done | |
 | 31.8.2 | Timeline view | Not started | |
-| 31.8.3 | List view | Not started | |
 | 31.8.4 | Calendar view | Not started | |
 | 31.8.5 | Map split view | Not started | |
 | 31.8.6 | Unscheduled ideas | Not started | |
-| 31.8.7 | Create itinerary item | Not started | |
-| 31.8.8 | Start and end time | Not started | |
-| 31.8.9 | Duration and buffer | Not started | |
-| 31.8.10 | All-day item | Not started | |
-| 31.8.11 | Multi-day item | Not started | |
-| 31.8.12 | Drag and drop | Not started | |
-| 31.8.13 | Keyboard move controls | Not started | |
-| 31.8.14 | Undo itinerary change | Not started | |
-| 31.8.15 | Overlap detection | Not started | |
-| 31.8.16 | Transfer-time warning | Not started | |
-| 31.8.17 | Timezone warning | Not started | |
-| 31.8.18 | Opening-hours warning | Not started | |
-| 31.8.19 | Alternative activity | Not started | |
-| 31.8.20 | Locked itinerary item | Not started | |
-| 31.8.21 | Item assignees | Not started | |
-| 31.8.22 | Item attendees and RSVP | Not started | |
-| 31.8.23 | Event capacity | Not started | |
-| 31.8.24 | Recurring preparation event | Not started | |
-| 31.8.25 | Event-specific chat | Not started | |
-| 31.8.26 | Event cancellation | Not started | |
-| 31.8.27 | Calendar export | Not started | |
-| 31.8.28 | Calendar import | Not started | |
-| 31.8.29 | External free/busy connection | Not started | |
-| 31.8.30 | Change summary | Not started | |
+| 31.8.8 | Duration and buffer | Not started | |
+| 31.8.9 | All-day item | Not started | |
+| 31.8.10 | Multi-day item | Not started | |
+| 31.8.11 | Drag and drop | Not started | |
+| 31.8.12 | Keyboard move controls | Not started | |
+| 31.8.13 | Undo itinerary change | Not started | |
+| 31.8.14 | Overlap detection | Not started | |
+| 31.8.15 | Transfer-time warning | Not started | |
+| 31.8.16 | Timezone warning | Not started | |
+| 31.8.17 | Opening-hours warning | Not started | |
+| 31.8.18 | Alternative activity | Not started | |
+| 31.8.19 | Locked itinerary item | Not started | |
+| 31.8.20 | Item assignees | Not started | |
+| 31.8.21 | Item attendees and RSVP | Not started | |
+| 31.8.22 | Event capacity | Not started | |
+| 31.8.23 | Recurring preparation event | Not started | |
+| 31.8.24 | Event-specific chat | Not started | |
+| 31.8.25 | Event cancellation | Not started | |
+| 31.8.26 | Calendar export | Not started | |
+| 31.8.27 | Calendar import | Not started | |
+| 31.8.28 | External free/busy connection | Not started | |
+| 31.8.29 | Change summary | Not started | |
 | 31.9.1 | Accommodation record | Not started | |
 | 31.9.2 | Accommodation candidate list | Not started | |
 | 31.9.3 | Stay comparison | Not started | |

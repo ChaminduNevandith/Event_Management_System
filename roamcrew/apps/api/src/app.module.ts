@@ -7,12 +7,14 @@ import { UsersModule } from './users/users.module';
 import { TripsModule } from './trips/trips.module';
 import { DestinationsModule } from './destinations/destinations.module';
 import { ConfigModule } from '@nestjs/config';
-import { ItineraryItemsModule } from './itinerary-items/itinerary-items.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { ChatModule } from './chat/chat.module';
 import { FriendsModule } from './friends/friends.module';
 import { CirclesModule } from './circles/circles.module';
 import { InvitationsModule } from './invitations/invitations.module';
+import { PlacesModule } from './places/places.module';
+import { PollsModule } from './polls/polls.module';
+import { ItineraryModule } from './itinerary/itinerary.module';
 
 @Module({
   imports: [
@@ -22,12 +24,14 @@ import { InvitationsModule } from './invitations/invitations.module';
     UsersModule,
     TripsModule,
     DestinationsModule,
-    ItineraryItemsModule,
     ExpensesModule,
     ChatModule,
     FriendsModule,
     CirclesModule,
     InvitationsModule,
+    PlacesModule,
+    PollsModule,
+    ItineraryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
