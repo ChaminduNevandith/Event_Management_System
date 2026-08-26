@@ -81,7 +81,11 @@ export default function TripsPage() {
                 
                 {/* Visual Header / Cover Image Placeholder */}
                 <div className="h-40 w-full bg-gradient-to-br from-[#0EA5E9]/20 to-[#38BDF8]/5 relative overflow-hidden group-hover:from-[#0EA5E9]/30 transition-colors duration-500">
-                  <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiMwRUE1RTkiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PC9zdmc+')] [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
+                  {trip.coverImageUrl ? (
+                    <img src={trip.coverImageUrl} alt={trip.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiMwRUE1RTkiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PC9zdmc+')] [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
+                  )}
                   
                   {/* Status Badge */}
                   <div className="absolute top-4 right-4 rounded-full bg-white/90 backdrop-blur-md px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#0EA5E9] shadow-sm border border-white">

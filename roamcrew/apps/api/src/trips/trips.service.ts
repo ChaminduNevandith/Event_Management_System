@@ -11,6 +11,7 @@ export class TripsService {
       data: {
         title: createTripDto.title,
         description: createTripDto.description,
+        coverImageUrl: createTripDto.coverImageUrl,
         startDate: createTripDto.startDate ? new Date(createTripDto.startDate) : undefined,
         endDate: createTripDto.endDate ? new Date(createTripDto.endDate) : undefined,
         timezone: createTripDto.timezone,
