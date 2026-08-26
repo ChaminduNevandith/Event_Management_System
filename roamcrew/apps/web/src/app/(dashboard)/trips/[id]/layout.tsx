@@ -14,6 +14,31 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
   const [trip, setTrip] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteLink, setInviteLink] = useState("");
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Settings State
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [status, setStatus] = useState("PLANNING");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [timezone, setTimezone] = useState("");
+
+  useEffect(() => {
+    if (trip) {
+      setTitle(trip.title);
+      setDescription(trip.description || "");
+      setCoverImageUrl(trip.coverImageUrl || "");
+      setStatus(trip.status);
+      setStartDate(trip.startDate ? new Date(trip.startDate).toISOString().split("T")[0] : "");
+      setEndDate(trip.endDate ? new Date(trip.endDate).toISOString().split("T")[0] : "");
+      setTimezone(trip.timezone || "");
+    }
+  }, [trip]);
 
   useEffect(() => {
     async function loadTrip() {
@@ -28,6 +53,66 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
     }
     loadTrip();
   }, [params.id]);
+
+  const handleUpdateTrip = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    try {
+      await fetchApi(`/trips/${params.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          title,
+          description: description || undefined,
+          coverImageUrl: coverImageUrl || undefined,
+          status,
+          startDate: startDate ? new Date(startDate).toISOString() : undefined,
+          endDate: endDate ? new Date(endDate).toISOString() : undefined,
+          timezone,
+        })
+      });
+      const data = await fetchApi(`/trips/${params.id}`);
+      setTrip(data);
+      setShowSettingsModal(false);
+    } catch (err: any) {
+      alert(err.message || "Failed to update trip");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!confirm(`Are you sure you want to ${trip.isArchived ? 'restore' : 'archive'} this trip?`)) return;
+    try {
+      await fetchApi(`/trips/${params.id}/${trip.isArchived ? 'restore' : 'archive'}`, { method: "POST" });
+      const data = await fetchApi(`/trips/${params.id}`);
+      setTrip(data);
+    } catch (err: any) {
+      alert(err.message || "Failed to archive/restore trip");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you absolutely sure you want to delete this trip? This action cannot be undone.")) return;
+    try {
+      await fetchApi(`/trips/${params.id}`, { method: "DELETE" });
+      router.push("/trips");
+    } catch (err: any) {
+      alert(err.message || "Failed to delete trip");
+    }
+  };
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      await fetchApi(`/trips/${params.id}/members/${userId}/role`, {
+        method: "PATCH",
+        body: JSON.stringify({ role: newRole })
+      });
+      const data = await fetchApi(`/trips/${params.id}`);
+      setTrip(data);
+    } catch (err: any) {
+      alert(err.message || "Failed to change role");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -53,69 +138,92 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
     { name: "Itinerary", href: `/trips/${params.id}` },
     { name: "Budget", href: `/trips/${params.id}/budget` },
     { name: "Chat", href: `/trips/${params.id}/chat` },
+    { name: "Activity", href: `/trips/${params.id}/activity` },
   ];
+
+  const myRole = trip.members.find((m: any) => m.user.id === (window as any)._currentUser?.id)?.role || 'MEMBER';
+  const canManage = myRole === 'OWNER' || myRole === 'ADMIN';
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {trip.isArchived && (
+        <div className="bg-[#fa3c1b]/10 p-3 rounded-xl border border-[#fa3c1b]/20 text-center text-[#da2405] font-bold text-sm">
+          This trip is archived. It is read-only.
+        </div>
+      )}
+
       {/* Header */}
-      <div className="relative">
-        <Link href="/trips" className="inline-flex items-center text-sm font-bold text-[#486581] hover:text-[#0EA5E9] mb-6 transition-colors bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to trips
-        </Link>
-        
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-          <div className="flex-1">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="rounded-full bg-[#0EA5E9]/15 px-4 py-1.5 text-xs font-bold text-[#0EA5E9] uppercase tracking-wider border border-[#0EA5E9]/20 shadow-sm">
-                {trip.status}
+      <div className="relative overflow-hidden rounded-3xl">
+        {trip.coverImageUrl && (
+          <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent z-10"></div>
+            <img src={trip.coverImageUrl} className="w-full h-full object-cover" alt="Trip Cover" />
+          </div>
+        )}
+        <div className="relative z-10 px-8 py-10">
+          <Link href="/trips" className="inline-flex items-center text-sm font-bold text-[#486581] hover:text-[#0EA5E9] mb-6 transition-colors bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to trips
+          </Link>
+          
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="rounded-full bg-[#0EA5E9]/15 px-4 py-1.5 text-xs font-bold text-[#0EA5E9] uppercase tracking-wider border border-[#0EA5E9]/20 shadow-sm">
+                  {trip.status}
+                </div>
               </div>
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#0C4A6E] leading-tight">
+                {trip.title}
+              </h1>
+              {trip.description && (
+                <p className="text-[#486581] mt-4 max-w-3xl text-lg leading-relaxed font-medium bg-white/40 p-4 rounded-xl backdrop-blur-sm border border-white/50">{trip.description}</p>
+              )}
             </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#0C4A6E] leading-tight">
-              {trip.title}
-            </h1>
-            {trip.description && (
-              <p className="text-[#486581] mt-4 max-w-3xl text-lg leading-relaxed">{trip.description}</p>
+            {canManage && (
+              <button 
+                onClick={() => setShowSettingsModal(true)}
+                className="inline-flex h-12 items-center justify-center rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 backdrop-blur-md px-6 text-sm font-bold text-[#0C4A6E] shadow-sm transition-all hover:bg-white/80 hover:border-[#0EA5E9]/40 hover:-translate-y-0.5 shrink-0"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Manage Trip
+              </button>
             )}
           </div>
-          <button className="inline-flex h-12 items-center justify-center rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 backdrop-blur-md px-6 text-sm font-bold text-[#0C4A6E] shadow-sm transition-all hover:bg-white/80 hover:border-[#0EA5E9]/40 hover:-translate-y-0.5 shrink-0">
-            <Settings className="mr-2 h-4 w-4" />
-            Manage Trip
-          </button>
-        </div>
 
-        <div className="flex flex-wrap gap-4 mt-8 pt-6 border-t border-[#0EA5E9]/10">
-          {trip.startDate && (
+          <div className="flex flex-wrap gap-4 mt-8 pt-6 border-t border-[#0EA5E9]/10">
+            {trip.startDate && (
+              <div className="flex items-center bg-white/60 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white shadow-sm font-bold text-[#0C4A6E]">
+                <Calendar className="mr-2 h-5 w-5 text-[#F97316]" />
+                {format(new Date(trip.startDate), "MMMM d, yyyy")}
+                {trip.endDate && ` - ${format(new Date(trip.endDate), "MMMM d, yyyy")}`}
+              </div>
+            )}
             <div className="flex items-center bg-white/60 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white shadow-sm font-bold text-[#0C4A6E]">
-              <Calendar className="mr-2 h-5 w-5 text-[#F97316]" />
-              {format(new Date(trip.startDate), "MMMM d, yyyy")}
-              {trip.endDate && ` - ${format(new Date(trip.endDate), "MMMM d, yyyy")}`}
+              <Users className="mr-2 h-5 w-5 text-[#38BDF8]" />
+              {trip.members.length} Crew Member{trip.members.length !== 1 ? 's' : ''}
             </div>
-          )}
-          <div className="flex items-center bg-white/60 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white shadow-sm font-bold text-[#0C4A6E]">
-            <Users className="mr-2 h-5 w-5 text-[#38BDF8]" />
-            {trip.members.length} Crew Member{trip.members.length !== 1 ? 's' : ''}
           </div>
-        </div>
 
-        {/* Tab Navigation */}
-        <div className="flex space-x-2 mt-8 bg-white/40 p-1.5 rounded-2xl border border-white inline-flex shadow-sm">
-          {tabs.map((tab) => {
-            const isActive = pathname === tab.href;
-            return (
-              <Link
-                key={tab.name}
-                href={tab.href}
-                className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                  isActive
-                    ? "bg-white text-[#0EA5E9] shadow-sm border border-white"
-                    : "text-[#486581] hover:text-[#0C4A6E] hover:bg-white/50"
-                }`}
-              >
-                {tab.name}
-              </Link>
-            );
-          })}
+          {/* Tab Navigation */}
+          <div className="flex space-x-2 mt-8 bg-white/40 p-1.5 rounded-2xl border border-white inline-flex shadow-sm backdrop-blur-md">
+            {tabs.map((tab) => {
+              const isActive = pathname === tab.href;
+              return (
+                <Link
+                  key={tab.name}
+                  href={tab.href}
+                  className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                    isActive
+                      ? "bg-white text-[#0EA5E9] shadow-sm border border-white"
+                      : "text-[#486581] hover:text-[#0C4A6E] hover:bg-white/50"
+                  }`}
+                >
+                  {tab.name}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -137,24 +245,39 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
             </div>
             <div className="p-3">
               {trip.members.map((member: any) => (
-                <div key={member.id} className="flex items-center justify-between p-3 hover:bg-white/50 rounded-2xl transition-colors cursor-pointer group">
-                  <div className="flex items-center space-x-4">
-                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0EA5E9] to-[#38BDF8] text-white flex items-center justify-center font-bold text-lg shadow-md group-hover:scale-105 transition-transform">
-                      {member.user.firstName.charAt(0)}{member.user.lastName.charAt(0)}
+                <div key={member.id} className="flex flex-col p-3 hover:bg-white/50 rounded-2xl transition-colors group">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#0EA5E9] to-[#38BDF8] text-white flex items-center justify-center font-bold shadow-md">
+                        {member.user.firstName.charAt(0)}{member.user.lastName.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-[#0C4A6E]">{member.user.firstName} {member.user.lastName}</p>
+                        <p className="text-xs font-bold text-[#F97316] mt-0.5 uppercase tracking-wide">{member.role}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-base text-[#0C4A6E]">{member.user.firstName} {member.user.lastName}</p>
-                      <p className="text-xs font-bold text-[#F97316] mt-0.5 uppercase tracking-wide">{member.role}</p>
-                    </div>
+                    {canManage && member.role !== 'OWNER' && (
+                      <select 
+                        value={member.role}
+                        onChange={(e) => handleRoleChange(member.user.id, e.target.value)}
+                        className="text-xs font-bold border border-white/50 rounded-lg bg-white/60 text-[#0C4A6E] px-2 py-1 outline-none focus:ring-1 focus:ring-[#0EA5E9]"
+                      >
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="MEMBER">MEMBER</option>
+                        <option value="VIEWER">VIEWER</option>
+                      </select>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
-            <div className="px-6 py-4 border-t border-white/50 bg-white/40">
-              <button className="text-sm font-bold text-[#0EA5E9] hover:text-[#0284c7] w-full text-center py-2 bg-white rounded-xl shadow-sm border border-[#0EA5E9]/10 transition-colors">
-                + Invite Someone
-              </button>
-            </div>
+            {canManage && (
+              <div className="px-6 py-4 border-t border-white/50 bg-white/40">
+                <button onClick={() => setShowInviteModal(true)} className="text-sm font-bold text-[#0EA5E9] hover:text-[#0284c7] w-full text-center py-2 bg-white rounded-xl shadow-sm border border-[#0EA5E9]/10 transition-colors">
+                  + Invite Someone
+                </button>
+              </div>
+            )}
           </div>
           
           <div className="bg-gradient-to-br from-[#F97316] to-[#ea580c] rounded-3xl shadow-lg shadow-[#F97316]/20 overflow-hidden text-white p-6 relative">
@@ -167,6 +290,119 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </div>
+
+      {showInviteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/40 backdrop-blur-sm">
+          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2">Invite to {trip.title}</h2>
+            <p className="text-[#486581] text-sm mb-6">Generate a link to share, or invite directly.</p>
+            
+            <div className="space-y-4">
+              <button 
+                onClick={async () => {
+                  try {
+                    const inv = await fetchApi(`/invitations/trip/${params.id}`, { method: 'POST', body: JSON.stringify({}) });
+                    setInviteLink(`${window.location.origin}/invite/${inv.token}`);
+                  } catch (err: any) { alert(err.message); }
+                }}
+                className="w-full py-3 rounded-xl bg-[#0EA5E9] text-white font-bold hover:bg-[#0284C7] transition-all"
+              >
+                Generate Link
+              </button>
+              
+              {inviteLink && (
+                <div className="p-3 bg-white/50 border border-[#0EA5E9]/20 rounded-xl flex items-center justify-between overflow-hidden">
+                  <span className="text-sm text-[#0C4A6E] truncate mr-2">{inviteLink}</span>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(inviteLink);
+                      alert("Copied to clipboard!");
+                    }}
+                    className="text-xs font-bold bg-white text-[#0EA5E9] px-3 py-1.5 rounded-lg shadow-sm shrink-0"
+                  >
+                    Copy
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            <button onClick={() => { setShowInviteModal(false); setInviteLink(''); }} className="mt-8 w-full py-2.5 rounded-xl border border-[#0EA5E9]/20 text-[#0C4A6E] font-bold hover:bg-white/50 transition-colors">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showSettingsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/40 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-2xl shadow-2xl my-8 relative">
+            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-6">Trip Settings</h2>
+            
+            <form onSubmit={handleUpdateTrip} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-sm font-bold text-[#243b53]">Title</label>
+                  <input required className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 outline-none focus:ring-2 focus:ring-[#0EA5E9]" value={title} onChange={(e) => setTitle(e.target.value)} />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-sm font-bold text-[#243b53]">Description</label>
+                  <textarea className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 outline-none focus:ring-2 focus:ring-[#0EA5E9]" value={description} onChange={(e) => setDescription(e.target.value)} />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-sm font-bold text-[#243b53]">Cover Image URL</label>
+                  <input type="url" className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 outline-none focus:ring-2 focus:ring-[#0EA5E9]" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-[#243b53]">Status</label>
+                  <select className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 outline-none focus:ring-2 focus:ring-[#0EA5E9]" value={status} onChange={(e) => setStatus(e.target.value)}>
+                    <option value="PLANNING">PLANNING</option>
+                    <option value="UPCOMING">UPCOMING</option>
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-[#243b53]">Timezone</label>
+                  <select className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 outline-none focus:ring-2 focus:ring-[#0EA5E9]" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+                    {Intl.supportedValuesOf('timeZone').map(tz => (
+                      <option key={tz} value={tz}>{tz}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-[#243b53]">Start Date</label>
+                  <input type="date" className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 outline-none focus:ring-2 focus:ring-[#0EA5E9]" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-[#243b53]">End Date</label>
+                  <input type="date" min={startDate} className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 outline-none focus:ring-2 focus:ring-[#0EA5E9]" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-6 border-t border-black/5">
+                <button type="button" onClick={() => setShowSettingsModal(false)} className="px-6 py-2 rounded-xl text-[#0C4A6E] font-bold hover:bg-white/50 border border-transparent">Cancel</button>
+                <button type="submit" disabled={isUpdating} className="px-6 py-2 rounded-xl bg-[#0EA5E9] text-white font-bold hover:bg-[#0284c7]">Save Changes</button>
+              </div>
+            </form>
+
+            <div className="mt-10 pt-6 border-t border-black/5">
+              <h3 className="text-lg font-bold text-[#da2405] mb-2">Danger Zone</h3>
+              <div className="flex gap-4">
+                <button onClick={handleArchive} className="px-4 py-2 rounded-xl bg-orange-100 text-orange-700 font-bold hover:bg-orange-200">
+                  {trip.isArchived ? "Restore Trip" : "Archive Trip"}
+                </button>
+                {myRole === 'OWNER' && (
+                  <button onClick={handleDelete} className="px-4 py-2 rounded-xl bg-red-100 text-red-700 font-bold hover:bg-red-200">
+                    Delete Trip
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

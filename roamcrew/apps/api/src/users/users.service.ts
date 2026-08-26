@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, Prisma } from 'database';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -16,5 +17,29 @@ export class UsersService {
     return this.prisma.client.user.create({
       data,
     });
+  }
+
+  async updateUser(userId: string, data: Prisma.UserUpdateInput): Promise<User> {
+    return this.prisma.client.user.update({
+      where: { id: userId },
+      data,
+    });
+  }
+
+  async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
+    const user = await this.findOne({ id: userId });
+    if (!user || !user.passwordHash) {
+      throw new BadRequestException('User not found or uses social login');
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.passwordHash);
+    if (!isMatch) {
+      throw new BadRequestException('Incorrect old password');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(newPassword, salt);
+
+    await this.updateUser(userId, { passwordHash });
   }
 }

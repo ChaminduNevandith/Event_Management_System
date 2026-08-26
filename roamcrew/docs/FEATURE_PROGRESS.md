@@ -9,7 +9,7 @@
 | 31.1.5 | Password strength guidance | Not started | |
 | 31.1.6 | Show or hide password | Not started | |
 | 31.1.7 | Forgot password | Not started | |
-| 31.1.8 | Change password | Not started | |
+| 31.1.8 | Change password | Done | |
 | 31.1.9 | Active session list | Not started | |
 | 31.1.10 | Remote session logout | Not started | |
 | 31.1.11 | Optional multi-factor authentication | Deferred | |
@@ -17,76 +17,76 @@
 | 31.1.13 | Automatic session expiry | Not started | |
 | 31.1.14 | Account deactivation | Not started | |
 | 31.1.15 | Account deletion | Not started | |
-| 31.2.1 | Profile photo | Not started | |
-| 31.2.2 | Display name | Not started | |
-| 31.2.3 | Unique username | Not started | |
-| 31.2.4 | Short biography | Not started | |
-| 31.2.5 | Home timezone | Not started | |
-| 31.2.6 | Preferred currency | Not started | |
-| 31.2.7 | Measurement units | Not started | |
-| 31.2.8 | Date and time format | Not started | |
-| 31.2.9 | Language preference | Not started | |
-| 31.2.10 | Light and dark themes | Not started | |
-| 31.2.11 | Reduced motion | Not started | |
-| 31.2.12 | Travel interests | Not started | |
-| 31.2.13 | Travel pace | Not started | |
-| 31.2.14 | Dietary preferences | Not started | |
-| 31.2.15 | Accessibility preferences | Not started | |
-| 31.2.16 | Privacy settings | Not started | |
-| 31.3.1 | Friend search | Not started | |
-| 31.3.2 | Friend request | Not started | |
-| 31.3.3 | Accept friend request | Not started | |
-| 31.3.4 | Decline friend request | Not started | |
+| 31.2.1 | Profile photo | Done | |
+| 31.2.2 | Display name | Done | |
+| 31.2.3 | Unique username | Done | |
+| 31.2.4 | Short biography | Done | |
+| 31.2.5 | Home timezone | Done | |
+| 31.2.6 | Preferred currency | Done | |
+| 31.2.7 | Measurement units | Done | |
+| 31.2.8 | Date and time format | Done | |
+| 31.2.9 | Language preference | Done | |
+| 31.2.10 | Light and dark themes | Done | |
+| 31.2.11 | Reduced motion | Done | |
+| 31.2.12 | Travel interests | Done | |
+| 31.2.13 | Travel pace | Done | |
+| 31.2.14 | Dietary preferences | Done | |
+| 31.2.15 | Accessibility preferences | Done | |
+| 31.2.16 | Privacy settings | Done | |
+| 31.3.1 | Friend search | Done | |
+| 31.3.2 | Friend request | Done | |
+| 31.3.3 | Accept friend request | Done | |
+| 31.3.4 | Decline friend request | Done | |
 | 31.3.5 | Cancel sent request | Not started | |
-| 31.3.6 | Pending request list | Not started | |
-| 31.3.7 | Friends list | Not started | |
-| 31.3.8 | Unfriend user | Not started | |
+| 31.3.6 | Pending request list | Done | |
+| 31.3.7 | Friends list | Done | |
+| 31.3.8 | Unfriend user | Done | |
 | 31.3.9 | Mute friend activity | Not started | |
-| 31.3.10 | Block user | Not started | |
+| 31.3.10 | Block user | Done | |
 | 31.3.11 | Report user | Not started | |
-| 31.3.12 | Travel circles | Not started | |
-| 31.3.13 | Circle name and image | Not started | |
-| 31.3.14 | Circle membership management | Not started | |
-| 31.3.15 | Shared trip history | Not started | |
-| 31.3.16 | Optional presence status | Not started | |
-| 31.4.1 | In-app invitation | Not started | |
-| 31.4.2 | Email invitation | Not started | |
-| 31.4.3 | WhatsApp invitation | Not started | |
-| 31.4.4 | Copy invitation link | Not started | |
-| 31.4.5 | QR code invitation | Not started | |
-| 31.4.6 | Personal invitation note | Not started | |
-| 31.4.7 | Role selection | Not started | |
-| 31.4.8 | Invitation expiry | Not started | |
-| 31.4.9 | Usage limit | Not started | |
-| 31.4.10 | Approval-required link | Not started | |
-| 31.4.11 | Invitation preview | Not started | |
-| 31.4.12 | Accept invitation | Not started | |
-| 31.4.13 | Decline invitation | Not started | |
-| 31.4.14 | Revoke invitation | Not started | |
-| 31.4.15 | Invitation status tracking | Not started | |
-| 31.4.16 | Duplicate invitation prevention | Not started | |
-| 31.4.17 | Return after registration | Not started | |
-| 31.5.1 | Quick trip creation | Not started | |
-| 31.5.2 | Trip title | Not started | |
-| 31.5.3 | Trip cover image | Not started | |
-| 31.5.4 | Approximate dates | Not started | |
-| 31.5.5 | Fixed dates | Not started | |
-| 31.5.6 | Trip timezone | Not started | |
-| 31.5.7 | Trip description | Not started | |
-| 31.5.8 | Trip status | Not started | |
+| 31.3.12 | Travel circles | Done | |
+| 31.3.13 | Circle name and image | Done | |
+| 31.3.14 | Circle membership management | Done | |
+| 31.3.15 | Shared trip history | Done | |
+| 31.3.16 | Optional presence status | Done | |
+| 31.4.1 | In-app invitation | Done | |
+| 31.4.2 | Email invitation | Done | |
+| 31.4.3 | WhatsApp invitation | Done | |
+| 31.4.4 | Copy invitation link | Done | |
+| 31.4.5 | QR code invitation | Done | |
+| 31.4.6 | Personal invitation note | Done | |
+| 31.4.7 | Role selection | Done | |
+| 31.4.8 | Invitation expiry | Done | |
+| 31.4.9 | Usage limit | Done | |
+| 31.4.10 | Approval-required link | Done | |
+| 31.4.11 | Invitation preview | Done | |
+| 31.4.12 | Accept invitation | Done | |
+| 31.4.13 | Decline invitation | Done | |
+| 31.4.14 | Revoke invitation | Done | |
+| 31.4.15 | Invitation status tracking | Done | |
+| 31.4.16 | Duplicate invitation prevention | Done | |
+| 31.4.17 | Return after registration | Done | |
+| 31.5.1 | Quick trip creation | Done | |
+| 31.5.2 | Trip title | Done | |
+| 31.5.3 | Trip cover image | Done | |
+| 31.5.4 | Approximate dates | Done | |
+| 31.5.5 | Fixed dates | Done | |
+| 31.5.6 | Trip timezone | Done | |
+| 31.5.7 | Trip description | Done | |
+| 31.5.8 | Trip status | Done | |
 | 31.5.9 | Trip overview dashboard | Not started | |
 | 31.5.10 | Trip readiness checklist | Not started | |
 | 31.5.11 | Trip progress indicator | Not started | |
-| 31.5.12 | Trip ownership | Not started | |
-| 31.5.13 | Transfer ownership | Not started | |
-| 31.5.14 | Trip roles | Not started | |
-| 31.5.15 | Member management | Not started | |
-| 31.5.16 | Trip activity history | Not started | |
+| 31.5.12 | Trip ownership | Done | |
+| 31.5.13 | Transfer ownership | Done | |
+| 31.5.14 | Trip roles | Done | |
+| 31.5.15 | Member management | Done | |
+| 31.5.16 | Trip activity history | Done | |
 | 31.5.17 | Duplicate trip | Not started | |
-| 31.5.18 | Archive trip | Not started | |
-| 31.5.19 | Restore trip | Not started | |
-| 31.5.20 | Cancel trip | Not started | |
-| 31.5.21 | Delete trip | Not started | |
+| 31.5.18 | Archive trip | Done | |
+| 31.5.19 | Restore trip | Done | |
+| 31.5.20 | Cancel trip | Done | |
+| 31.5.21 | Delete trip | Done | |
 | 31.6.1 | Destination search | Not started | |
 | 31.6.2 | Manual destination | Not started | |
 | 31.6.3 | Destination candidate board | Not started | |

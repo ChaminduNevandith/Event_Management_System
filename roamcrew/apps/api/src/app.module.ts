@@ -10,6 +10,9 @@ import { ConfigModule } from '@nestjs/config';
 import { ItineraryItemsModule } from './itinerary-items/itinerary-items.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { ChatModule } from './chat/chat.module';
+import { FriendsModule } from './friends/friends.module';
+import { CirclesModule } from './circles/circles.module';
+import { InvitationsModule } from './invitations/invitations.module';
 
 @Module({
   imports: [
@@ -22,6 +25,9 @@ import { ChatModule } from './chat/chat.module';
     ItineraryItemsModule,
     ExpensesModule,
     ChatModule,
+    FriendsModule,
+    CirclesModule,
+    InvitationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
