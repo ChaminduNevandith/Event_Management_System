@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTripRequest, UpdateTripRequest } from 'contracts';
+import { isSafeImageUrl } from '../common/utils/url-validator';
+
 
 @Injectable()
 export class TripsService {
@@ -86,6 +88,10 @@ export class TripsService {
     const trip = await this.findOne(userId, id);
     const member = trip.members.find((m: any) => m.userId === userId);
     if (!member || member.role === 'VIEWER') throw new ForbiddenException('Viewers cannot edit trips');
+
+    if (updateTripDto.coverImageUrl && !isSafeImageUrl(updateTripDto.coverImageUrl)) {
+      throw new BadRequestException('Invalid or unsafe cover image URL');
+    }
 
     const updated = await this.prisma.client.trip.update({
       where: { id },

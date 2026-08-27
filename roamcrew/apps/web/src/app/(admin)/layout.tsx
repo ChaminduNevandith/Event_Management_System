@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, ShieldAlert, Settings, Users, Activity } from "lucide-react";
+import { LogOut, ShieldAlert, Settings, Users, Activity, Flag } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -85,6 +85,17 @@ export default function AdminLayout({
             >
               <Users className="h-5 w-5" />
               <span>Users</span>
+            </Link>
+            <Link
+              href="/admin/reports"
+              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
+                pathname.startsWith("/admin/reports") 
+                  ? "bg-red-500 text-white font-bold shadow-md shadow-red-500/20" 
+                  : "text-[#486581] hover:bg-white/80 hover:text-[#0C4A6E] font-medium"
+              }`}
+            >
+              <Flag className="h-5 w-5" />
+              <span>Reports</span>
             </Link>
           </div>
         </div>

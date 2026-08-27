@@ -28,7 +28,7 @@ export class DestinationsService {
     
     const nextOrderIndex = lastDest ? lastDest.orderIndex + 1 : 0;
 
-    return this.prisma.client.destination.create({
+    const dest = await this.prisma.client.destination.create({
       data: {
         tripId,
         name: createDestinationDto.name,
@@ -42,6 +42,9 @@ export class DestinationsService {
         orderIndex: nextOrderIndex,
       },
     });
+
+    await this.tripsService.logActivity(tripId, userId, 'ADDED_DESTINATION', `Added destination: ${createDestinationDto.name}`);
+    return dest;
   }
 
   async findAll(userId: string, tripId: string) {
@@ -68,7 +71,7 @@ export class DestinationsService {
       throw new NotFoundException('Destination not found');
     }
 
-    return this.prisma.client.destination.update({
+    const updated = await this.prisma.client.destination.update({
       where: { id },
       data: {
         name: updateDto.name,
@@ -83,6 +86,9 @@ export class DestinationsService {
         orderIndex: updateDto.orderIndex,
       }
     });
+
+    await this.tripsService.logActivity(tripId, userId, 'UPDATED_DESTINATION', `Updated destination: ${dest.name}`);
+    return updated;
   }
 
   async vote(userId: string, tripId: string, id: string, voteDto: DestinationVoteRequest) {
@@ -116,8 +122,8 @@ export class DestinationsService {
 
   async remove(userId: string, tripId: string, id: string) {
     await this.tripsService.findOne(userId, tripId);
-    return this.prisma.client.destination.delete({
-      where: { id },
-    });
+    const dest = await this.prisma.client.destination.findFirst({ where: { id, tripId } });
+    await this.prisma.client.destination.delete({ where: { id } });
+    if (dest) await this.tripsService.logActivity(tripId, userId, 'REMOVED_DESTINATION', `Removed destination: ${dest.name}`);
   }
 }
