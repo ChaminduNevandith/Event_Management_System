@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="h-full antialiased">
-      <body className={`min-h-full flex flex-col bg-background text-foreground ${dmSans.className}`}>
+      <body suppressHydrationWarning className={`min-h-full flex flex-col bg-background text-foreground ${dmSans.className}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

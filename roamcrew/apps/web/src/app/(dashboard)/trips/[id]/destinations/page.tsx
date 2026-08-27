@@ -136,6 +136,7 @@ export default function DestinationsPage() {
       await fetchApi(`/trips/${params.id}/destinations/${id}`, {
         method: "DELETE"
       });
+      toast.success("Destination removed successfully");
       loadDestinations();
     } catch (err: any) {
       toast.error(err.message || "Failed to delete");

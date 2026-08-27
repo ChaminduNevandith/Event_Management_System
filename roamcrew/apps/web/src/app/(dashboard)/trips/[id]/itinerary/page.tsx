@@ -151,6 +151,7 @@ export default function ItineraryPage() {
       setStartTime("");
       setEndDate("");
       setEndTime("");
+      toast.success("Event added successfully!");
       if (socket) socket.emit("clientDataUpdated", { tripId: params.id, eventType: 'itinerary' });
       loadData();
     } catch (err: any) {
