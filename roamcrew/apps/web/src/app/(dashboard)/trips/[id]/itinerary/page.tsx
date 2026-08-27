@@ -25,6 +25,7 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableItem } from "./sortable-item";
 import dynamic from 'next/dynamic';
+import { useSocket } from "@/components/socket-provider";
 
 const TripMap = dynamic(() => import('@/components/trip-map'), { ssr: false });
 
@@ -53,6 +54,7 @@ export default function ItineraryPage() {
   const [destinations, setDestinations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const { socket } = useSocket();
 
   // Form state
   const [title, setTitle] = useState("");
@@ -96,12 +98,26 @@ export default function ItineraryPage() {
     loadData();
   }, [params.id]);
 
+  useEffect(() => {
+    if (!socket) return;
+    const handleDataUpdated = (type: string) => {
+      if (type === 'itinerary') {
+        loadData();
+      }
+    };
+    socket.on('dataUpdated', handleDataUpdated);
+    return () => {
+      socket.off('dataUpdated', handleDataUpdated);
+    };
+  }, [socket]);
+
   const handleDelete = async (itemId: string) => {
     const isConfirmed = await confirm("Remove this item from the itinerary?");
     if (!isConfirmed) return;
     try {
       await fetchApi(`/trips/${params.id}/itinerary/${itemId}`, { method: "DELETE" });
       toast.success("Item deleted successfully!");
+      if (socket) socket.emit("clientDataUpdated", { tripId: params.id, eventType: 'itinerary' });
       loadData();
     } catch (err) {
       toast.error("Failed to delete");
@@ -135,6 +151,7 @@ export default function ItineraryPage() {
       setStartTime("");
       setEndDate("");
       setEndTime("");
+      if (socket) socket.emit("clientDataUpdated", { tripId: params.id, eventType: 'itinerary' });
       loadData();
     } catch (err: any) {
       toast.error(err.message || "Failed to create item");
@@ -192,6 +209,7 @@ export default function ItineraryPage() {
           endTime: movedItem.endTime
         })
       });
+      if (socket) socket.emit("clientDataUpdated", { tripId: params.id, eventType: 'itinerary' });
     } catch (err) {
       console.error("Failed to update item times", err);
       loadData(); // Revert on failure

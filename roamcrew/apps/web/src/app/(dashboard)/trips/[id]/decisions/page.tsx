@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { Modal } from "@/components/ui/modal";
+import { useSocket } from "@/components/socket-provider";
 
 export default function DecisionsPage() {
   const params = useParams();
@@ -15,6 +16,7 @@ export default function DecisionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const { socket } = useSocket();
 
   // Form State
   const [title, setTitle] = useState("");
@@ -42,6 +44,19 @@ export default function DecisionsPage() {
     loadData();
   }, [params.id]);
 
+  useEffect(() => {
+    if (!socket) return;
+    const handleDataUpdated = (type: string) => {
+      if (type === 'poll') {
+        loadData();
+      }
+    };
+    socket.on('dataUpdated', handleDataUpdated);
+    return () => {
+      socket.off('dataUpdated', handleDataUpdated);
+    };
+  }, [socket]);
+
   const handleCreatePoll = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -68,6 +83,7 @@ export default function DecisionsPage() {
       setDescription("");
       setIsMultipleChoice(false);
       setOptions([{ text: "", imageUrl: "", isLoading: false }, { text: "", imageUrl: "", isLoading: false }]);
+      if (socket) socket.emit("clientDataUpdated", { tripId: params.id, eventType: 'poll' });
       loadData();
     } catch (err: any) {
       toast.error(err.message || "Failed to create poll");
@@ -82,6 +98,7 @@ export default function DecisionsPage() {
         method: "POST",
         body: JSON.stringify({ optionId })
       });
+      if (socket) socket.emit("clientDataUpdated", { tripId: params.id, eventType: 'poll' });
       loadData();
     } catch (err: any) {
       toast.error(err.message || "Failed to vote");

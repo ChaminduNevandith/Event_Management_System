@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { Modal } from "@/components/ui/modal";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { useSocket } from "@/components/socket-provider";
 
 const CURRENCIES = Intl.supportedValuesOf ? Intl.supportedValuesOf("currency").map(c => ({ value: c, label: c })) : [
   { value: 'USD', label: 'USD - US Dollar' },
@@ -46,6 +47,8 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
     payerId: "",
     category: "OTHER"
   });
+  
+  const { socket } = useSocket();
 
   const loadData = async () => {
     try {
@@ -69,6 +72,19 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
   useEffect(() => {
     loadData();
   }, [tripId]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleDataUpdated = (type: string) => {
+      if (type === 'expense') {
+        loadData();
+      }
+    };
+    socket.on('dataUpdated', handleDataUpdated);
+    return () => {
+      socket.off('dataUpdated', handleDataUpdated);
+    };
+  }, [socket]);
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,12 +119,13 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
           splits: splits
         })
       });
+
       setIsAddOpen(false);
       setNewExpense({ title: "", amount: "", currency: "USD", payerId: "", category: "OTHER" });
+      if (socket) socket.emit("clientDataUpdated", { tripId, eventType: 'expense' });
       loadData();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to add expense");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add expense");
     }
   };
 
@@ -116,11 +133,13 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
     const isConfirmed = await confirm("Are you sure you want to delete this expense?");
     if (!isConfirmed) return;
     try {
-      await fetchApi(`/trips/${tripId}/expenses/${expenseId}`, { method: "DELETE" });
-      toast.success("Item deleted successfully!");
+      await fetchApi(`/trips/${tripId}/expenses/${expenseId}`, {
+        method: "DELETE"
+      });
+      toast.success("Expense deleted");
+      if (socket) socket.emit("clientDataUpdated", { tripId, eventType: 'expense' });
       loadData();
     } catch (err) {
-      console.error(err);
       toast.error("Failed to delete expense");
     }
   };

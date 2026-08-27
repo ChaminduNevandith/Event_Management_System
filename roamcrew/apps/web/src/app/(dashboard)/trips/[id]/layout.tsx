@@ -11,6 +11,43 @@ import { Modal } from "@/components/ui/modal";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/components/auth-provider";
+import { SocketProvider, useSocket } from "@/components/socket-provider";
+
+function ActiveUsers() {
+  const { activeUsers } = useSocket();
+  const { user } = useAuth();
+  
+  if (!activeUsers || activeUsers.length === 0) return null;
+  
+  // Show everyone else, plus me. Sort me last or first? Actually we can just show max 5 users.
+  const displayUsers = activeUsers.slice(0, 5);
+  const extraCount = Math.max(0, activeUsers.length - 5);
+
+  return (
+    <div className="flex -space-x-2 mr-4">
+      {displayUsers.map(u => (
+        <div 
+          key={u.id} 
+          className={`w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold overflow-hidden shadow-sm transition-all hover:z-10 hover:scale-110 ${u.id === user?.id ? 'ring-2 ring-[#0EA5E9]' : 'opacity-80'}`}
+          title={`${u.firstName} ${u.lastName} (Online)`}
+        >
+          {u.avatarUrl ? (
+            <img src={u.avatarUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-[#0EA5E9] to-[#38BDF8] text-white flex items-center justify-center">
+              {u.firstName?.[0]}
+            </div>
+          )}
+        </div>
+      ))}
+      {extraCount > 0 && (
+        <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 z-0">
+          +{extraCount}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function TripLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
@@ -230,8 +267,9 @@ export default function TripLayout({ children, params }: { children: React.React
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {trip.isArchived && (
+    <SocketProvider tripId={tripId}>
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        {trip.isArchived && (
         <div className="bg-[#fa3c1b]/10 p-3 rounded-xl border border-[#fa3c1b]/20 text-center text-[#da2405] font-bold text-sm">
           This trip is archived. It is read-only.
         </div>
@@ -246,10 +284,14 @@ export default function TripLayout({ children, params }: { children: React.React
           </div>
         )}
         <div className="relative z-10 px-8 py-10">
-          <Link href="/trips" className="inline-flex items-center text-sm font-bold text-[#486581] hover:text-[#0EA5E9] mb-6 transition-colors bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to trips
-          </Link>
+          <div className="flex justify-between items-start mb-6">
+            <Link href="/trips" className="inline-flex items-center text-sm font-bold text-[#486581] hover:text-[#0EA5E9] transition-colors bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Trips
+            </Link>
+            
+            <ActiveUsers />
+          </div>
           
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
             <div className="flex-1">
@@ -560,6 +602,7 @@ export default function TripLayout({ children, params }: { children: React.React
         </div>
       </Modal>
       <ConfirmationModal />
-    </div>
+      </div>
+    </SocketProvider>
   );
 }
