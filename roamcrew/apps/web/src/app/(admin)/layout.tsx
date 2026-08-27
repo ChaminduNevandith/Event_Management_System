@@ -7,6 +7,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export default function AdminLayout({
   children,
@@ -16,6 +17,14 @@ export default function AdminLayout({
   const { user, logout, isLoading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const { confirm, ConfirmationModal } = useConfirm();
+
+  const handleLogout = async () => {
+    const isConfirmed = await confirm("Are you sure you want to log out?");
+    if (isConfirmed) {
+      logout();
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && user && user.role !== "ADMIN") {
@@ -33,7 +42,8 @@ export default function AdminLayout({
             <Skeleton className="h-64 md:col-span-3 rounded-3xl" />
           </div>
         </div>
-      </div>
+      <ConfirmationModal />
+    </div>
     );
   }
 
@@ -91,7 +101,7 @@ export default function AdminLayout({
               </div>
             </div>
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="p-2 text-[#486581] hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
               title="Logout"
             >
@@ -114,7 +124,7 @@ export default function AdminLayout({
              <ShieldAlert className="w-6 h-6 text-red-500" />
             <span className="ml-2 font-bold text-lg text-[#0C4A6E]">Admin</span>
           </div>
-          <button onClick={logout} className="p-2 text-[#486581] hover:text-red-500">
+          <button onClick={handleLogout} className="p-2 text-[#486581] hover:text-red-500">
             <LogOut className="h-5 w-5" />
           </button>
         </header>

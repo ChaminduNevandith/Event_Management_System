@@ -7,6 +7,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { NotificationsBell } from "@/components/notifications-bell";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export default function DashboardLayout({
   children,
@@ -15,6 +16,14 @@ export default function DashboardLayout({
 }) {
   const { user, logout, isLoading } = useAuth();
   const pathname = usePathname();
+  const { confirm, ConfirmationModal } = useConfirm();
+
+  const handleLogout = async () => {
+    const isConfirmed = await confirm("Are you sure you want to log out?");
+    if (isConfirmed) {
+      logout();
+    }
+  };
 
   if (isLoading) {
     return (
@@ -93,7 +102,7 @@ export default function DashboardLayout({
               <span className="text-sm font-bold truncate">{user.firstName}</span>
             </div>
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="text-[#829ab1] hover:text-[#fa3c1b] transition-colors p-1 rounded-md hover:bg-[#fa3c1b]/10"
               title="Sign out"
             >
@@ -115,7 +124,7 @@ export default function DashboardLayout({
           </Link>
           <div className="flex items-center gap-2">
             <NotificationsBell />
-            <button onClick={logout} className="p-2 text-[#829ab1] hover:text-[#fa3c1b]">
+            <button onClick={handleLogout} className="p-2 text-[#829ab1] hover:text-[#fa3c1b]">
               <LogOut className="h-5 w-5" />
             </button>
           </div>
@@ -131,6 +140,7 @@ export default function DashboardLayout({
           </div>
         </main>
       </div>
+      <ConfirmationModal />
     </div>
   );
 }
