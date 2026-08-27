@@ -137,7 +137,8 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
   }
 
   const tabs = [
-    { name: "Itinerary", href: `/trips/${params.id}` },
+    { name: "Overview", href: `/trips/${params.id}` },
+    { name: "Itinerary", href: `/trips/${params.id}/itinerary` },
     { name: "Map", href: `/trips/${params.id}/map` },
     { name: "Destinations", href: `/trips/${params.id}/destinations` },
     { name: "Accommodations", href: `/trips/${params.id}/accommodations` },

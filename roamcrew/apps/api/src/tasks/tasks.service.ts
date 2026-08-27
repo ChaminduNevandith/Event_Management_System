@@ -6,13 +6,13 @@ export class TasksService {
   constructor(private prisma: PrismaService) {}
 
   async create(tripId: string, userId: string, data: any) {
-    const member = await (this.prisma as any).tripMember.findUnique({
+    const member = await this.prisma.client.tripMember.findUnique({
       where: { userId_tripId: { userId, tripId } },
       include: { user: true }
     });
     if (!member) throw new ForbiddenException("You do not have access to this trip");
 
-    const task = await (this.prisma as any).task.create({
+    const task = await this.prisma.client.task.create({
       data: {
         title: data.title,
         description: data.description,
@@ -31,7 +31,7 @@ export class TasksService {
     });
 
     // Add activity log
-    await (this.prisma as any).tripActivityLog.create({
+    await this.prisma.client.tripActivityLog.create({
       data: {
         tripId,
         userId,
@@ -42,7 +42,7 @@ export class TasksService {
 
     // Notify assignee if it's someone else
     if (data.assigneeId && data.assigneeId !== userId) {
-      await (this.prisma as any).notification.create({
+      await this.prisma.client.notification.create({
         data: {
           userId: data.assigneeId,
           tripId,
@@ -58,12 +58,12 @@ export class TasksService {
   }
 
   async findAll(tripId: string, userId: string) {
-    const member = await (this.prisma as any).tripMember.findUnique({
+    const member = await this.prisma.client.tripMember.findUnique({
       where: { userId_tripId: { userId, tripId } }
     });
     if (!member) throw new ForbiddenException("You do not have access to this trip");
 
-    return (this.prisma as any).task.findMany({
+    return this.prisma.client.task.findMany({
       where: { tripId },
       include: {
         assignee: {
@@ -78,15 +78,15 @@ export class TasksService {
   }
 
   async update(tripId: string, taskId: string, userId: string, data: any) {
-    const member = await (this.prisma as any).tripMember.findUnique({
+    const member = await this.prisma.client.tripMember.findUnique({
       where: { userId_tripId: { userId, tripId } }
     });
     if (!member) throw new ForbiddenException("You do not have access to this trip");
 
-    const task = await (this.prisma as any).task.findUnique({ where: { id: taskId, tripId } });
+    const task = await this.prisma.client.task.findUnique({ where: { id: taskId, tripId } });
     if (!task) throw new NotFoundException("Task not found");
 
-    return (this.prisma as any).task.update({
+    return this.prisma.client.task.update({
       where: { id: taskId },
       data: {
         title: data.title,
@@ -106,15 +106,15 @@ export class TasksService {
   }
 
   async remove(tripId: string, taskId: string, userId: string) {
-    const member = await (this.prisma as any).tripMember.findUnique({
+    const member = await this.prisma.client.tripMember.findUnique({
       where: { userId_tripId: { userId, tripId } }
     });
     if (!member) throw new ForbiddenException("You do not have access to this trip");
 
-    const task = await (this.prisma as any).task.findUnique({ where: { id: taskId, tripId } });
+    const task = await this.prisma.client.task.findUnique({ where: { id: taskId, tripId } });
     if (!task) throw new NotFoundException("Task not found");
 
-    await (this.prisma as any).task.delete({ where: { id: taskId } });
+    await this.prisma.client.task.delete({ where: { id: taskId } });
     return { success: true };
   }
 }

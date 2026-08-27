@@ -2,292 +2,260 @@
 
 import { useEffect, useState } from "react";
 import { fetchApi } from "@/lib/api";
-import { useParams } from "next/navigation";
-import { MapPin, Plus, Plane, Bed, Utensils, Activity, Car, NotebookText, Trash2, Clock } from "lucide-react";
-import { format } from "date-fns";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { format, isAfter, isToday } from "date-fns";
+import { useAuth } from "@/components/auth-provider";
+import { 
+  MapPin, CheckSquare, Wallet, Activity, CalendarClock, 
+  ArrowRight, Clock, Plus, Compass, MessageSquare, AlertCircle
+} from "lucide-react";
 
-const getItemIcon = (type: string) => {
-  switch (type) {
-    case 'FLIGHT': return <Plane className="h-5 w-5 text-blue-500" />;
-    case 'ACCOMMODATION': return <Bed className="h-5 w-5 text-indigo-500" />;
-    case 'DINING': return <Utensils className="h-5 w-5 text-orange-500" />;
-    case 'TRANSPORT': return <Car className="h-5 w-5 text-emerald-500" />;
-    case 'NOTE': return <NotebookText className="h-5 w-5 text-slate-500" />;
-    case 'ACTIVITY':
-    default: return <Activity className="h-5 w-5 text-rose-500" />;
-  }
-};
-
-export default function TripItineraryPage() {
+export default function TripOverviewPage() {
   const params = useParams();
+  const router = useRouter();
+  const { user } = useAuth();
+  
   const [trip, setTrip] = useState<any>(null);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [balances, setBalances] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [isAddingDest, setIsAddingDest] = useState(false);
-  const [destName, setDestName] = useState("");
-  const [isSubmittingDest, setIsSubmittingDest] = useState(false);
-
-  const [addingItemToDest, setAddingItemToDest] = useState<string | null>(null);
-  const [itemData, setItemData] = useState({ title: "", description: "", type: "ACTIVITY", startTime: "", endTime: "" });
-  const [isSubmittingItem, setIsSubmittingItem] = useState(false);
-
   useEffect(() => {
-    async function loadTrip() {
+    async function loadDashboardData() {
       try {
-        const data = await fetchApi(`/trips/${params.id}`);
-        setTrip(data);
+        const [tripData, tasksData, balancesData, activitiesData] = await Promise.all([
+          fetchApi(`/trips/${params.id}`),
+          fetchApi(`/trips/${params.id}/tasks`),
+          fetchApi(`/trips/${params.id}/expenses/balances`),
+          fetchApi(`/trips/${params.id}/activity-logs`)
+        ]);
+        
+        setTrip(tripData);
+        setTasks(tasksData);
+        setBalances(balancesData);
+        setActivities(activitiesData);
+      } catch (err: any) {
+        console.error("Failed to load overview data:", err);
       } finally {
         setIsLoading(false);
       }
     }
-    loadTrip();
-  }, [params.id]);
-
-  const handleAddDestination = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!destName) return;
-    setIsSubmittingDest(true);
-
-    try {
-      const newDest = await fetchApi(`/trips/${params.id}/destinations`, {
-        method: "POST",
-        body: JSON.stringify({ name: destName }),
-      });
-      setTrip((prev: any) => ({
-        ...prev,
-        destinations: [...(prev.destinations || []), newDest],
-      }));
-      setDestName("");
-      setIsAddingDest(false);
-    } catch (err: any) {
-      alert(err.message || "Failed to add destination");
-    } finally {
-      setIsSubmittingDest(false);
+    
+    if (user) {
+      loadDashboardData();
     }
-  };
+  }, [params.id, user]);
 
-  const handleAddItem = async (e: React.FormEvent, destId: string) => {
-    e.preventDefault();
-    if (!itemData.title) return;
-    setIsSubmittingItem(true);
+  if (isLoading) {
+    return (
+      <div className="flex h-[40vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0EA5E9] border-t-transparent"></div>
+      </div>
+    );
+  }
 
-    try {
-      const newItem = await fetchApi(`/trips/${params.id}/destinations/${destId}/items`, {
-        method: "POST",
-        body: JSON.stringify({
-          title: itemData.title,
-          description: itemData.description,
-          type: itemData.type,
-          startTime: itemData.startTime ? new Date(itemData.startTime).toISOString() : undefined,
-          endTime: itemData.endTime ? new Date(itemData.endTime).toISOString() : undefined,
-        }),
-      });
+  if (!trip) return null;
 
-      setTrip((prev: any) => ({
-        ...prev,
-        destinations: prev.destinations.map((d: any) => 
-          d.id === destId 
-            ? { ...d, itineraryItems: [...(d.itineraryItems || []), newItem] } 
-            : d
-        )
-      }));
-      setAddingItemToDest(null);
-      setItemData({ title: "", description: "", type: "ACTIVITY", startTime: "", endTime: "" });
-    } catch (err: any) {
-      alert(err.message || "Failed to add activity");
-    } finally {
-      setIsSubmittingItem(false);
-    }
-  };
+  // Compute Upcoming Events
+  const allEvents = (trip.destinations || []).flatMap((d: any) => 
+    (d.itineraryItems || []).map((i: any) => ({ ...i, destinationName: d.name }))
+  );
+  
+  const upcomingEvents = allEvents
+    .filter((e: any) => e.startTime && (isAfter(new Date(e.startTime), new Date()) || isToday(new Date(e.startTime))))
+    .sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+    .slice(0, 3);
 
-  const handleDeleteItem = async (destId: string, itemId: string) => {
-    if (!confirm("Are you sure you want to delete this activity?")) return;
-    try {
-      await fetchApi(`/trips/${params.id}/items/${itemId}`, { method: "DELETE" });
-      setTrip((prev: any) => ({
-        ...prev,
-        destinations: prev.destinations.map((d: any) => 
-          d.id === destId 
-            ? { ...d, itineraryItems: d.itineraryItems.filter((i: any) => i.id !== itemId) } 
-            : d
-        )
-      }));
-    } catch (err: any) {
-      alert("Failed to delete item: " + err.message);
-    }
-  };
+  // Compute My Pending Tasks
+  const myPendingTasks = tasks
+    .filter(t => t.assigneeId === user?.id && t.status !== 'COMPLETED')
+    .sort((a, b) => {
+      if (a.dueDate && b.dueDate) return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+      return 0;
+    })
+    .slice(0, 3);
 
-  if (isLoading || !trip) return null; // Let the layout handle the main loading state
+  // Compute Budget Snapshot
+  const myBalance = balances.find(b => b.userId === user?.id)?.netBalance || 0;
+  const isOwed = myBalance > 0;
+  const isOwing = myBalance < 0;
+
+  // Recent Activity
+  const recentActivity = activities.slice(0, 4);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between bg-white/30 backdrop-blur-sm p-4 rounded-2xl border border-white/50 shadow-sm">
-        <h2 className="text-2xl font-extrabold tracking-tight text-[#0C4A6E] flex items-center ml-2">
-          <MapPin className="mr-2 h-6 w-6 text-[#0EA5E9]" /> Itinerary
-        </h2>
-        {!isAddingDest && (
-          <button 
-            onClick={() => setIsAddingDest(true)}
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-[#0EA5E9] px-4 text-sm font-bold text-white shadow-md shadow-[#0EA5E9]/20 transition-all hover:bg-[#0284c7] hover:-translate-y-0.5"
-          >
-            <Plus className="mr-2 h-4 w-4" /> Add Stop
-          </button>
-        )}
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Quick Links Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Link href={`/trips/${params.id}/itinerary`} className="group bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-white hover:border-[#0EA5E9]/50 shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center text-center">
+          <div className="bg-[#0EA5E9]/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
+            <Compass className="h-6 w-6 text-[#0EA5E9]" />
+          </div>
+          <span className="font-bold text-[#0C4A6E]">Itinerary</span>
+        </Link>
+        <Link href={`/trips/${params.id}/tasks`} className="group bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-white hover:border-[#F97316]/50 shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center text-center">
+          <div className="bg-[#F97316]/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
+            <CheckSquare className="h-6 w-6 text-[#F97316]" />
+          </div>
+          <span className="font-bold text-[#0C4A6E]">Tasks</span>
+        </Link>
+        <Link href={`/trips/${params.id}/budget`} className="group bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-white hover:border-[#10B981]/50 shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center text-center">
+          <div className="bg-[#10B981]/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
+            <Wallet className="h-6 w-6 text-[#10B981]" />
+          </div>
+          <span className="font-bold text-[#0C4A6E]">Budget</span>
+        </Link>
+        <Link href={`/trips/${params.id}/chat`} className="group bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-white hover:border-[#8B5CF6]/50 shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center text-center">
+          <div className="bg-[#8B5CF6]/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform">
+            <MessageSquare className="h-6 w-6 text-[#8B5CF6]" />
+          </div>
+          <span className="font-bold text-[#0C4A6E]">Chat</span>
+        </Link>
       </div>
 
-      {isAddingDest && (
-        <form onSubmit={handleAddDestination} className="bg-white/60 backdrop-blur-xl border border-white rounded-2xl p-6 flex flex-col sm:flex-row gap-4 items-end shadow-lg animate-in fade-in zoom-in-95 duration-200">
-          <div className="flex-1 w-full space-y-2">
-            <label className="text-sm font-bold text-[#243b53]" htmlFor="destName">
-              Where to?
-            </label>
-            <input
-              id="destName"
-              required
-              autoFocus
-              placeholder="e.g. Kyoto, Japan"
-              className="flex h-12 w-full rounded-xl border border-white bg-white/70 backdrop-blur-sm px-4 py-2 text-base text-[#0C4A6E] font-medium placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/50 focus:border-[#0EA5E9] transition-all shadow-sm"
-              value={destName}
-              onChange={(e) => setDestName(e.target.value)}
-            />
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Upcoming Events Widget */}
+        <div className="bg-white/60 backdrop-blur-xl border border-white rounded-3xl p-6 shadow-sm flex flex-col hover:border-[#0EA5E9]/30 transition-colors">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-extrabold text-xl text-[#0C4A6E] flex items-center">
+              <CalendarClock className="mr-2 h-6 w-6 text-[#0EA5E9]" /> Up Next
+            </h3>
+            <Link href={`/trips/${params.id}/itinerary`} className="text-sm font-bold text-[#0EA5E9] hover:text-[#0284c7] flex items-center">
+              See all <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
           </div>
-          <div className="flex space-x-3 w-full sm:w-auto mt-2 sm:mt-0">
-            <button
-              type="button"
-              onClick={() => setIsAddingDest(false)}
-              className="h-12 flex-1 sm:flex-none px-6 rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 text-sm font-bold text-[#0C4A6E] hover:bg-white/80 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmittingDest || !destName}
-              className="h-12 flex-1 sm:flex-none px-6 rounded-xl bg-[#0EA5E9] text-white text-sm font-bold shadow-md shadow-[#0EA5E9]/20 hover:bg-[#0284c7] transition-all hover:-translate-y-0.5 disabled:opacity-50"
-            >
-              {isSubmittingDest ? "Adding..." : "Add Stop"}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {trip.destinations?.length > 0 ? (
-        <div className="space-y-6 pt-2">
-          {trip.destinations.map((dest: any, index: number) => {
-            const items = (dest.itineraryItems || []).sort((a: any, b: any) => {
-              if (!a.startTime) return 1;
-              if (!b.startTime) return -1;
-              return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-            });
-
-            return (
-              <div key={dest.id} className="relative pl-10 group">
-                {index !== trip.destinations.length - 1 && (
-                  <div className="absolute left-[15px] top-10 bottom-[-32px] w-1 bg-gradient-to-b from-[#0EA5E9] to-[#38BDF8]/30 rounded-full"></div>
-                )}
-                <div className="absolute left-0 top-3 h-8 w-8 rounded-full border-[6px] border-[#F0F9FF] bg-[#0EA5E9] shadow-md z-10 flex items-center justify-center transition-transform group-hover:scale-110"></div>
-                
-                <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#0EA5E9]/30">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#0EA5E9]/10 pb-4 mb-6">
-                    <h3 className="text-2xl font-extrabold text-[#0C4A6E]">
-                      {dest.name}
-                    </h3>
-                    {dest.startDate ? (
-                      <span className="text-sm font-bold bg-[#F97316]/10 text-[#F97316] px-4 py-1.5 rounded-full border border-[#F97316]/20">
-                        {format(new Date(dest.startDate), "MMM d")}
-                      </span>
-                    ) : (
-                      <span className="text-sm font-bold bg-white/50 text-[#829ab1] px-4 py-1.5 rounded-full border border-white">
-                        Dates TBD
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {items.length === 0 ? (
-                      <div className="p-6 rounded-2xl bg-white/40 border-2 border-dashed border-[#0EA5E9]/20 text-center text-sm font-medium text-[#486581] flex flex-col items-center justify-center">
-                        <Clock className="h-8 w-8 text-[#0EA5E9]/40 mb-2" />
-                        No activities planned for this stop.
-                      </div>
-                    ) : (
-                      items.map((item: any) => (
-                        <div key={item.id} className="group/item flex items-start gap-4 p-4 rounded-2xl bg-white/50 border border-white shadow-sm hover:shadow-md hover:bg-white/70 transition-all">
-                          <div className="h-10 w-10 rounded-full bg-white border border-[#0EA5E9]/10 flex flex-shrink-0 items-center justify-center shadow-sm">
-                            {getItemIcon(item.type)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <h4 className="font-bold text-[#0C4A6E] truncate">{item.title}</h4>
-                              <button onClick={() => handleDeleteItem(dest.id, item.id)} className="text-[#829ab1] hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm font-medium text-[#486581]">
-                              <span className="inline-flex items-center">
-                                <Clock className="mr-1.5 h-3.5 w-3.5" />
-                                {item.startTime ? format(new Date(item.startTime), "MMM d, h:mm a") : "Time TBD"}
-                              </span>
-                              {item.description && (
-                                <span className="truncate max-w-md hidden sm:inline-block text-[#829ab1]">
-                                  • {item.description}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {addingItemToDest === dest.id ? (
-                    <form onSubmit={(e) => handleAddItem(e, dest.id)} className="mt-6 bg-white/70 rounded-2xl p-5 border border-white shadow-sm">
-                      <h4 className="font-bold text-[#0C4A6E] mb-4 text-sm uppercase tracking-wider">New Activity</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="sm:col-span-2">
-                          <label className="text-xs font-bold text-[#486581] mb-1 block">Title</label>
-                          <input required value={itemData.title} onChange={e => setItemData({...itemData, title: e.target.value})} className="w-full h-10 rounded-xl border-none bg-white px-3 text-sm focus:ring-2 focus:ring-[#0EA5E9]/50 shadow-sm" placeholder="e.g. Dinner at Nobu" />
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-[#486581] mb-1 block">Type</label>
-                          <select value={itemData.type} onChange={e => setItemData({...itemData, type: e.target.value})} className="w-full h-10 rounded-xl border-none bg-white px-3 text-sm focus:ring-2 focus:ring-[#0EA5E9]/50 shadow-sm">
-                            <option value="ACTIVITY">Activity</option>
-                            <option value="FLIGHT">Flight</option>
-                            <option value="ACCOMMODATION">Accommodation</option>
-                            <option value="DINING">Dining</option>
-                            <option value="TRANSPORT">Transport</option>
-                            <option value="NOTE">Note</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-[#486581] mb-1 block">Time (Optional)</label>
-                          <input type="datetime-local" value={itemData.startTime} onChange={e => setItemData({...itemData, startTime: e.target.value})} className="w-full h-10 rounded-xl border-none bg-white px-3 text-sm focus:ring-2 focus:ring-[#0EA5E9]/50 shadow-sm" />
-                        </div>
-                        <div className="sm:col-span-2 flex justify-end gap-2 mt-2">
-                          <button type="button" onClick={() => setAddingItemToDest(null)} className="px-4 py-2 text-sm font-bold text-[#486581] hover:bg-white rounded-xl transition-colors">Cancel</button>
-                          <button type="submit" disabled={isSubmittingItem} className="px-4 py-2 text-sm font-bold text-white bg-[#0EA5E9] hover:bg-[#0284c7] rounded-xl shadow-sm transition-colors">{isSubmittingItem ? "Saving..." : "Save Activity"}</button>
-                        </div>
-                      </div>
-                    </form>
-                  ) : (
-                    <button onClick={() => setAddingItemToDest(dest.id)} className="mt-6 w-full py-3 rounded-2xl border-2 border-dashed border-[#0EA5E9]/20 text-[#0EA5E9] font-bold text-sm hover:bg-[#0EA5E9]/5 transition-colors flex items-center justify-center">
-                      <Plus className="mr-2 h-4 w-4" /> Add Activity
-                    </button>
-                  )}
-                </div>
+          
+          <div className="space-y-4 flex-1">
+            {upcomingEvents.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-[#829ab1] text-sm font-medium py-8 bg-white/40 rounded-2xl border-2 border-dashed border-[#0C4A6E]/10">
+                <Compass className="h-8 w-8 mb-2 opacity-50" />
+                No upcoming events scheduled.
               </div>
-            );
-          })}
-        </div>
-      ) : (
-        !isAddingDest && (
-          <div className="rounded-3xl border-2 border-dashed border-[#0EA5E9]/20 bg-white/30 backdrop-blur-md p-16 text-center flex flex-col items-center shadow-sm">
-            <div className="bg-white p-4 rounded-full shadow-sm mb-4">
-              <MapPin className="h-10 w-10 text-[#0EA5E9]/40" />
-            </div>
-            <h3 className="text-xl font-bold text-[#0C4A6E]">Your itinerary is empty</h3>
-            <p className="text-[#486581] mt-2 max-w-sm">Add your first destination to start building out the schedule.</p>
+            ) : (
+              upcomingEvents.map((event: any, i: number) => (
+                <div key={i} className="flex gap-4 items-start p-4 bg-white/80 rounded-2xl border border-white shadow-sm hover:shadow-md transition-all group">
+                  <div className="bg-[#0EA5E9]/10 text-[#0EA5E9] p-3 rounded-xl flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <Clock className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-bold text-[#0C4A6E] truncate">{event.title}</h4>
+                    <p className="text-sm font-medium text-[#486581] mt-1 truncate">
+                      {format(new Date(event.startTime), "MMM d, h:mm a")} • {event.destinationName}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-        )
-      )}
+        </div>
+
+        {/* My Tasks Widget */}
+        <div className="bg-white/60 backdrop-blur-xl border border-white rounded-3xl p-6 shadow-sm flex flex-col hover:border-[#F97316]/30 transition-colors">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-extrabold text-xl text-[#0C4A6E] flex items-center">
+              <CheckSquare className="mr-2 h-6 w-6 text-[#F97316]" /> My Tasks
+            </h3>
+            <Link href={`/trips/${params.id}/tasks`} className="text-sm font-bold text-[#F97316] hover:text-[#ea580c] flex items-center">
+              See all <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </div>
+          
+          <div className="space-y-3 flex-1">
+            {myPendingTasks.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-[#829ab1] text-sm font-medium py-8 bg-white/40 rounded-2xl border-2 border-dashed border-[#0C4A6E]/10">
+                <CheckSquare className="h-8 w-8 mb-2 opacity-50" />
+                You're all caught up!
+              </div>
+            ) : (
+              myPendingTasks.map(task => (
+                <Link key={task.id} href={`/trips/${params.id}/tasks`} className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-white shadow-sm hover:shadow-md transition-all group">
+                  <div className="h-5 w-5 rounded border-2 border-[#F97316]/50 group-hover:border-[#F97316] group-hover:bg-[#F97316]/10 flex-shrink-0 transition-colors"></div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-[#0C4A6E] truncate text-sm">{task.title}</h4>
+                    {task.dueDate && (
+                      <p className="text-xs font-medium text-[#F97316] mt-0.5">
+                        Due {format(new Date(task.dueDate), "MMM d")}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Budget Snapshot Widget */}
+        <div className="bg-white/60 backdrop-blur-xl border border-white rounded-3xl p-6 shadow-sm flex flex-col hover:border-[#10B981]/30 transition-colors">
+           <div className="flex items-center justify-between mb-6">
+            <h3 className="font-extrabold text-xl text-[#0C4A6E] flex items-center">
+              <Wallet className="mr-2 h-6 w-6 text-[#10B981]" /> My Balance
+            </h3>
+            <Link href={`/trips/${params.id}/budget`} className="text-sm font-bold text-[#10B981] hover:text-[#059669] flex items-center">
+              Open ledger <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </div>
+          
+          <div className="flex-1 flex flex-col items-center justify-center py-6 bg-white/40 rounded-2xl border border-white/60 shadow-inner">
+             {myBalance === 0 ? (
+                <div className="text-center group">
+                  <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-[#10B981]/10 text-[#10B981] mb-3 group-hover:scale-110 transition-transform">
+                    <CheckSquare className="h-7 w-7" />
+                  </div>
+                  <h4 className="font-extrabold text-2xl text-[#0C4A6E]">Settled Up</h4>
+                  <p className="text-[#486581] font-medium text-sm mt-1">You don't owe anything.</p>
+                </div>
+             ) : (
+                <div className="text-center group">
+                  <h4 className={`font-extrabold text-4xl mb-2 group-hover:scale-105 transition-transform ${isOwed ? 'text-[#10B981]' : 'text-red-500'}`}>
+                    ${Math.abs(myBalance).toFixed(2)}
+                  </h4>
+                  <p className="text-[#0C4A6E] font-bold">
+                    {isOwed ? 'You are owed' : 'You owe the group'}
+                  </p>
+                </div>
+             )}
+          </div>
+        </div>
+
+        {/* Recent Activity Widget */}
+        <div className="bg-white/60 backdrop-blur-xl border border-white rounded-3xl p-6 shadow-sm flex flex-col hover:border-[#8B5CF6]/30 transition-colors">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-extrabold text-xl text-[#0C4A6E] flex items-center">
+              <Activity className="mr-2 h-6 w-6 text-[#8B5CF6]" /> Activity
+            </h3>
+            <Link href={`/trips/${params.id}/activity`} className="text-sm font-bold text-[#8B5CF6] hover:text-[#7C3AED] flex items-center">
+              View all <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </div>
+          
+          <div className="space-y-4 flex-1">
+             {recentActivity.length === 0 ? (
+               <div className="h-full flex flex-col items-center justify-center text-[#829ab1] text-sm font-medium py-8 bg-white/40 rounded-2xl border-2 border-dashed border-[#0C4A6E]/10">
+                 <Activity className="h-8 w-8 mb-2 opacity-50" />
+                 No recent activity.
+               </div>
+             ) : (
+               <div className="relative border-l-2 border-[#8B5CF6]/20 ml-3 space-y-6 mt-2">
+                 {recentActivity.map((log: any) => (
+                   <div key={log.id} className="relative pl-5 group">
+                     <div className="absolute -left-[7px] top-1.5 h-3 w-3 rounded-full bg-[#8B5CF6] shadow-[0_0_0_3px_rgba(255,255,255,1)] group-hover:scale-125 transition-transform"></div>
+                     <p className="text-sm font-medium text-[#0C4A6E]">
+                       {log.details || log.action?.replace(/_/g, ' ')}
+                     </p>
+                     <p className="text-xs font-medium text-[#829ab1] mt-0.5">
+                       {format(new Date(log.createdAt), "MMM d, h:mm a")}
+                     </p>
+                   </div>
+                 ))}
+               </div>
+             )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
