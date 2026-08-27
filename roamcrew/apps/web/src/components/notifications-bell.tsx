@@ -23,6 +23,10 @@ export function NotificationsBell({
   }, []);
 
   const loadNotifications = async () => {
+    // Don't fetch if there's no auth token — user isn't logged in yet
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    if (!token) return;
+
     try {
       const data = await fetchApi("/notifications");
       setNotifications(data);
@@ -35,8 +39,12 @@ export function NotificationsBell({
         }
         return unread;
       });
-    } catch (err) {
-      console.error("Failed to load notifications", err);
+    } catch (err: any) {
+      // Silently ignore network errors (API not ready, no connection)
+      // Only log real API errors (4xx / 5xx), not connection failures
+      if (err?.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
+        console.error("Notifications error:", err.message);
+      }
     }
   };
 

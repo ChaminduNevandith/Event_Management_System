@@ -7,13 +7,15 @@ import {
 } from 'contracts';
 import { TripsService } from '../trips/trips.service';
 import { DestinationStatus, VoteType } from 'database';
+import { NotificationsService } from '../notifications/notifications.service';
 // Force TS Cache refresh
 
 @Injectable()
 export class DestinationsService {
   constructor(
     private prisma: PrismaService,
-    private tripsService: TripsService
+    private tripsService: TripsService,
+    private notificationsService: NotificationsService
   ) {}
 
   async create(userId: string, tripId: string, createDestinationDto: CreateDestinationRequest) {
@@ -28,7 +30,7 @@ export class DestinationsService {
     
     const nextOrderIndex = lastDest ? lastDest.orderIndex + 1 : 0;
 
-    return this.prisma.client.destination.create({
+    const dest = await this.prisma.client.destination.create({
       data: {
         tripId,
         name: createDestinationDto.name,
@@ -42,6 +44,9 @@ export class DestinationsService {
         orderIndex: nextOrderIndex,
       },
     });
+
+    await this.tripsService.logActivity(tripId, userId, 'ADDED_DESTINATION', `Added destination: ${createDestinationDto.name}`);
+    return dest;
   }
 
   async findAll(userId: string, tripId: string) {
@@ -68,7 +73,7 @@ export class DestinationsService {
       throw new NotFoundException('Destination not found');
     }
 
-    return this.prisma.client.destination.update({
+    const updated = await this.prisma.client.destination.update({
       where: { id },
       data: {
         name: updateDto.name,
@@ -83,6 +88,35 @@ export class DestinationsService {
         orderIndex: updateDto.orderIndex,
       }
     });
+
+    const oldStartDate = dest.startDate?.getTime();
+    const newStartDate = updated.startDate?.getTime();
+    const oldEndDate = dest.endDate?.getTime();
+    const newEndDate = updated.endDate?.getTime();
+
+    if (oldStartDate !== newStartDate || oldEndDate !== newEndDate) {
+      const trip = await this.prisma.client.trip.findUnique({
+        where: { id: tripId },
+        include: { members: true }
+      });
+      if (trip) {
+        for (const m of trip.members) {
+          if (m.userId !== userId) {
+            await this.notificationsService.create({
+              userId: m.userId,
+              tripId: tripId,
+              title: 'Destination Schedule Updated',
+              message: `Dates for ${dest.name} in ${trip.title} have changed.`,
+              type: 'TRIP_UPDATE',
+              link: `/trips/${tripId}?tab=itinerary`,
+            });
+          }
+        }
+      }
+    }
+
+    await this.tripsService.logActivity(tripId, userId, 'UPDATED_DESTINATION', `Updated destination: ${dest.name}`);
+    return updated;
   }
 
   async vote(userId: string, tripId: string, id: string, voteDto: DestinationVoteRequest) {
@@ -116,8 +150,8 @@ export class DestinationsService {
 
   async remove(userId: string, tripId: string, id: string) {
     await this.tripsService.findOne(userId, tripId);
-    return this.prisma.client.destination.delete({
-      where: { id },
-    });
+    const dest = await this.prisma.client.destination.findFirst({ where: { id, tripId } });
+    await this.prisma.client.destination.delete({ where: { id } });
+    if (dest) await this.tripsService.logActivity(tripId, userId, 'REMOVED_DESTINATION', `Removed destination: ${dest.name}`);
   }
 }

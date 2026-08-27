@@ -2,6 +2,7 @@ import { fetchApi } from "@/lib/api";
 import Image from "next/image";
 import { format } from "date-fns";
 import { MapPin, Calendar, Users, Navigation } from "lucide-react";
+import { ReportButton } from "@/components/report-button";
 
 export default async function PublicTripRecapPage({ params }: { params: { token: string } }) {
   let trip;
@@ -173,7 +174,10 @@ export default async function PublicTripRecapPage({ params }: { params: { token:
           </div>
           <span className="font-bold text-xl text-white">RoamCrew</span>
         </div>
-        <p className="text-[#0EA5E9] font-medium text-sm">Created with RoamCrew • Plan your next adventure</p>
+        <p className="text-[#0EA5E9] font-medium text-sm mb-4">Created with RoamCrew • Plan your next adventure</p>
+        <div className="flex justify-center">
+          <ReportButton contentType="PUBLIC_RECAP" contentId={trip.id} label="Report this page" />
+        </div>
       </footer>
     </div>
   );

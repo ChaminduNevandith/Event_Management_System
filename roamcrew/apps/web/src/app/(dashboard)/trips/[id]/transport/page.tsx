@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { fetchApi } from "@/lib/api";
-import {  Plus, Plane, Train, Bus, Ship, Car, Calendar, Clock, MapPin, Trash2  } from "lucide-react";
+import { Plane, Train, Bus, Ship, Car, Plus, Trash2, Calendar, MapPin } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
+import { Modal } from "@/components/ui/modal";
 
 export default function TransportPage({ params }: { params: { id: string } }) {
   const [transports, setTransports] = useState<any[]>([]);
@@ -194,67 +195,67 @@ export default function TransportPage({ params }: { params: { id: string } }) {
         )}
       </div>
 
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/40 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 w-full max-w-lg shadow-2xl my-8 relative animate-in zoom-in-95 duration-200">
-            <button type="button" onClick={() => setShowAddModal(false)} className="absolute top-6 right-6 text-[#486581] hover:text-[#0EA5E9] bg-white/50 p-2 rounded-full transition-colors z-10">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-6 pr-8">Add Transport</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="text-sm font-bold text-[#243b53]">Type</label>
-                <select className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={type} onChange={(e) => setType(e.target.value)}>
-                  <option value="FLIGHT">Flight</option>
-                  <option value="TRAIN">Train</option>
-                  <option value="BUS">Bus</option>
-                  <option value="FERRY">Ferry</option>
-                  <option value="CAR">Car</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-bold text-[#243b53]">Origin</label>
-                  <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={origin} onChange={(e) => setOrigin(e.target.value)} />
-                </div>
-                <div>
-                  <label className="text-sm font-bold text-[#243b53]">Destination</label>
-                  <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={destination} onChange={(e) => setDestination(e.target.value)} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-bold text-[#243b53]">Departure</label>
-                  <input type="datetime-local" className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} />
-                </div>
-                <div>
-                  <label className="text-sm font-bold text-[#243b53]">Arrival</label>
-                  <input type="datetime-local" className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={arrivalTime} onChange={(e) => setArrivalTime(e.target.value)} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-bold text-[#243b53]">Booking Reference</label>
-                  <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={bookingRef} onChange={(e) => setBookingRef(e.target.value)} />
-                </div>
-                <div>
-                  <label className="text-sm font-bold text-[#243b53]">Seat Number</label>
-                  <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={seatNumber} onChange={(e) => setSeatNumber(e.target.value)} />
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-bold text-[#243b53]">Notes</label>
-                <textarea className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={notes} onChange={(e) => setNotes(e.target.value)} />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-2 rounded-xl text-[#0C4A6E] font-bold hover:bg-white/50 transition-colors">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-xl bg-[#F97316] text-white font-bold hover:bg-[#ea580c] transition-colors shadow-sm">{isSubmitting ? "Saving..." : "Save Transport"}</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add Transport"
+        className="max-w-lg my-8"
+      >
+        <h2 className="text-2xl font-bold text-[#0C4A6E] mb-6 pr-8">Add Transport</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-sm font-bold text-[#243b53]">Type</label>
+            <select className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={type} onChange={(e) => setType(e.target.value)}>
+              <option value="FLIGHT">Flight</option>
+              <option value="TRAIN">Train</option>
+              <option value="BUS">Bus</option>
+              <option value="FERRY">Ferry</option>
+              <option value="CAR">Car</option>
+            </select>
           </div>
-        </div>
-      )}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-bold text-[#243b53]">Origin</label>
+              <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={origin} onChange={(e) => setOrigin(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-[#243b53]">Destination</label>
+              <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={destination} onChange={(e) => setDestination(e.target.value)} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-bold text-[#243b53]">Departure</label>
+              <input type="datetime-local" className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-[#243b53]">Arrival</label>
+              <input type="datetime-local" className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={arrivalTime} onChange={(e) => setArrivalTime(e.target.value)} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-bold text-[#243b53]">Booking Reference</label>
+              <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={bookingRef} onChange={(e) => setBookingRef(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-[#243b53]">Seat Number</label>
+              <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={seatNumber} onChange={(e) => setSeatNumber(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-bold text-[#243b53]">Notes</label>
+            <textarea className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={() => setShowAddModal(false)} className="px-5 py-2 rounded-xl text-[#0C4A6E] font-bold hover:bg-white/50 transition-colors">Cancel</button>
+            <button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-xl bg-[#F97316] text-white font-bold hover:bg-[#ea580c] shadow-md shadow-[#F97316]/20 transition-all">
+              {isSubmitting ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </form>
+      </Modal>
       <ConfirmationModal />
     </div>
   );

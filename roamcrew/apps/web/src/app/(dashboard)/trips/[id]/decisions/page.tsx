@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { fetchApi } from "@/lib/api";
-import {  Plus, MessageSquare, CheckSquare, Clock, User, CheckCircle2  } from "lucide-react";
+import { Plus, MessageSquare, CheckSquare, Clock, User, CheckCircle2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
+import { Modal } from "@/components/ui/modal";
 
 export default function DecisionsPage() {
   const params = useParams();
@@ -232,105 +233,103 @@ export default function DecisionsPage() {
         )}
       </div>
 
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/40 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 my-8 relative">
-            <button type="button" onClick={() => setShowCreateModal(false)} className="absolute top-6 right-6 text-[#486581] hover:text-[#0EA5E9] bg-white/50 p-2 rounded-full transition-colors z-10">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2 pr-8">Create a Poll</h2>
-            <p className="text-[#486581] text-sm mb-6">Ask the crew a question and gather votes.</p>
-            
-            <form onSubmit={handleCreatePoll} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Question</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
-                  placeholder="e.g. Where should we stay?"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Description (Optional)</label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white min-h-[80px]"
-                  placeholder="Add context to help people decide..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Options</label>
-                <div className="space-y-2">
-                  {options.map((opt, i) => (
-                    <div key={i} className="flex space-x-2">
-                      <input
-                        type="text"
-                        value={opt.text}
-                        onChange={(e) => handleOptionChange(i, e.target.value)}
-                        className="flex-1 rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-2.5 text-sm text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
-                        placeholder={`Option ${i + 1}`}
-                        required
-                      />
-                      {options.length > 2 && (
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveOption(i)}
-                          className="px-3 rounded-xl border-2 border-red-100 bg-red-50 text-red-500 hover:bg-red-100 font-bold"
-                        >
-                          X
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={handleAddOption}
-                    className="w-full py-2.5 border-2 border-dashed border-[#0EA5E9]/30 rounded-xl text-sm font-bold text-[#0EA5E9] hover:bg-[#0EA5E9]/5 transition-colors"
-                  >
-                    + Add Option
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 p-3 bg-white/50 rounded-xl border border-white">
-                <input
-                  type="checkbox"
-                  id="multi"
-                  checked={isMultipleChoice}
-                  onChange={(e) => setIsMultipleChoice(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#0EA5E9] focus:ring-[#0EA5E9]"
-                />
-                <label htmlFor="multi" className="text-sm font-bold text-[#0C4A6E]">
-                  Allow multiple choices
-                </label>
-              </div>
-
-              <div className="pt-4 flex space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1 rounded-xl border-2 border-white bg-white/50 px-4 py-3 text-sm font-bold text-[#486581] transition-all hover:bg-white hover:text-[#0C4A6E] shadow-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] px-4 py-3 text-sm font-bold text-white transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50"
-                >
-                  {isSubmitting ? "Creating..." : "Create Poll"}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create a Poll"
+        className="max-w-md my-8 p-6 md:p-8"
+      >
+        <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2 pr-8">Create a Poll</h2>
+        <p className="text-[#486581] text-sm mb-6">Ask the crew a question and gather votes.</p>
+        
+        <form onSubmit={handleCreatePoll} className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Question</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+              placeholder="e.g. Where should we stay?"
+              required
+            />
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Description (Optional)</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white min-h-[80px]"
+              placeholder="Add context to help people decide..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Options</label>
+            <div className="space-y-2">
+              {options.map((opt, i) => (
+                <div key={i} className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={opt.text}
+                    onChange={(e) => handleOptionChange(i, e.target.value)}
+                    className="flex-1 rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-2.5 text-sm text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+                    placeholder={`Option ${i + 1}`}
+                    required
+                  />
+                  {options.length > 2 && (
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveOption(i)}
+                      className="px-3 rounded-xl border-2 border-red-100 bg-red-50 text-red-500 hover:bg-red-100 font-bold"
+                    >
+                      X
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={handleAddOption}
+                className="w-full py-2.5 border-2 border-dashed border-[#0EA5E9]/30 rounded-xl text-sm font-bold text-[#0EA5E9] hover:bg-[#0EA5E9]/5 transition-colors"
+              >
+                + Add Option
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3 p-3 bg-white/50 rounded-xl border border-white">
+            <input
+              type="checkbox"
+              id="multi"
+              checked={isMultipleChoice}
+              onChange={(e) => setIsMultipleChoice(e.target.checked)}
+              className="w-4 h-4 rounded text-[#0EA5E9] focus:ring-[#0EA5E9]"
+            />
+            <label htmlFor="multi" className="text-sm font-bold text-[#0C4A6E]">
+              Allow multiple choices
+            </label>
+          </div>
+
+          <div className="pt-4 flex space-x-3">
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(false)}
+              className="flex-1 rounded-xl border-2 border-white bg-white/50 px-4 py-3 text-sm font-bold text-[#486581] transition-all hover:bg-white hover:text-[#0C4A6E] shadow-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 rounded-xl bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] px-4 py-3 text-sm font-bold text-white transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50"
+            >
+              {isSubmitting ? "Creating..." : "Create Poll"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

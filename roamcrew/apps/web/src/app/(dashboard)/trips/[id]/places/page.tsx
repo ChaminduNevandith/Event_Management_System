@@ -6,6 +6,7 @@ import { fetchApi } from "@/lib/api";
 import {  MapPin, Plus, List, Image as ImageIcon, Tag, Link as LinkIcon, Navigation  } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
+import { Modal } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type PlaceCategory = "ACCOMMODATION" | "FOOD" | "ATTRACTION" | "ACTIVITY" | "TRANSPORT" | "OTHER";
@@ -224,126 +225,124 @@ export default function PlacesPage() {
         )}
       </div>
 
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/40 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 my-8 relative">
-            <button type="button" onClick={() => setShowAddModal(false)} className="absolute top-6 right-6 text-[#486581] hover:text-[#0EA5E9] bg-white/50 p-2 rounded-full transition-colors z-10">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2 pr-8">Save a Place</h2>
-            <p className="text-[#486581] text-sm mb-6">Add a restaurant, hotel, or attraction to your list.</p>
-            
-            <form onSubmit={handleAdd} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Place Name</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <MapPin className="h-5 w-5 text-[#0EA5E9]" />
-                  </div>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 pl-11 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
-                    placeholder="e.g. The Louvre"
-                    required
-                  />
-                </div>
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Save a Place"
+        className="max-w-md my-8"
+      >
+        <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2 pr-8">Save a Place</h2>
+        <p className="text-[#486581] text-sm mb-6">Add a restaurant, hotel, or attraction to your list.</p>
+        
+        <form onSubmit={handleAdd} className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Place Name</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <MapPin className="h-5 w-5 text-[#0EA5E9]" />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Category</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as PlaceCategory)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white font-bold"
-                  >
-                    <option value="ATTRACTION">Attraction</option>
-                    <option value="FOOD">Food & Drink</option>
-                    <option value="ACCOMMODATION">Accommodation</option>
-                    <option value="ACTIVITY">Activity</option>
-                    <option value="TRANSPORT">Transport</option>
-                    <option value="OTHER">Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Destination</label>
-                  <select
-                    value={destinationId}
-                    onChange={(e) => setDestinationId(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white font-bold"
-                  >
-                    <option value="">(None)</option>
-                    {destinations.map(d => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Address / Link</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <Navigation className="h-5 w-5 text-[#0EA5E9]" />
-                  </div>
-                  <input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 pl-11 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
-                    placeholder="Address or Google Maps link"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Notes</label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white min-h-[80px]"
-                  placeholder="Must try the croissants..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Tags</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <Tag className="h-5 w-5 text-[#0EA5E9]" />
-                  </div>
-                  <input
-                    type="text"
-                    value={tagsStr}
-                    onChange={(e) => setTagsStr(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 pl-11 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
-                    placeholder="e.g. coffee, views, cheap (comma separated)"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 flex space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 rounded-xl border-2 border-white bg-white/50 px-4 py-3 text-sm font-bold text-[#486581] transition-all hover:bg-white hover:text-[#0C4A6E] shadow-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] px-4 py-3 text-sm font-bold text-white transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50"
-                >
-                  {isSubmitting ? "Saving..." : "Save Place"}
-                </button>
-              </div>
-            </form>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 pl-11 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+                placeholder="e.g. The Louvre"
+                required
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as PlaceCategory)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white font-bold"
+              >
+                <option value="ATTRACTION">Attraction</option>
+                <option value="FOOD">Food & Drink</option>
+                <option value="ACCOMMODATION">Accommodation</option>
+                <option value="ACTIVITY">Activity</option>
+                <option value="TRANSPORT">Transport</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Destination</label>
+              <select
+                value={destinationId}
+                onChange={(e) => setDestinationId(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white font-bold"
+              >
+                <option value="">(None)</option>
+                {destinations.map(d => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Address / Link</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <Navigation className="h-5 w-5 text-[#0EA5E9]" />
+              </div>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 pl-11 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+                placeholder="Address or Google Maps link"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Notes</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white min-h-[80px]"
+              placeholder="Must try the croissants..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Tags</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <Tag className="h-5 w-5 text-[#0EA5E9]" />
+              </div>
+              <input
+                type="text"
+                value={tagsStr}
+                onChange={(e) => setTagsStr(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 pl-11 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+                placeholder="e.g. coffee, views, cheap (comma separated)"
+              />
+            </div>
+          </div>
+
+          <div className="pt-4 flex space-x-3">
+            <button
+              type="button"
+              onClick={() => setShowAddModal(false)}
+              className="flex-1 rounded-xl border-2 border-white bg-white/50 px-4 py-3 text-sm font-bold text-[#486581] transition-all hover:bg-white hover:text-[#0C4A6E] shadow-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 rounded-xl bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] px-4 py-3 text-sm font-bold text-white transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50"
+            >
+              {isSubmitting ? "Saving..." : "Save Place"}
+            </button>
+          </div>
+        </form>
+      </Modal>
       <ConfirmationModal />
     </div>
   );

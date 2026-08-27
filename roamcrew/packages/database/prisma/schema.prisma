@@ -66,6 +66,7 @@ model User {
   notifications    Notification[]
   notificationSettings NotificationSettings?
   pushSubscriptions PushSubscription[]
+  reportsSubmitted Report[] @relation("Reporter")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -334,9 +335,42 @@ model TripActivityLog {
   action  String
   details String?
 
-  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  trip Trip  @relation(fields: [tripId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+}
+
+model Report {
+  id             String       @id @default(uuid())
+  reporterId     String
+  contentType    String       // "PUBLIC_RECAP", "USER_PROFILE", "TRIP"
+  contentId      String       // The ID of the reported item
+  reason         ReportReason
+  description    String?
+  status         ReportStatus @default(PENDING)
+  resolvedBy     String?
+  resolvedNote   String?
+
+  reporter User @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ReportReason {
+  SPAM
+  HARASSMENT
+  INAPPROPRIATE_CONTENT
+  MISINFORMATION
+  COPYRIGHT
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
 }
 
 model DestinationVote {

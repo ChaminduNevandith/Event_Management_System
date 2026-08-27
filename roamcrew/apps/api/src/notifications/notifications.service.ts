@@ -1,9 +1,12 @@
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import * as webpush from 'web-push';
 
 @Injectable()
 export class NotificationsService implements OnModuleInit {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(private prisma: PrismaService) {}
 
   onModuleInit() {
@@ -182,5 +185,66 @@ export class NotificationsService implements OnModuleInit {
     }
 
     return notification;
+  }
+
+  // --- Scheduled Jobs ---
+  @Cron(CronExpression.EVERY_DAY_AT_8AM)
+  async sendDailyDigest() {
+    this.logger.log('Running daily digest cron job');
+    
+    // Find users who have daily digest enabled
+    const settings = await this.prisma.client.notificationSettings.findMany({
+      where: { dailyDigest: true },
+      include: {
+        user: {
+          select: { id: true, firstName: true },
+        },
+      },
+    });
+
+    for (const setting of settings) {
+      try {
+        // Find upcoming trips (starting in the next 3 days)
+        const inThreeDays = new Date();
+        inThreeDays.setDate(inThreeDays.getDate() + 3);
+        const today = new Date();
+
+        const upcomingTrips = await this.prisma.client.tripMember.count({
+          where: {
+            userId: setting.userId,
+            trip: {
+              startDate: {
+                gte: today,
+                lte: inThreeDays,
+              },
+            },
+          },
+        });
+
+        // Find pending tasks for this user
+        const pendingTasks = await this.prisma.client.task.count({
+          where: {
+            assigneeId: setting.userId,
+            status: 'PENDING',
+          },
+        });
+
+        if (upcomingTrips > 0 || pendingTasks > 0) {
+          let message = `Good morning, ${setting.user.firstName || 'Explorer'}! `;
+          if (upcomingTrips > 0) message += `You have ${upcomingTrips} trip(s) coming up soon. `;
+          if (pendingTasks > 0) message += `You have ${pendingTasks} pending task(s) to check off.`;
+
+          await this.create({
+            userId: setting.userId,
+            title: 'Your RoamCrew Daily Digest',
+            message: message.trim(),
+            type: 'SYSTEM',
+            link: '/trips',
+          });
+        }
+      } catch (err) {
+        this.logger.error(`Failed to send daily digest to user ${setting.userId}`, err);
+      }
+    }
   }
 }

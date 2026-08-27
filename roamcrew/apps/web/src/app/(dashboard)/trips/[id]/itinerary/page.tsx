@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
 import { format, parseISO, isSameDay, addMinutes, differenceInMinutes } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Modal } from "@/components/ui/modal";
 import {
   DndContext,
   closestCenter,
@@ -301,7 +302,7 @@ export default function ItineraryPage() {
 
                       return (
                         <SortableItem key={item.id} id={item.id}>
-                          <div className="relative group">
+                          <div className="relative group" aria-label={`Drag ${item.title}`}>
                       {/* Timeline Dot & Line Connector */}
                       <div className="absolute -left-[1.35rem] md:left-[-3.1rem] top-6 flex items-center justify-center">
                         <div className={`w-10 h-10 rounded-full border-4 border-white flex items-center justify-center shadow-md z-10 transition-transform group-hover:scale-110 ${colorClass.split(' ')[0]} ${colorClass.split(' ')[1]}`}>
@@ -352,6 +353,7 @@ export default function ItineraryPage() {
                           <button
                             onClick={() => handleDelete(item.id)}
                             className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                            aria-label={`Remove ${item.title} from itinerary`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -385,137 +387,135 @@ export default function ItineraryPage() {
       </DndContext>
 
       {/* Create Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/40 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 my-8 relative">
-            <button type="button" onClick={() => setShowModal(false)} className="absolute top-6 right-6 text-[#486581] hover:text-[#0EA5E9] bg-white/50 p-2 rounded-full transition-colors z-10">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2 pr-8">Add Event</h2>
-            <p className="text-[#486581] text-sm mb-6">Schedule an activity, flight, or stay.</p>
-            
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Destination</label>
-                <select
-                  value={destinationId}
-                  onChange={(e) => setDestinationId(e.target.value)}
-                  className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white font-medium"
-                  required
-                >
-                  <option value="" disabled>Select a destination</option>
-                  {destinations.map(d => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Title</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
-                  placeholder="e.g. Flight to Paris, Dinner at Louie's"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Event Type</label>
-                  <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white font-medium"
-                  >
-                    <option value="FLIGHT">✈️ Flight</option>
-                    <option value="TRANSPORT">🚆 Transport</option>
-                    <option value="ACCOMMODATION">🏨 Accommodation</option>
-                    <option value="ACTIVITY">📸 Activity</option>
-                    <option value="DINING">🍽️ Dining</option>
-                    <option value="NOTE">📌 Note</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Start Date</label>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Start Time</label>
-                  <input
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">End Date</label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">End Time</label>
-                  <input
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Notes (Optional)</label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white min-h-[80px]"
-                  placeholder="Booking references, meeting points..."
-                />
-              </div>
-
-              <div className="pt-4 flex space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 rounded-xl border-2 border-white bg-white/50 px-4 py-3 text-sm font-bold text-[#486581] transition-all hover:bg-white hover:text-[#0C4A6E] shadow-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] px-4 py-3 text-sm font-bold text-white transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50"
-                >
-                  {isSubmitting ? "Saving..." : "Save Event"}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Add Event"
+        className="max-w-lg my-8 p-6 md:p-8"
+      >
+        <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2 pr-8">Add Event</h2>
+        <p className="text-[#486581] text-sm mb-6">Schedule an activity, flight, or stay.</p>
+        
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Destination</label>
+            <select
+              value={destinationId}
+              onChange={(e) => setDestinationId(e.target.value)}
+              className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white font-medium"
+              required
+            >
+              <option value="" disabled>Select a destination</option>
+              {destinations.map(d => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+              placeholder="e.g. Flight to Paris, Dinner at Louie's"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Event Type</label>
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white font-medium"
+              >
+                <option value="FLIGHT">✈️ Flight</option>
+                <option value="TRANSPORT">🚆 Transport</option>
+                <option value="ACCOMMODATION">🏨 Accommodation</option>
+                <option value="ACTIVITY">📸 Activity</option>
+                <option value="DINING">🍽️ Dining</option>
+                <option value="NOTE">📌 Note</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Start Date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Start Time</label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">End Date</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">End Time</label>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Notes (Optional)</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white min-h-[80px]"
+              placeholder="Booking references, meeting points..."
+            />
+          </div>
+
+          <div className="pt-4 flex space-x-3">
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="flex-1 rounded-xl border-2 border-white bg-white/50 px-4 py-3 text-sm font-bold text-[#486581] transition-all hover:bg-white hover:text-[#0C4A6E] shadow-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 rounded-xl bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] px-4 py-3 text-sm font-bold text-white transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50"
+            >
+              {isSubmitting ? "Saving..." : "Save Event"}
+            </button>
+          </div>
+        </form>
+      </Modal>
       <ConfirmationModal />
     </div>
   );

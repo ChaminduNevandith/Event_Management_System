@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { TripsModule } from './trips/trips.module';
 import { DestinationsModule } from './destinations/destinations.module';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ExpensesModule } from './expenses/expenses.module';
 import { ChatModule } from './chat/chat.module';
 import { FriendsModule } from './friends/friends.module';
@@ -28,6 +29,7 @@ import { AdminModule } from './admin/admin.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 100,

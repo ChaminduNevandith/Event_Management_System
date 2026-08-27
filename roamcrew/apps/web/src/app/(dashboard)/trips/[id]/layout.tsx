@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, Users, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
+import { Modal } from "@/components/ui/modal";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/components/auth-provider";
@@ -393,175 +394,171 @@ export default function TripLayout({ children, params }: { children: React.React
         </div>
       </div>
 
-      {showInviteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/60 backdrop-blur-md">
-          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 relative">
-            <button onClick={() => { setShowInviteModal(false); setInviteLink(''); }} className="absolute top-6 right-6 text-[#486581] hover:text-[#0EA5E9] bg-white/50 p-2 rounded-full transition-colors">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2 pr-8">Invite to {trip.title}</h2>
-            <p className="text-[#486581] text-sm mb-6">Generate a link to share, or invite directly.</p>
-            
-            <div className="space-y-4">
+      <Modal
+        isOpen={showInviteModal}
+        onClose={() => { setShowInviteModal(false); setInviteLink(''); }}
+        title={`Invite to ${trip.title}`}
+        className="max-w-md p-6 md:p-8"
+      >
+        <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2 pr-8">Invite to {trip.title}</h2>
+        <p className="text-[#486581] text-sm mb-6">Generate a link to share, or invite directly.</p>
+        
+        <div className="space-y-4">
+          <button 
+            onClick={async () => {
+              try {
+                const inv = await fetchApi(`/invitations/trip/${tripId}`, { method: 'POST', body: JSON.stringify({}) });
+                setInviteLink(`${window.location.origin}/invite/${inv.token}`);
+              } catch (err: any) { toast.error(err.message); }
+            }}
+            className="w-full py-3 rounded-xl bg-[#0EA5E9] text-white font-bold hover:bg-[#0284C7] transition-all shadow-sm border border-[#0EA5E9]"
+          >
+            Generate Link
+          </button>
+          
+          {inviteLink && (
+            <div className="p-3 bg-white/60 border border-[#0EA5E9]/20 rounded-xl flex items-center justify-between overflow-hidden shadow-inner">
+              <span className="text-sm font-medium text-[#0C4A6E] truncate mr-2 select-all">{inviteLink}</span>
               <button 
-                onClick={async () => {
-                  try {
-                    const inv = await fetchApi(`/invitations/trip/${tripId}`, { method: 'POST', body: JSON.stringify({}) });
-                    setInviteLink(`${window.location.origin}/invite/${inv.token}`);
-                  } catch (err: any) { toast.error(err.message); }
+                onClick={() => {
+                  navigator.clipboard.writeText(inviteLink);
+                  toast.error("Copied to clipboard!");
                 }}
-                className="w-full py-3 rounded-xl bg-[#0EA5E9] text-white font-bold hover:bg-[#0284C7] transition-all shadow-sm border border-[#0EA5E9]"
+                className="text-xs font-bold bg-[#0EA5E9]/10 text-[#0EA5E9] hover:bg-[#0EA5E9]/20 px-4 py-2 rounded-lg shadow-sm shrink-0 transition-colors"
               >
-                Generate Link
+                Copy
               </button>
-              
-              {inviteLink && (
-                <div className="p-3 bg-white/60 border border-[#0EA5E9]/20 rounded-xl flex items-center justify-between overflow-hidden shadow-inner">
-                  <span className="text-sm font-medium text-[#0C4A6E] truncate mr-2 select-all">{inviteLink}</span>
-                  <button 
-                    onClick={() => {
-                      navigator.clipboard.writeText(inviteLink);
-                      toast.error("Copied to clipboard!");
-                    }}
-                    className="text-xs font-bold bg-[#0EA5E9]/10 text-[#0EA5E9] hover:bg-[#0EA5E9]/20 px-4 py-2 rounded-lg shadow-sm shrink-0 transition-colors"
-                  >
-                    Copy
-                  </button>
-                </div>
-              )}
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </Modal>
 
-      {showSettingsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#0C4A6E]/60 backdrop-blur-md">
-          <div className="bg-white/95 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 hide-scrollbar flex flex-col">
-            <button onClick={() => setShowSettingsModal(false)} className="absolute top-6 right-6 text-[#486581] hover:text-[#0EA5E9] bg-white/50 p-2 rounded-full transition-colors z-10">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <h2 className="text-3xl font-extrabold text-[#0C4A6E] mb-6 pr-10">Trip Settings</h2>
+      <Modal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        title="Trip Settings"
+        className="max-w-2xl max-h-[90vh] overflow-y-auto hide-scrollbar flex flex-col p-6 md:p-8"
+      >
+        <h2 className="text-3xl font-extrabold text-[#0C4A6E] mb-6 pr-10">Trip Settings</h2>
+        
+        <form onSubmit={handleUpdateTrip} className="space-y-6 flex-shrink-0">
+          <div className="grid md:grid-cols-2 gap-5 bg-white/40 p-6 rounded-2xl border border-white/60">
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-bold text-[#243b53]">Title</label>
+              <input required className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-bold text-[#243b53]">Description</label>
+              <textarea className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] min-h-[100px] font-medium text-[#0C4A6E] shadow-sm transition-all" value={description} onChange={(e) => setDescription(e.target.value)} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-bold text-[#243b53]">Cover Image URL</label>
+              <input type="url" className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} placeholder="https://..." />
+            </div>
             
-            <form onSubmit={handleUpdateTrip} className="space-y-6 flex-shrink-0">
-              <div className="grid md:grid-cols-2 gap-5 bg-white/40 p-6 rounded-2xl border border-white/60">
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-bold text-[#243b53]">Title</label>
-                  <input required className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={title} onChange={(e) => setTitle(e.target.value)} />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-bold text-[#243b53]">Description</label>
-                  <textarea className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] min-h-[100px] font-medium text-[#0C4A6E] shadow-sm transition-all" value={description} onChange={(e) => setDescription(e.target.value)} />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-bold text-[#243b53]">Cover Image URL</label>
-                  <input type="url" className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} placeholder="https://..." />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-[#243b53]">Status</label>
-                  <select className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-bold text-[#0C4A6E] shadow-sm transition-all" value={status} onChange={(e) => setStatus(e.target.value)}>
-                    <option value="PLANNING">PLANNING</option>
-                    <option value="UPCOMING">UPCOMING</option>
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="COMPLETED">COMPLETED</option>
-                    <option value="CANCELLED">CANCELLED</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-[#243b53]">Timezone</label>
-                  <select className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
-                    {Intl.supportedValuesOf('timeZone').map(tz => (
-                      <option key={tz} value={tz}>{tz}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-[#243b53]">Start Date</label>
-                  <input type="date" className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-[#243b53]">End Date</label>
-                  <input type="date" min={startDate} className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-                </div>
-              </div>
-              <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setShowSettingsModal(false)} className="px-6 py-2.5 rounded-xl text-[#0C4A6E] font-bold hover:bg-[#0C4A6E]/5 border border-transparent transition-colors">Cancel</button>
-                <button type="submit" disabled={isUpdating} className="px-8 py-2.5 rounded-xl bg-[#0EA5E9] text-white font-bold hover:bg-[#0284c7] shadow-md shadow-[#0EA5E9]/20 transition-all">{isUpdating ? 'Saving...' : 'Save Changes'}</button>
-              </div>
-            </form>
-
-            <div className="mt-8 pt-6 border-t border-[#0EA5E9]/10">
-              <h3 className="text-xl font-extrabold text-[#0C4A6E] mb-2 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-[#0EA5E9]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                Public Recap Link
-              </h3>
-              <p className="text-sm text-[#486581] font-medium mb-4">Generate a beautiful, read-only public page for this trip to share your memories with anyone.</p>
-              
-              {trip.publicToken ? (
-                <div className="p-4 bg-[#F0F9FF] border border-[#0EA5E9]/20 rounded-xl flex items-center justify-between">
-                  <span className="text-sm font-medium text-[#0C4A6E] truncate mr-4 select-all">
-                    {window.location.origin}/p/{trip.publicToken}
-                  </span>
-                  <button 
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/p/${trip.publicToken}`);
-                      toast.success("Copied to clipboard!");
-                    }}
-                    className="px-4 py-2 bg-white text-[#0EA5E9] border border-[#0EA5E9]/20 font-bold rounded-lg shadow-sm hover:bg-[#F0F9FF] transition-colors shrink-0"
-                  >
-                    Copy Link
-                  </button>
-                </div>
-              ) : (
-                <button 
-                  type="button"
-                  onClick={handleGeneratePublicLink}
-                  className="px-6 py-2.5 rounded-xl bg-[#0C4A6E] text-white font-bold hover:bg-[#102a43] shadow-md transition-all flex items-center"
-                >
-                  Generate Public Link
-                </button>
-              )}
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-[#243b53]">Status</label>
+              <select className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-bold text-[#0C4A6E] shadow-sm transition-all" value={status} onChange={(e) => setStatus(e.target.value)}>
+                <option value="PLANNING">PLANNING</option>
+                <option value="UPCOMING">UPCOMING</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="COMPLETED">COMPLETED</option>
+                <option value="CANCELLED">CANCELLED</option>
+              </select>
             </div>
-
-            <div className="mt-6 pt-6 border-t border-[#0EA5E9]/10">
-              <h3 className="text-xl font-extrabold text-[#0C4A6E] mb-2 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-[#0EA5E9]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
-                Trip Template
-              </h3>
-              <p className="text-sm text-[#486581] font-medium mb-4">Marking this trip as a template allows you or anyone else to duplicate its destinations and places for their own trips.</p>
-              <button 
-                type="button"
-                onClick={() => handleSetTemplate(!trip.isTemplate)}
-                className={`px-6 py-2.5 rounded-xl font-bold shadow-md transition-all flex items-center ${
-                  trip.isTemplate 
-                  ? "bg-white text-[#0EA5E9] border border-[#0EA5E9]/20 hover:bg-[#F0F9FF]" 
-                  : "bg-[#0C4A6E] text-white hover:bg-[#102a43]"
-                }`}
-              >
-                {trip.isTemplate ? "Remove from Templates" : "Mark as Template"}
-              </button>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-[#243b53]">Timezone</label>
+              <select className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+                {Intl.supportedValuesOf('timeZone').map(tz => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))}
+              </select>
             </div>
-
-            <div className="mt-8 pt-6 border-t-2 border-red-100 bg-red-50/80 -mx-6 md:-mx-8 -mb-6 md:-mb-8 p-6 md:p-8 rounded-b-3xl">
-              <h3 className="text-xl font-extrabold text-[#da2405] mb-2 flex items-center">
-                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-                 Danger Zone
-              </h3>
-              <p className="text-sm text-red-700/80 font-medium mb-6">These actions can have permanent consequences for the entire crew. Please be careful.</p>
-              <div className="flex flex-wrap gap-4">
-                <button onClick={handleArchive} className="px-5 py-2.5 rounded-xl bg-orange-100 text-orange-700 font-bold hover:bg-orange-200 border border-orange-200 transition-colors shadow-sm">
-                  {trip.isArchived ? "Restore Trip" : "Archive Trip"}
-                </button>
-                {myRole === 'OWNER' && (
-                  <button onClick={handleDelete} className="px-5 py-2.5 rounded-xl bg-red-100 text-red-700 font-bold hover:bg-red-200 border border-red-200 transition-colors shadow-sm">
-                    Delete Trip
-                  </button>
-                )}
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-[#243b53]">Start Date</label>
+              <input type="date" className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-[#243b53]">End Date</label>
+              <input type="date" min={startDate} className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </div>
           </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={() => setShowSettingsModal(false)} className="px-6 py-2.5 rounded-xl text-[#0C4A6E] font-bold hover:bg-[#0C4A6E]/5 border border-transparent transition-colors">Cancel</button>
+            <button type="submit" disabled={isUpdating} className="px-8 py-2.5 rounded-xl bg-[#0EA5E9] text-white font-bold hover:bg-[#0284c7] shadow-md shadow-[#0EA5E9]/20 transition-all">{isUpdating ? 'Saving...' : 'Save Changes'}</button>
+          </div>
+        </form>
+
+        <div className="mt-8 pt-6 border-t border-[#0EA5E9]/10">
+          <h3 className="text-xl font-extrabold text-[#0C4A6E] mb-2 flex items-center">
+            <svg className="w-5 h-5 mr-2 text-[#0EA5E9]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Public Recap Link
+          </h3>
+          <p className="text-sm text-[#486581] font-medium mb-4">Generate a beautiful, read-only public page for this trip to share your memories with anyone.</p>
+          
+          {trip.publicToken ? (
+            <div className="p-4 bg-[#F0F9FF] border border-[#0EA5E9]/20 rounded-xl flex items-center justify-between">
+              <span className="text-sm font-medium text-[#0C4A6E] truncate mr-4 select-all">
+                {window.location.origin}/p/{trip.publicToken}
+              </span>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/p/${trip.publicToken}`);
+                  toast.success("Copied to clipboard!");
+                }}
+                className="px-4 py-2 bg-white text-[#0EA5E9] border border-[#0EA5E9]/20 font-bold rounded-lg shadow-sm hover:bg-[#F0F9FF] transition-colors shrink-0"
+              >
+                Copy Link
+              </button>
+            </div>
+          ) : (
+            <button 
+              type="button"
+              onClick={handleGeneratePublicLink}
+              className="px-6 py-2.5 rounded-xl bg-[#0C4A6E] text-white font-bold hover:bg-[#102a43] shadow-md transition-all flex items-center"
+            >
+              Generate Public Link
+            </button>
+          )}
         </div>
-      )}
+
+        <div className="mt-6 pt-6 border-t border-[#0EA5E9]/10">
+          <h3 className="text-xl font-extrabold text-[#0C4A6E] mb-2 flex items-center">
+            <svg className="w-5 h-5 mr-2 text-[#0EA5E9]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+            Trip Template
+          </h3>
+          <p className="text-sm text-[#486581] font-medium mb-4">Marking this trip as a template allows you or anyone else to duplicate its destinations and places for their own trips.</p>
+          <button 
+            type="button"
+            onClick={() => handleSetTemplate(!trip.isTemplate)}
+            className={`px-6 py-2.5 rounded-xl font-bold shadow-md transition-all flex items-center ${
+              trip.isTemplate 
+              ? "bg-white text-[#0EA5E9] border border-[#0EA5E9]/20 hover:bg-[#F0F9FF]" 
+              : "bg-[#0C4A6E] text-white hover:bg-[#102a43]"
+            }`}
+          >
+            {trip.isTemplate ? "Remove from Templates" : "Mark as Template"}
+          </button>
+        </div>
+
+        <div className="mt-8 pt-6 border-t-2 border-red-100 bg-red-50/80 -mx-6 md:-mx-8 -mb-6 md:-mb-8 p-6 md:p-8 rounded-b-3xl">
+          <h3 className="text-xl font-extrabold text-[#da2405] mb-2 flex items-center">
+             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+             Danger Zone
+          </h3>
+          <p className="text-sm text-red-700/80 font-medium mb-6">These actions can have permanent consequences for the entire crew. Please be careful.</p>
+          <div className="flex flex-wrap gap-4">
+            <button onClick={handleArchive} className="px-5 py-2.5 rounded-xl bg-orange-100 text-orange-700 font-bold hover:bg-orange-200 border border-orange-200 transition-colors shadow-sm">
+              {trip.isArchived ? "Restore Trip" : "Archive Trip"}
+            </button>
+            {myRole === 'OWNER' && (
+              <button onClick={handleDelete} className="px-5 py-2.5 rounded-xl bg-red-100 text-red-700 font-bold hover:bg-red-200 border border-red-200 transition-colors shadow-sm">
+                Delete Trip
+              </button>
+            )}
+          </div>
+        </div>
+      </Modal>
       <ConfirmationModal />
     </div>
   );

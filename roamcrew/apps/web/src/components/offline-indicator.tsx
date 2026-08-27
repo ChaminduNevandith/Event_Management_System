@@ -1,57 +1,92 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { WifiOff } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Wifi, WifiOff, RefreshCw } from "lucide-react";
 
 export function OfflineIndicator() {
-  const [isOffline, setIsOffline] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [showBanner, setShowBanner] = useState(false);
+  const [justReconnected, setJustReconnected] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  useEffect(() => {
-    // Check initial state
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
-      setIsOffline(true);
-      setShowToast(true);
+  const handleOnline = useCallback(() => {
+    setIsOnline(true);
+    setJustReconnected(true);
+    setIsSyncing(true);
+
+    // Trigger background sync if supported
+    if ("serviceWorker" in navigator && "SyncManager" in window) {
+      navigator.serviceWorker.ready
+        .then((reg) => (reg as any).sync.register("sync-offline-mutations"))
+        .catch(() => {});
     }
 
-    const handleOnline = () => {
-      setIsOffline(false);
-      setShowToast(false);
-    };
+    // Auto-dismiss "reconnected" banner after 3s
+    setTimeout(() => {
+      setIsSyncing(false);
+      setJustReconnected(false);
+      setShowBanner(false);
+    }, 3500);
+  }, []);
 
-    const handleOffline = () => {
-      setIsOffline(true);
-      setShowToast(true);
-    };
+  const handleOffline = useCallback(() => {
+    setIsOnline(false);
+    setShowBanner(true);
+    setJustReconnected(false);
+  }, []);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined") return;
+
+    setIsOnline(navigator.onLine);
+    setShowBanner(!navigator.onLine);
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
+    // Listen for sync complete message from service worker
+    const handleSWMessage = (event: MessageEvent) => {
+      if (event.data?.type === "SYNC_COMPLETE") setIsSyncing(false);
+    };
+    navigator.serviceWorker?.addEventListener("message", handleSWMessage);
+
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      navigator.serviceWorker?.removeEventListener("message", handleSWMessage);
     };
-  }, []);
+  }, [handleOnline, handleOffline]);
 
-  if (!isOffline || !showToast) return null;
+  if (!showBanner && !justReconnected) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
-      <div className="bg-white/80 backdrop-blur-xl border border-red-200 shadow-2xl shadow-red-500/10 px-6 py-4 rounded-full flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-500">
-          <WifiOff className="h-4 w-4" />
-        </div>
-        <div>
-          <p className="text-sm font-bold text-slate-800">You're Offline</p>
-          <p className="text-xs text-slate-500">Viewing cached RoamCrew data.</p>
-        </div>
-        <button
-          onClick={() => setShowToast(false)}
-          className="ml-4 h-8 px-3 rounded-full bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-600 transition-colors"
-        >
-          Dismiss
-        </button>
-      </div>
+    <div
+      role="status"
+      aria-live="polite"
+      className={`fixed top-0 left-0 right-0 z-[200] flex items-center justify-center gap-3 px-4 py-3 text-sm font-bold shadow-lg transition-all duration-500 ${
+        isOnline
+          ? "bg-emerald-500 text-white shadow-emerald-500/30"
+          : "bg-[#0C4A6E] text-white shadow-[#0C4A6E]/40"
+      }`}
+    >
+      {isOnline ? (
+        <>
+          {isSyncing ? (
+            <RefreshCw className="w-4 h-4 animate-spin" />
+          ) : (
+            <Wifi className="w-4 h-4" />
+          )}
+          <span>
+            {isSyncing ? "Back online — syncing your changes..." : "Connection restored!"}
+          </span>
+        </>
+      ) : (
+        <>
+          <WifiOff className="w-4 h-4 animate-pulse" />
+          <span>You&apos;re offline — viewing cached data</span>
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+        </>
+      )}
     </div>
   );
 }

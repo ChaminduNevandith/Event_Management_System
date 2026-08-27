@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { Modal } from "@/components/ui/modal";
 
 export default function AccommodationsPage({ params }: { params: { id: string } }) {
   const [accommodations, setAccommodations] = useState<any[]>([]);
@@ -180,49 +181,47 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
         )}
       </div>
 
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/40 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 w-full max-w-lg shadow-2xl my-8 relative animate-in zoom-in-95 duration-200">
-            <button type="button" onClick={() => setShowAddModal(false)} className="absolute top-6 right-6 text-[#486581] hover:text-[#0EA5E9] bg-white/50 p-2 rounded-full transition-colors z-10">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-6 pr-8">Add Accommodation</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="text-sm font-bold text-[#243b53]">Place Name</label>
-                <input required className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={name} onChange={(e) => setName(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-bold text-[#243b53]">Address</label>
-                <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={address} onChange={(e) => setAddress(e.target.value)} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-bold text-[#243b53]">Check-In</label>
-                  <input type="datetime-local" className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
-                </div>
-                <div>
-                  <label className="text-sm font-bold text-[#243b53]">Check-Out</label>
-                  <input type="datetime-local" className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-bold text-[#243b53]">Booking Reference</label>
-                <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={bookingRef} onChange={(e) => setBookingRef(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-bold text-[#243b53]">Notes</label>
-                <textarea className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={notes} onChange={(e) => setNotes(e.target.value)} />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-2 rounded-xl text-[#0C4A6E] font-bold hover:bg-white/50 transition-colors">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-xl bg-[#0EA5E9] text-white font-bold hover:bg-[#0284c7] transition-colors shadow-sm">{isSubmitting ? "Saving..." : "Save Place"}</button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add Accommodation"
+        className="max-w-lg my-8"
+      >
+        <h2 className="text-2xl font-bold text-[#0C4A6E] mb-6 pr-8">Add Accommodation</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-sm font-bold text-[#243b53]">Place Name</label>
+            <input required className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
-        </div>
-      )}
+          <div>
+            <label className="text-sm font-bold text-[#243b53]">Address</label>
+            <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={address} onChange={(e) => setAddress(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-bold text-[#243b53]">Check-In</label>
+              <input type="datetime-local" className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-[#243b53]">Check-Out</label>
+              <input type="datetime-local" className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-bold text-[#243b53]">Booking Reference</label>
+            <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={bookingRef} onChange={(e) => setBookingRef(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-sm font-bold text-[#243b53]">Notes</label>
+            <textarea className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-2 rounded-xl text-[#0C4A6E] font-bold hover:bg-white/50 transition-colors">Cancel</button>
+            <button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-xl bg-[#0EA5E9] text-white font-bold hover:bg-[#0284c7] transition-colors shadow-sm">{isSubmitting ? "Saving..." : "Save Place"}</button>
+          </div>
+        </form>
+      </Modal>
       <ConfirmationModal />
     </div>
   );
