@@ -6,6 +6,7 @@ import { useParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Users, Settings } from "lucide-react";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/components/auth-provider";
 
 export default function TripLayout({ children }: { children: React.ReactNode }) {
@@ -118,8 +119,28 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
 
   if (isLoading) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0EA5E9] border-t-transparent"></div>
+      <div className="flex-1 overflow-auto bg-[#F0F9FF]">
+        <div className="min-h-full">
+          {/* Hero Image Skeleton */}
+          <Skeleton className="h-64 md:h-80 w-full rounded-none" />
+          
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
+            <div className="bg-white/80 backdrop-blur-2xl rounded-3xl p-8 border border-white shadow-xl mb-8 space-y-4">
+              <Skeleton className="h-10 w-2/3 md:w-1/3" />
+              <div className="flex gap-4">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-6 w-32" />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+              <Skeleton className="h-64 rounded-3xl hidden md:block" />
+              <div className="md:col-span-3 space-y-8">
+                <Skeleton className="h-[500px] rounded-3xl" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { NotificationsBell } from "@/components/notifications-bell";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardLayout({
   children,
@@ -17,8 +18,14 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F0F9FF]">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0EA5E9] border-t-transparent"></div>
+      <div className="flex min-h-screen bg-[#F0F9FF] items-center justify-center p-8">
+        <div className="w-full max-w-4xl space-y-6">
+          <Skeleton className="h-12 w-full rounded-2xl" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Skeleton className="h-64 rounded-3xl" />
+            <Skeleton className="h-64 md:col-span-3 rounded-3xl" />
+          </div>
+        </div>
       </div>
     );
   }

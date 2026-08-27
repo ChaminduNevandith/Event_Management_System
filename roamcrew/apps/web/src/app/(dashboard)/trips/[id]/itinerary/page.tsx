@@ -3,8 +3,24 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { fetchApi } from "@/lib/api";
-import { Plus, Calendar, Clock, MapPin, Plane, Train, Bus, Car, Home, Camera, Utensils, Users, Hash, Trash2 } from "lucide-react";
-import { format, parseISO, isSameDay } from "date-fns";
+import { Plus, Calendar, Clock, MapPin, Plane, Train, Bus, Car, Home, Camera, Utensils, Users, Hash, Trash2, GripVertical } from "lucide-react";
+import { format, parseISO, isSameDay, addMinutes, differenceInMinutes } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { SortableItem } from "./sortable-item";
 
 const iconMap: Record<string, any> = {
   FLIGHT: Plane,
@@ -41,6 +57,17 @@ export default function ItineraryPage() {
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const loadData = async () => {
     try {
@@ -107,6 +134,61 @@ export default function ItineraryPage() {
     }
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    // Find the item we dragged and the item we dropped it over
+    const oldIndex = items.findIndex((i) => i.id === active.id);
+    const newIndex = items.findIndex((i) => i.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // We'll optimistically update the array locally
+    const newItems = [...items];
+    const [movedItem] = newItems.splice(oldIndex, 1);
+    
+    // Determine new start time based on the adjacent item
+    const targetItem = items[newIndex];
+    let newStartTime = new Date(targetItem.startTime);
+    
+    // If moving down, we place it after the target item. If moving up, we place it before.
+    if (oldIndex < newIndex) {
+      // Place it exactly after the target item's end time, or 1 hour after target's start
+      newStartTime = targetItem.endTime ? new Date(targetItem.endTime) : addMinutes(new Date(targetItem.startTime), 60);
+    } else {
+      // Place it before target item. Subtract its own duration.
+      const durationMins = differenceInMinutes(new Date(movedItem.endTime), new Date(movedItem.startTime));
+      newStartTime = addMinutes(new Date(targetItem.startTime), -(durationMins || 60));
+    }
+
+    const durationMins = differenceInMinutes(new Date(movedItem.endTime), new Date(movedItem.startTime)) || 60;
+    const newEndTime = addMinutes(newStartTime, durationMins);
+
+    movedItem.startTime = newStartTime.toISOString();
+    movedItem.endTime = newEndTime.toISOString();
+
+    newItems.splice(newIndex, 0, movedItem);
+    
+    // Re-sort locally so UI reflects correctly
+    newItems.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    setItems(newItems);
+
+    // Call API to persist
+    try {
+      await fetchApi(`/trips/${params.id}/itinerary/${movedItem.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          startTime: movedItem.startTime,
+          endTime: movedItem.endTime
+        })
+      });
+    } catch (err) {
+      console.error("Failed to update item times", err);
+      loadData(); // Revert on failure
+    }
+  };
+
   // Group items by day
   const groupedItems = items.reduce((acc: any, item: any) => {
     const day = format(parseISO(item.startTime), "yyyy-MM-dd");
@@ -119,8 +201,44 @@ export default function ItineraryPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0EA5E9] border-t-transparent"></div>
+      <div className="space-y-8 max-w-4xl mx-auto animate-in fade-in duration-500">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <Skeleton className="h-10 w-32 rounded-xl" />
+        </div>
+        
+        <div className="space-y-12">
+          {[1, 2].map((day) => (
+            <div key={day} className="relative">
+              <div className="sticky top-4 z-20 mb-6 flex items-center space-x-4">
+                <Skeleton className="w-16 h-16 rounded-2xl" />
+                <div>
+                  <Skeleton className="h-6 w-32 mb-1" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              </div>
+              <div className="relative pl-8 md:pl-24 space-y-6">
+                <div className="absolute left-8 md:left-[5.5rem] top-4 bottom-4 w-0.5 bg-[#0EA5E9]/10"></div>
+                {[1, 2, 3].map((item) => (
+                  <div key={item} className="relative">
+                    <div className="absolute -left-[1.35rem] md:left-[-3.1rem] top-6 flex items-center justify-center">
+                      <Skeleton className="w-10 h-10 rounded-full" />
+                    </div>
+                    <div className="bg-white/40 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-white/50">
+                      <Skeleton className="h-4 w-20 mb-3" />
+                      <Skeleton className="h-6 w-3/4 mb-2" />
+                      <Skeleton className="h-4 w-full mb-2" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -141,34 +259,44 @@ export default function ItineraryPage() {
         </button>
       </div>
 
-      <div className="space-y-12">
-        {sortedDays.map((day) => {
-          const dayItems = groupedItems[day];
-          return (
-            <div key={day} className="relative">
-              {/* Day Header */}
-              <div className="sticky top-4 z-20 mb-6 flex items-center space-x-4">
-                <div className="flex flex-col items-center justify-center bg-white border-2 border-[#0EA5E9]/20 rounded-2xl w-16 h-16 shadow-lg shadow-[#0EA5E9]/5">
-                  <span className="text-xs font-bold text-[#0EA5E9] uppercase">{format(parseISO(day), "MMM")}</span>
-                  <span className="text-2xl font-black text-[#0C4A6E] leading-none">{format(parseISO(day), "d")}</span>
+      <DndContext 
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="space-y-12">
+          {sortedDays.map((day) => {
+            const dayItems = groupedItems[day];
+            return (
+              <div key={day} className="relative">
+                {/* Day Header */}
+                <div className="sticky top-4 z-20 mb-6 flex items-center space-x-4">
+                  <div className="flex flex-col items-center justify-center bg-white border-2 border-[#0EA5E9]/20 rounded-2xl w-16 h-16 shadow-lg shadow-[#0EA5E9]/5">
+                    <span className="text-xs font-bold text-[#0EA5E9] uppercase">{format(parseISO(day), "MMM")}</span>
+                    <span className="text-2xl font-black text-[#0C4A6E] leading-none">{format(parseISO(day), "d")}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-[#0C4A6E]">{format(parseISO(day), "EEEE")}</h3>
+                    <p className="text-sm font-medium text-[#486581]">{dayItems.length} events</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-[#0C4A6E]">{format(parseISO(day), "EEEE")}</h3>
-                  <p className="text-sm font-medium text-[#486581]">{dayItems.length} events</p>
-                </div>
-              </div>
 
-              {/* Timeline Container */}
-              <div className="relative pl-8 md:pl-24 space-y-6">
-                {/* Vertical Line */}
-                <div className="absolute left-8 md:left-[5.5rem] top-4 bottom-4 w-0.5 bg-gradient-to-b from-[#0EA5E9]/50 via-[#0EA5E9]/20 to-transparent"></div>
+                {/* Timeline Container */}
+                <SortableContext 
+                  items={dayItems.map((i: any) => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="relative pl-8 md:pl-24 space-y-6">
+                    {/* Vertical Line */}
+                    <div className="absolute left-8 md:left-[5.5rem] top-4 bottom-4 w-0.5 bg-gradient-to-b from-[#0EA5E9]/50 via-[#0EA5E9]/20 to-transparent"></div>
 
-                {dayItems.map((item: any, idx: number) => {
-                  const Icon = iconMap[item.type] || Hash;
-                  const colorClass = colorMap[item.type] || colorMap.NOTE;
+                    {dayItems.map((item: any) => {
+                      const Icon = iconMap[item.type] || Hash;
+                      const colorClass = colorMap[item.type] || colorMap.NOTE;
 
-                  return (
-                    <div key={item.id} className="relative group">
+                      return (
+                        <SortableItem key={item.id} id={item.id}>
+                          <div className="relative group">
                       {/* Timeline Dot & Line Connector */}
                       <div className="absolute -left-[1.35rem] md:left-[-3.1rem] top-6 flex items-center justify-center">
                         <div className={`w-10 h-10 rounded-full border-4 border-white flex items-center justify-center shadow-md z-10 transition-transform group-hover:scale-110 ${colorClass.split(' ')[0]} ${colorClass.split(' ')[1]}`}>
@@ -184,9 +312,12 @@ export default function ItineraryPage() {
                         </div>
                       </div>
 
-                      {/* Content Card */}
-                      <div className="bg-white/70 backdrop-blur-xl border border-white rounded-3xl p-5 shadow-lg shadow-[#102a43]/5 flex flex-col sm:flex-row sm:items-start transition-all hover:shadow-xl hover:border-[#0EA5E9]/30">
-                        <div className="flex-1">
+                          {/* Content Card */}
+                          <div className="bg-white/70 backdrop-blur-xl border border-white rounded-3xl p-5 shadow-lg shadow-[#102a43]/5 flex flex-col sm:flex-row sm:items-start transition-all hover:shadow-xl hover:border-[#0EA5E9]/30">
+                            <div className="mr-3 mt-1 cursor-grab active:cursor-grabbing text-slate-300 hover:text-[#0EA5E9] transition-colors">
+                              <GripVertical className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${colorClass}`}>
                               {item.type}
@@ -219,31 +350,34 @@ export default function ItineraryPage() {
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                            </div>
+                          </div>
+                          </div>
+                        </SortableItem>
+                      );
+                    })}
+                  </div>
+                </SortableContext>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
-        {items.length === 0 && (
-          <div className="py-20 text-center bg-white/40 backdrop-blur-sm rounded-3xl border border-white/60">
-            <Calendar className="h-16 w-16 text-[#0EA5E9]/30 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-[#0C4A6E] mb-2">No itinerary yet</h3>
-            <p className="text-[#486581] font-medium max-w-md mx-auto mb-8">Start adding flights, activities, and accommodations to build your daily schedule.</p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="inline-flex items-center rounded-xl bg-white border-2 border-[#0EA5E9]/20 px-6 py-3 text-sm font-bold text-[#0EA5E9] shadow-sm transition-all hover:bg-[#f0f9ff] hover:border-[#0EA5E9]/40"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              Add First Event
-            </button>
-          </div>
-        )}
-      </div>
+          {items.length === 0 && (
+            <div className="py-20 text-center bg-white/40 backdrop-blur-sm rounded-3xl border border-white/60">
+              <Calendar className="h-16 w-16 text-[#0EA5E9]/30 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-[#0C4A6E] mb-2">No itinerary yet</h3>
+              <p className="text-[#486581] font-medium max-w-md mx-auto mb-8">Start adding flights, activities, and accommodations to build your daily schedule.</p>
+              <button
+                onClick={() => setShowModal(true)}
+                className="inline-flex items-center rounded-xl bg-white border-2 border-[#0EA5E9]/20 px-6 py-3 text-sm font-bold text-[#0EA5E9] shadow-sm transition-all hover:bg-[#f0f9ff] hover:border-[#0EA5E9]/40"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Add First Event
+              </button>
+            </div>
+          )}
+        </div>
+      </DndContext>
 
       {/* Create Modal */}
       {showModal && (

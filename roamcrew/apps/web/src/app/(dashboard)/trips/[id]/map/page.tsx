@@ -3,7 +3,8 @@
 import { useState, useEffect, use } from "react";
 import { fetchApi } from "@/lib/api";
 import dynamic from "next/dynamic";
-import { Map, MapPin } from "lucide-react";
+import {  Map, MapPin  } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Dynamically import the map component with SSR disabled
 // Leaflet uses the window object heavily, which causes errors during server-side rendering
@@ -13,7 +14,17 @@ const TripMap = dynamic(() => import("@/components/trip-map"), {
     <div className="h-[600px] w-full rounded-3xl border-2 border-white bg-white/40 backdrop-blur-md flex items-center justify-center shadow-xl shadow-[#102a43]/10">
       <div className="flex flex-col items-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#0EA5E9] border-t-transparent mb-4"></div>
-        <p className="font-bold text-[#0C4A6E]">Loading Map Data...</p>
+        <div className="space-y-6 w-full mt-4">
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-10 w-1/3 rounded-xl" />
+          <Skeleton className="h-10 w-32 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-48 rounded-3xl" />
+          <Skeleton className="h-48 rounded-3xl hidden md:block" />
+          <Skeleton className="h-48 rounded-3xl hidden lg:block" />
+        </div>
+      </div>
       </div>
     </div>
   )
@@ -48,8 +59,16 @@ export default function MapPage({ params }: { params: Promise<{ id: string }> })
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0EA5E9] border-t-transparent"></div>
+      <div className="space-y-6 w-full mt-4">
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-10 w-1/3 rounded-xl" />
+          <Skeleton className="h-10 w-32 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-48 rounded-3xl" />
+          <Skeleton className="h-48 rounded-3xl hidden md:block" />
+          <Skeleton className="h-48 rounded-3xl hidden lg:block" />
+        </div>
       </div>
     );
   }

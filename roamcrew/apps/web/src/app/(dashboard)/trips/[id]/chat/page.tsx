@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, use } from "react";
 import { fetchApi } from "@/lib/api";
-import { Send, Image as ImageIcon, Smile, MoreVertical } from "lucide-react";
+import {  Send, Image as ImageIcon, Smile, MoreVertical  } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { io, Socket } from "socket.io-client";
 import { format } from "date-fns";
 
@@ -94,7 +95,17 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   if (isLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0EA5E9] border-t-transparent"></div>
+        <div className="space-y-6 w-full mt-4">
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-10 w-1/3 rounded-xl" />
+          <Skeleton className="h-10 w-32 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-48 rounded-3xl" />
+          <Skeleton className="h-48 rounded-3xl hidden md:block" />
+          <Skeleton className="h-48 rounded-3xl hidden lg:block" />
+        </div>
+      </div>
       </div>
     );
   }
