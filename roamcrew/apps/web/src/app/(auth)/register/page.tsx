@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { fetchApi } from "@/lib/api";
 import Link from "next/link";
-import { ArrowLeft, Map } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
 
 export default function RegisterPage() {
   const { login } = useAuth();
@@ -45,8 +46,8 @@ export default function RegisterPage() {
 
       <div className="w-full max-w-[480px] relative z-10 py-12">
         <div className="flex justify-center mb-8">
-          <div className="bg-[#F97316] p-3 rounded-2xl shadow-lg shadow-[#F97316]/20">
-            <Map className="h-8 w-8 text-white" />
+          <div className="bg-white/80 p-2 rounded-2xl shadow-lg shadow-[#F97316]/20 border border-[#F97316]/20">
+            <Image src="/icon-192x192.png" alt="RoamCrew Logo" width={48} height={48} className="rounded-xl" />
           </div>
         </div>
         

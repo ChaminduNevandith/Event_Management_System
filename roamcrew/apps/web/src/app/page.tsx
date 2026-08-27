@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/components/auth-provider";
-import { ArrowRight, Map, Compass, Users, Wallet } from "lucide-react";
+import { ArrowRight, Compass, Users, Wallet } from "lucide-react";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
@@ -13,8 +14,8 @@ export default function Home() {
     <div className="flex min-h-[100dvh] flex-col bg-[#F0F9FF] text-[#0C4A6E]">
       <header className="px-6 lg:px-12 h-20 flex items-center bg-white/70 backdrop-blur-xl border-b border-white/20 sticky top-0 z-50 transition-all duration-300">
         <Link className="flex items-center justify-center group" href="/">
-          <div className="bg-[#0EA5E9] p-2 rounded-xl group-hover:bg-[#38BDF8] transition-colors shadow-sm shadow-[#0EA5E9]/20">
-            <Map className="h-5 w-5 text-white" />
+          <div className="bg-white/80 p-1 rounded-xl shadow-sm shadow-[#0EA5E9]/10 transition-transform group-hover:scale-105 border border-[#0EA5E9]/20">
+            <Image src="/icon-192x192.png" alt="RoamCrew Logo" width={28} height={28} className="rounded-lg" />
           </div>
           <span className="ml-3 font-bold text-xl tracking-tight text-[#0C4A6E]">RoamCrew</span>
         </Link>
