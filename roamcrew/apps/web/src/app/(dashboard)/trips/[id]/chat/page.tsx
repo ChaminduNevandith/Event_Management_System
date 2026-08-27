@@ -4,8 +4,8 @@ import { useState, useEffect, useRef, use } from "react";
 import { fetchApi } from "@/lib/api";
 import {  Send, Image as ImageIcon, Smile, MoreVertical  } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { io, Socket } from "socket.io-client";
 import { format } from "date-fns";
+import { useSocket } from "@/components/socket-provider";
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
@@ -16,7 +16,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   
-  const socketRef = useRef<Socket | null>(null);
+  const { socket } = useSocket();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -44,47 +44,32 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     };
 
     loadMessages();
+  }, [tripId]);
 
-    // 2. Setup Socket.IO connection
-    const token = localStorage.getItem("access_token");
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-    
-    // Connect to the WebSocket Gateway
-    const socket = io(apiUrl, {
-      auth: { token }
-    });
-    
-    socketRef.current = socket;
+  // Handle incoming socket events
+  useEffect(() => {
+    if (!socket) return;
 
-    socket.on("connect", () => {
-      console.log("Connected to chat server");
-      // Join the trip's chat room
-      socket.emit("joinTrip", { tripId });
-    });
-
-    socket.on("newMessage", (message: any) => {
+    const handleNewMessage = (message: any) => {
       setMessages(prev => {
-        // Prevent duplicate messages if we already have it
         if (prev.some(m => m.id === message.id)) return prev;
         return [...prev, message];
       });
       setTimeout(scrollToBottom, 100);
-    });
+    };
 
-    socket.on("error", (error: any) => {
-      console.error("Socket error:", error);
-    });
+    socket.on("newMessage", handleNewMessage);
 
     return () => {
-      socket.disconnect();
+      socket.off("newMessage", handleNewMessage);
     };
-  }, [tripId]);
+  }, [socket]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !socketRef.current) return;
+    if (!newMessage.trim() || !socket) return;
 
-    socketRef.current.emit("sendMessage", {
+    socket.emit("sendMessage", {
       tripId,
       content: newMessage.trim(),
     });
