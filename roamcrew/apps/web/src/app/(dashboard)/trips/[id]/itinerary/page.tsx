@@ -291,8 +291,8 @@ export default function ItineraryPage() {
   return (
     <>
     <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto h-[calc(100vh-8rem)]">
-      {/* Left Column: Itinerary List */}
-      <div className="flex-1 overflow-y-auto pr-4 space-y-8 pb-32 custom-scrollbar">
+      {/* Itinerary List */}
+      <div className="flex-1 overflow-y-auto space-y-8 pb-32 custom-scrollbar">
         <div className="flex items-center justify-between sticky top-0 bg-[#F4F7FB]/95 backdrop-blur-xl z-30 py-6 border-b border-[#0EA5E9]/10 mb-6">
           <div>
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Daily Itinerary</h2>
@@ -343,9 +343,9 @@ export default function ItineraryPage() {
                   items={dayItems.map((i: any) => i.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className="relative pl-8 md:pl-24 space-y-6">
+                  <div className="relative pl-12 md:pl-40 space-y-6">
                     {/* Vertical Line */}
-                    <div className="absolute left-8 md:left-[5.5rem] top-4 bottom-4 w-0.5 bg-gradient-to-b from-[#0EA5E9]/50 via-[#0EA5E9]/20 to-transparent"></div>
+                    <div className="absolute left-[2.5rem] md:left-[7.75rem] top-4 bottom-4 w-0.5 bg-gradient-to-b from-[#0EA5E9]/50 via-[#0EA5E9]/20 to-transparent"></div>
 
                     {dayItems.map((item: any) => {
                       const Icon = iconMap[item.type] || Hash;
@@ -355,14 +355,14 @@ export default function ItineraryPage() {
                         <SortableItem key={item.id} id={item.id}>
                           <div className="relative group" aria-label={`Drag ${item.title}`}>
                       {/* Timeline Dot & Line Connector */}
-                      <div className="absolute -left-[1.35rem] md:left-[-3.1rem] top-6 flex items-center justify-center">
+                      <div className="absolute -left-[1.75rem] md:left-[-3.5rem] top-6 flex items-center justify-center">
                         <div className={`w-10 h-10 rounded-full border-4 border-white flex items-center justify-center shadow-md z-10 transition-transform group-hover:scale-110 ${colorClass.split(' ')[0]} ${colorClass.split(' ')[1]}`}>
                           <Icon className="w-4 h-4" />
                         </div>
                       </div>
 
                       {/* Time (Desktop Only) */}
-                      <div className="hidden md:block absolute left-[-9rem] top-6 w-20 text-right">
+                      <div className="hidden md:block absolute left-[-9.5rem] top-6 w-20 text-right">
                         <div className="font-bold text-[#0C4A6E]">{format(parseISO(item.startTime), "HH:mm")}</div>
                         <div className="text-xs font-medium text-[#486581]">
                           {format(parseISO(item.endTime), "HH:mm")}
@@ -438,13 +438,6 @@ export default function ItineraryPage() {
       </DndContext>
       </div>
 
-      {/* Right Column: Sticky Map */}
-      <div className="hidden lg:block flex-1 sticky top-0 h-full">
-        <TripMap 
-          destinations={destinations}
-          itineraryItems={items}
-        />
-      </div>
     </div>
 
     {/* Create Modal */}
