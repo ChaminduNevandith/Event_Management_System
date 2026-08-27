@@ -28,9 +28,13 @@ export class ItineraryService {
         startTime: dto.startTime ? new Date(dto.startTime) : null,
         endTime: dto.endTime ? new Date(dto.endTime) : null,
         isAllDay: dto.isAllDay || false,
+        placeId: dto.placeId || null,
+        latitude: dto.latitude || null,
+        longitude: dto.longitude || null,
       },
       include: {
         destination: true,
+        place: true,
       }
     });
   }
@@ -44,6 +48,7 @@ export class ItineraryService {
       },
       include: {
         destination: true,
+        place: true,
       },
       orderBy: { startTime: 'asc' }
     });
@@ -64,18 +69,25 @@ export class ItineraryService {
     if (dto.startTime !== undefined) dataToUpdate.startTime = dto.startTime ? new Date(dto.startTime) : null;
     if (dto.endTime !== undefined) dataToUpdate.endTime = dto.endTime ? new Date(dto.endTime) : null;
     if (dto.isAllDay !== undefined) dataToUpdate.isAllDay = dto.isAllDay;
-    if (dto.destinationId !== undefined) {
+    if (dto.placeId !== undefined) dataToUpdate.placeId = dto.placeId;
+    if (dto.latitude !== undefined) dataToUpdate.latitude = dto.latitude;
+    if (dto.longitude !== undefined) dataToUpdate.longitude = dto.longitude;
+
+    if (dto.destinationId) {
       const dest = await this.prisma.client.destination.findFirst({
         where: { id: dto.destinationId, tripId }
       });
-      if (!dest) throw new NotFoundException("Destination not found");
+      if (!dest) throw new NotFoundException("Destination not found or doesn't belong to this trip");
       dataToUpdate.destinationId = dto.destinationId;
     }
 
     return this.prisma.client.itineraryItem.update({
       where: { id },
       data: dataToUpdate,
-      include: { destination: true }
+      include: {
+        destination: true,
+        place: true,
+      }
     });
   }
 

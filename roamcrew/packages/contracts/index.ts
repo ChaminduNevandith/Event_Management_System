@@ -161,6 +161,9 @@ export const CreateItineraryItemSchema = z.object({
   endTime: z.string().datetime().optional(),
   isAllDay: z.boolean().optional(),
   destinationId: z.string().uuid(),
+  placeId: z.string().uuid().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 export type CreateItineraryItemRequest = z.infer<typeof CreateItineraryItemSchema>;
