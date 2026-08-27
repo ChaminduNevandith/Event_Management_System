@@ -133,7 +133,7 @@ export default function TripMap({
           }
         },
         (error) => {
-          console.error("Error getting location", error);
+          console.warn("Location error:", error.message);
           setIsBroadcasting(false);
           setWatchId(null);
           
