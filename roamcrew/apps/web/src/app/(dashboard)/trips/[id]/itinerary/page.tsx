@@ -256,11 +256,11 @@ export default function ItineraryPage() {
     <>
     <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto h-[calc(100vh-8rem)]">
       {/* Left Column: Itinerary List */}
-      <div className="flex-1 overflow-y-auto pr-2 space-y-8 pb-32 scrollbar-hide">
-        <div className="flex items-center justify-between sticky top-0 bg-[#F4F7FB]/90 backdrop-blur-md z-30 py-4">
+      <div className="flex-1 overflow-y-auto pr-4 space-y-8 pb-32 custom-scrollbar">
+        <div className="flex items-center justify-between sticky top-0 bg-[#F4F7FB]/95 backdrop-blur-xl z-30 py-6 border-b border-[#0EA5E9]/10 mb-6">
         <div>
-          <h2 className="text-2xl font-extrabold text-[#0C4A6E]">Daily Itinerary</h2>
-          <p className="text-[#486581] font-medium text-sm mt-1">Your journey timeline</p>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Daily Itinerary</h2>
+          <p className="text-slate-500 font-medium text-sm mt-1">Your journey timeline</p>
         </div>
         <button
           onClick={() => setShowModal(true)}

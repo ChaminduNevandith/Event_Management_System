@@ -140,56 +140,75 @@ export class ExpensesService {
       include: { splits: true },
     });
 
-    const balances: Record<string, { user: any; amount: number }> = {};
-    for (const member of trip.members) {
-      balances[member.userId] = { user: member.user, amount: 0 };
-    }
+    const balancesByCurrency: Record<string, Record<string, { user: any; amount: number }>> = {};
 
     for (const expense of expenses) {
-      if (balances[expense.payerId]) {
-        balances[expense.payerId].amount += expense.amount;
+      const cur = expense.currency;
+      if (!balancesByCurrency[cur]) {
+        balancesByCurrency[cur] = {};
+        for (const member of trip.members) {
+          balancesByCurrency[cur][member.userId] = { user: member.user, amount: 0 };
+        }
+      }
+
+      if (balancesByCurrency[cur][expense.payerId]) {
+        balancesByCurrency[cur][expense.payerId].amount += expense.amount;
       }
       for (const split of expense.splits) {
-        if (balances[split.userId]) {
-          balances[split.userId].amount -= split.amount;
+        if (balancesByCurrency[cur][split.userId]) {
+          balancesByCurrency[cur][split.userId].amount -= split.amount;
         }
       }
     }
 
-    return Object.values(balances);
+    return Object.entries(balancesByCurrency).map(([currency, balances]) => ({
+      currency,
+      balances: Object.values(balances),
+    }));
   }
 
   async getSettlements(userId: string, tripId: string) {
-    const balances = await this.getBalances(userId, tripId);
+    const balancesData = await this.getBalances(userId, tripId);
     
-    // Separate into debtors (balance < 0) and creditors (balance > 0)
-    const debtors = balances.filter(b => b.amount < -0.01).map(b => ({ ...b, amount: Math.abs(b.amount) })).sort((a, b) => b.amount - a.amount);
-    const creditors = balances.filter(b => b.amount > 0.01).sort((a, b) => b.amount - a.amount);
-    
-    const settlements = [];
-    let i = 0; // debtors index
-    let j = 0; // creditors index
-    
-    while (i < debtors.length && j < creditors.length) {
-      const debtor = debtors[i];
-      const creditor = creditors[j];
+    const settlementsByCurrency = [];
+
+    for (const currencyData of balancesData) {
+      const { currency, balances } = currencyData;
+
+      // Separate into debtors (balance < 0) and creditors (balance > 0)
+      const debtors = balances.filter(b => b.amount < -0.01).map(b => ({ ...b, amount: Math.abs(b.amount) })).sort((a, b) => b.amount - a.amount);
+      const creditors = balances.filter(b => b.amount > 0.01).sort((a, b) => b.amount - a.amount);
       
-      const amount = Math.min(debtor.amount, creditor.amount);
+      const settlements = [];
+      let i = 0; // debtors index
+      let j = 0; // creditors index
       
-      settlements.push({
-        from: debtor.user,
-        to: creditor.user,
-        amount: parseFloat(amount.toFixed(2)),
+      while (i < debtors.length && j < creditors.length) {
+        const debtor = debtors[i];
+        const creditor = creditors[j];
+        
+        const amount = Math.min(debtor.amount, creditor.amount);
+        
+        settlements.push({
+          from: debtor.user,
+          to: creditor.user,
+          amount: parseFloat(amount.toFixed(2)),
+        });
+        
+        debtor.amount -= amount;
+        creditor.amount -= amount;
+        
+        if (debtor.amount < 0.01) i++;
+        if (creditor.amount < 0.01) j++;
+      }
+
+      settlementsByCurrency.push({
+        currency,
+        settlements,
       });
-      
-      debtor.amount -= amount;
-      creditor.amount -= amount;
-      
-      if (debtor.amount < 0.01) i++;
-      if (creditor.amount < 0.01) j++;
     }
     
-    return settlements;
+    return settlementsByCurrency;
   }
 
   async remove(userId: string, tripId: string, expenseId: string) {

@@ -56,8 +56,32 @@ export class PollsService {
       },
       orderBy: { createdAt: 'desc' }
     });
-
     return polls;
+  }
+
+  async extractLinkMetadata(userId: string, tripId: string, url: string) {
+    await this.tripsService.findOne(userId, tripId);
+    
+    try {
+      const response = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' }
+      });
+      const html = await response.text();
+
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i) || html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i);
+      let title = titleMatch ? titleMatch[1].trim() : url;
+      
+      // decode basic HTML entities in title
+      title = title.replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+
+      const imageMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
+      const imageUrl = imageMatch ? imageMatch[1] : undefined;
+
+      return { title, imageUrl, url };
+    } catch (err) {
+      console.error("Failed to extract link metadata:", err);
+      return { title: url, url };
+    }
   }
 
   async vote(userId: string, tripId: string, pollId: string, dto: PollVoteRequest) {
