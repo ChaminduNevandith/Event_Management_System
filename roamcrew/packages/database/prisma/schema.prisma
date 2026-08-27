@@ -58,6 +58,8 @@ model User {
   pollComments     PollComment[]
 
   notifications    Notification[]
+  notificationSettings NotificationSettings?
+  pushSubscriptions PushSubscription[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -527,4 +529,30 @@ enum NotificationType {
   TASK
   EXPENSE
   POLL
+}
+
+model NotificationSettings {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  pushEnabled       Boolean  @default(false)
+  quietHoursEnabled Boolean  @default(false)
+  quietHoursStart   String   @default("22:00") // 24hr format
+  quietHoursEnd     String   @default("08:00") // 24hr format
+  dailyDigest       Boolean  @default(false)
+  
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt         DateTime @updatedAt
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String
+  p256dh    String
+  auth      String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, endpoint])
 }

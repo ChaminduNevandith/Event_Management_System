@@ -15,13 +15,26 @@ export function NotificationsBell({
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Initialize audio only on client side to avoid SSR issues
+    audioRef.current = new Audio('/sounds/notification.mp3');
+  }, []);
 
   const loadNotifications = async () => {
     try {
       const data = await fetchApi("/notifications");
       setNotifications(data);
       const unread = data.filter((n: any) => !n.isRead).length;
-      setUnreadCount(unread);
+      
+      setUnreadCount((prevCount) => {
+        if (unread > prevCount && audioRef.current) {
+          // Play sound if we have more unread notifications than before
+          audioRef.current.play().catch(e => console.log('Audio play failed:', e));
+        }
+        return unread;
+      });
     } catch (err) {
       console.error("Failed to load notifications", err);
     }
