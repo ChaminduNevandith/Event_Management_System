@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request, UsePipes, BadRequestException } from '@nestjs/common';
 import { PollsService } from './polls.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
@@ -18,6 +18,16 @@ export class PollsController {
     @Body() dto: CreatePollRequest
   ) {
     return this.pollsService.createPoll(req.user.userId, tripId, dto);
+  }
+
+  @Post('extract-link')
+  extractLink(
+    @Request() req: any,
+    @Param('tripId') tripId: string,
+    @Body('url') url: string
+  ) {
+    if (!url) throw new BadRequestException("URL is required");
+    return this.pollsService.extractLinkMetadata(req.user.userId, tripId, url);
   }
 
   @Get()

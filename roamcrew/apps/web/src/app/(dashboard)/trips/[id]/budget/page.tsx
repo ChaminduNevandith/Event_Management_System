@@ -8,6 +8,23 @@ import { useConfirm } from "@/hooks/useConfirm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { Modal } from "@/components/ui/modal";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+
+const CURRENCIES = Intl.supportedValuesOf ? Intl.supportedValuesOf("currency").map(c => ({ value: c, label: c })) : [
+  { value: 'USD', label: 'USD - US Dollar' },
+  { value: 'EUR', label: 'EUR - Euro' },
+  { value: 'GBP', label: 'GBP - British Pound' },
+  { value: 'JPY', label: 'JPY - Japanese Yen' },
+  { value: 'AUD', label: 'AUD - Australian Dollar' },
+  { value: 'CAD', label: 'CAD - Canadian Dollar' },
+  { value: 'CHF', label: 'CHF - Swiss Franc' },
+  { value: 'CNY', label: 'CNY - Chinese Yuan' },
+  { value: 'INR', label: 'INR - Indian Rupee' }
+];
+
+const formatCurrency = (amount: number, currency: string = 'USD') => {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+};
 
 export default function BudgetPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
@@ -25,6 +42,7 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
   const [newExpense, setNewExpense] = useState({
     title: "",
     amount: "",
+    currency: "USD",
     payerId: "",
     category: "OTHER"
   });
@@ -79,13 +97,14 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
         body: JSON.stringify({
           title: newExpense.title,
           amount: totalAmount,
+          currency: newExpense.currency,
           payerId: newExpense.payerId,
           category: newExpense.category,
           splits: splits
         })
       });
       setIsAddOpen(false);
-      setNewExpense({ title: "", amount: "", payerId: "", category: "OTHER" });
+      setNewExpense({ title: "", amount: "", currency: "USD", payerId: "", category: "OTHER" });
       loadData();
     } catch (err) {
       console.error(err);
@@ -161,67 +180,83 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
           <div className="bg-white/40 backdrop-blur-md border border-white/40 shadow-sm rounded-2xl p-6 space-y-4">
             
             {activeTab === 'balances' && (
-              <>
+              <div className="space-y-6">
                 {balances.length === 0 && (
                   <div className="text-slate-500 text-center py-4">No balances yet.</div>
                 )}
-                {balances.map((b: any, i: number) => (
-                  <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/50 border border-slate-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-medium">
-                        {b.user.firstName[0]}
-                      </div>
-                      <div>
-                        <div className="font-medium text-slate-800">{b.user.firstName} {b.user.lastName}</div>
-                        <div className="text-xs text-slate-500">
-                          {b.amount > 0 ? "Owed money" : b.amount < 0 ? "Owes money" : "Settled up"}
-                        </div>
-                      </div>
-                    </div>
-                    <div className={`font-bold text-lg ${b.amount > 0 ? "text-emerald-500" : b.amount < 0 ? "text-rose-500" : "text-slate-400"}`}>
-                      {b.amount > 0 ? "+" : ""}{b.amount.toFixed(2)} USD
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-
-            {activeTab === 'settlements' && (
-              <>
-                {settlements.length === 0 ? (
-                  <div className="text-slate-500 text-center py-4 flex flex-col items-center gap-2">
-                    <div className="w-12 h-12 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center">
-                      <Receipt className="w-6 h-6" />
-                    </div>
-                    <span>Everyone is perfectly settled up!</span>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {settlements.map((s, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-orange-50 to-rose-50 border border-orange-100">
+                {balances.map((group: any, idx: number) => (
+                  <div key={idx} className="space-y-3">
+                    <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">{group.currency} Balances</h3>
+                    {group.balances.map((b: any, i: number) => (
+                      <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/50 border border-slate-100 shadow-sm">
                         <div className="flex items-center gap-3">
-                          <div className="flex -space-x-2">
-                            <div className="w-8 h-8 rounded-full bg-rose-200 border-2 border-white flex items-center justify-center text-rose-700 text-xs font-medium z-10">
-                              {s.from.firstName[0]}
-                            </div>
-                            <div className="w-8 h-8 rounded-full bg-emerald-200 border-2 border-white flex items-center justify-center text-emerald-700 text-xs font-medium z-0">
-                              {s.to.firstName[0]}
-                            </div>
+                          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold border border-slate-200">
+                            {b.user.firstName[0]}
                           </div>
                           <div>
-                            <div className="text-sm font-medium text-slate-800">
-                              <span className="font-bold">{s.from.firstName}</span> owes <span className="font-bold">{s.to.firstName}</span>
+                            <div className="font-semibold text-slate-800">{b.user.firstName} {b.user.lastName}</div>
+                            <div className="text-xs text-slate-500 font-medium">
+                              {b.amount > 0 ? "Owed money" : b.amount < 0 ? "Owes money" : "Settled up"}
                             </div>
                           </div>
                         </div>
-                        <div className="font-bold text-slate-800 text-lg">
-                          ${s.amount.toFixed(2)}
+                        <div className={`font-black text-lg ${b.amount > 0 ? "text-emerald-500" : b.amount < 0 ? "text-rose-500" : "text-slate-400"}`}>
+                          {b.amount > 0 ? "+" : ""}{formatCurrency(b.amount, group.currency)}
                         </div>
                       </div>
                     ))}
                   </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === 'settlements' && (
+              <div className="space-y-6">
+                {settlements.length === 0 ? (
+                  <div className="text-slate-500 text-center py-8 flex flex-col items-center gap-3 bg-white/50 rounded-2xl border border-dashed border-slate-200">
+                    <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center shadow-inner">
+                      <Receipt className="w-8 h-8" />
+                    </div>
+                    <span className="font-semibold text-slate-700">Everyone is perfectly settled up!</span>
+                  </div>
+                ) : (
+                  settlements.map((group: any, idx: number) => (
+                    <div key={idx} className="space-y-4">
+                      {group.settlements.length > 0 && (
+                        <h3 className="font-black text-slate-800 text-sm uppercase tracking-widest text-center mt-2">
+                          {group.currency} Settlements
+                        </h3>
+                      )}
+                      {group.settlements.map((s: any, i: number) => (
+                        <div key={i} className="group relative flex items-center justify-between p-5 rounded-2xl bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-r from-rose-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="flex items-center gap-4 relative z-10">
+                            <div className="flex items-center">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-rose-100 to-rose-200 border-2 border-white flex items-center justify-center text-rose-700 font-bold shadow-md z-10 -mr-3">
+                                {s.from.firstName[0]}
+                              </div>
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 border-2 border-white flex items-center justify-center text-emerald-700 font-bold shadow-md z-0">
+                                {s.to.firstName[0]}
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <div className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
+                                <span>{s.from.firstName}</span>
+                                <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                                <span>{s.to.firstName}</span>
+                              </div>
+                              <div className="text-xs font-medium text-slate-500">Pays via App or Cash</div>
+                            </div>
+                          </div>
+                          <div className="font-black text-slate-800 text-xl relative z-10 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">
+                            {formatCurrency(s.amount, group.currency)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))
                 )}
-              </>
+              </div>
             )}
 
           </div>
@@ -250,7 +285,7 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-slate-800">${expense.amount.toFixed(2)}</div>
+                    <div className="font-bold text-slate-800">{formatCurrency(expense.amount, expense.currency)}</div>
                     <div className="text-xs text-slate-500">{format(new Date(expense.date), "MMM d, yyyy")}</div>
                   </div>
                 </div>
@@ -293,17 +328,28 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700">Amount (USD)</label>
-            <input 
-              type="number" 
-              step="0.01"
-              value={newExpense.amount}
-              onChange={e => setNewExpense({...newExpense, amount: e.target.value})}
-              className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all"
-              placeholder="0.00"
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Currency</label>
+              <SearchableSelect 
+                options={CURRENCIES}
+                value={newExpense.currency}
+                onChange={val => setNewExpense({...newExpense, currency: val})}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Amount</label>
+              <input 
+                type="number" 
+                step="0.01"
+                value={newExpense.amount}
+                onChange={e => setNewExpense({...newExpense, amount: e.target.value})}
+                className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all"
+                placeholder="0.00"
+                required
+              />
+            </div>
           </div>
 
           <div className="space-y-1.5">

@@ -20,7 +20,7 @@ export default function DecisionsPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isMultipleChoice, setIsMultipleChoice] = useState(false);
-  const [options, setOptions] = useState([{ text: "" }, { text: "" }]);
+  const [options, setOptions] = useState([{ text: "", imageUrl: "", isLoading: false }, { text: "", imageUrl: "", isLoading: false }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadData = async () => {
@@ -67,7 +67,7 @@ export default function DecisionsPage() {
       setTitle("");
       setDescription("");
       setIsMultipleChoice(false);
-      setOptions([{ text: "" }, { text: "" }]);
+      setOptions([{ text: "", imageUrl: "", isLoading: false }, { text: "", imageUrl: "", isLoading: false }]);
       loadData();
     } catch (err: any) {
       toast.error(err.message || "Failed to create poll");
@@ -88,15 +88,47 @@ export default function DecisionsPage() {
     }
   };
 
-  const handleAddOption = () => setOptions([...options, { text: "" }]);
+  const handleAddOption = () => setOptions([...options, { text: "", imageUrl: "", isLoading: false }]);
   const handleRemoveOption = (index: number) => {
     if (options.length <= 2) return;
     setOptions(options.filter((_, i) => i !== index));
   };
   const handleOptionChange = (index: number, text: string) => {
     const newOptions = [...options];
-    newOptions[index].text = text;
+    newOptions[index] = { ...newOptions[index], text };
     setOptions(newOptions);
+  };
+  const handleOptionPaste = async (index: number, e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pastedText = e.clipboardData.getData('text');
+    if (pastedText.startsWith('http://') || pastedText.startsWith('https://')) {
+      const newOptions = [...options];
+      newOptions[index] = { ...newOptions[index], isLoading: true };
+      setOptions(newOptions);
+      
+      try {
+        const res = await fetchApi(`/trips/${params.id}/polls/extract-link`, {
+          method: "POST",
+          body: JSON.stringify({ url: pastedText })
+        });
+        setOptions(prev => {
+          const finalOptions = [...prev];
+          finalOptions[index] = { 
+            ...finalOptions[index], 
+            text: res.title || finalOptions[index].text, 
+            imageUrl: res.imageUrl || finalOptions[index].imageUrl,
+            isLoading: false 
+          };
+          return finalOptions;
+        });
+      } catch (err) {
+        console.error("Failed to extract link metadata", err);
+        setOptions(prev => {
+          const errOptions = [...prev];
+          errOptions[index] = { ...errOptions[index], isLoading: false };
+          return errOptions;
+        });
+      }
+    }
   };
 
   if (isLoading) {
@@ -173,13 +205,18 @@ export default function DecisionsPage() {
                         style={{ width: `${percentage}%` }} 
                       />
                       
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-3 w-3/4">
                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                           hasVoted ? 'border-[#0EA5E9] bg-[#0EA5E9]' : 'border-slate-300'
                         } ${poll.isMultipleChoice ? 'rounded-md' : 'rounded-full'}`}>
                           {hasVoted && <CheckSquare className="w-3 h-3 text-white" />}
                         </div>
-                        <span className={`font-bold ${hasVoted ? 'text-[#0C4A6E]' : 'text-[#486581]'}`}>{option.text}</span>
+                        {option.imageUrl && (
+                          <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 shadow-sm border border-slate-100">
+                            <img src={option.imageUrl} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <span className={`font-bold truncate ${hasVoted ? 'text-[#0C4A6E]' : 'text-[#486581]'}`}>{option.text}</span>
                       </div>
                       
                       <div className="flex items-center space-x-2 text-sm text-[#486581] font-bold">
@@ -267,17 +304,29 @@ export default function DecisionsPage() {
 
           <div>
             <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Options</label>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {options.map((opt, i) => (
-                <div key={i} className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={opt.text}
-                    onChange={(e) => handleOptionChange(i, e.target.value)}
-                    className="flex-1 rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-2.5 text-sm text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
-                    placeholder={`Option ${i + 1}`}
-                    required
-                  />
+                <div key={i} className="flex space-x-2 items-center">
+                  {opt.imageUrl && (
+                    <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 shadow-sm border border-slate-100">
+                      <img src={opt.imageUrl} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={opt.text}
+                      onChange={(e) => handleOptionChange(i, e.target.value)}
+                      onPaste={(e) => handleOptionPaste(i, e)}
+                      className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-2.5 text-sm text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+                      placeholder={opt.isLoading ? "Extracting link info..." : `Option ${i + 1} (or paste a link)`}
+                      disabled={opt.isLoading}
+                      required
+                    />
+                    {opt.isLoading && (
+                      <div className="absolute right-3 top-3 w-4 h-4 border-2 border-[#0EA5E9] border-t-transparent rounded-full animate-spin"></div>
+                    )}
+                  </div>
                   {options.length > 2 && (
                     <button 
                       type="button" 
