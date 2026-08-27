@@ -170,6 +170,8 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
     { name: "Budget", href: `/trips/${params.id}/budget` },
     { name: "Chat", href: `/trips/${params.id}/chat` },
     { name: "Activity", href: `/trips/${params.id}/activity` },
+    { name: "Memories", href: `/trips/${params.id}/memories` },
+    { name: "Export", href: `/trips/${params.id}/export` },
   ];
 
   const myRole = trip.members.find((m: any) => m.user.id === user?.id)?.role || 'MEMBER';

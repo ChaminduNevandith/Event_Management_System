@@ -10,6 +10,7 @@ import {
   MapPin, CheckSquare, Wallet, Activity, CalendarClock, 
   ArrowRight, Clock, Plus, Compass, MessageSquare, AlertCircle
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function TripOverviewPage() {
   const params = useParams();
