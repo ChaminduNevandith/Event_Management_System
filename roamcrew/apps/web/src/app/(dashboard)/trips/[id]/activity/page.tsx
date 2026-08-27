@@ -92,7 +92,7 @@ export default function TripActivityPage() {
       ) : (
         <div className="relative">
           {/* Timeline line */}
-          <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#0EA5E9]/30 via-[#0EA5E9]/10 to-transparent" />
+          <div className="absolute left-7 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#0EA5E9]/30 via-[#0EA5E9]/10 to-transparent" />
 
           <div className="space-y-1">
             {activities.map((activity, idx) => {
