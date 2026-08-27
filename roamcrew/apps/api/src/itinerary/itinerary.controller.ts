@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards, Request, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Patch, Body, Param, UseGuards, Request, UsePipes } from '@nestjs/common';
 import { ItineraryService } from './itinerary.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { CreateItineraryItemSchema } from 'contracts';
-import type { CreateItineraryItemRequest } from 'contracts';
+import { CreateItineraryItemSchema, UpdateItineraryItemSchema } from 'contracts';
+import type { CreateItineraryItemRequest, UpdateItineraryItemRequest } from 'contracts';
 
 @Controller('trips/:tripId/itinerary')
 @UseGuards(JwtAuthGuard)
@@ -35,5 +35,16 @@ export class ItineraryController {
     @Param('id') id: string
   ) {
     return this.itineraryService.remove(req.user.id, tripId, id);
+  }
+
+  @Patch(':id')
+  @UsePipes(new ZodValidationPipe(UpdateItineraryItemSchema))
+  update(
+    @Request() req: any,
+    @Param('tripId') tripId: string,
+    @Param('id') id: string,
+    @Body() dto: UpdateItineraryItemRequest
+  ) {
+    return this.itineraryService.update(req.user.id, tripId, id, dto);
   }
 }

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { fetchApi } from "@/lib/api";
-import { Plus, Plane, Train, Bus, Ship, Car, Calendar, Clock, MapPin, Trash2 } from "lucide-react";
+import {  Plus, Plane, Train, Bus, Ship, Car, Calendar, Clock, MapPin, Trash2  } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
 export default function TransportPage({ params }: { params: { id: string } }) {
@@ -97,8 +98,16 @@ export default function TransportPage({ params }: { params: { id: string } }) {
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#F97316] border-t-transparent"></div>
+      <div className="space-y-6 w-full mt-4">
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-10 w-1/3 rounded-xl" />
+          <Skeleton className="h-10 w-32 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-48 rounded-3xl" />
+          <Skeleton className="h-48 rounded-3xl hidden md:block" />
+          <Skeleton className="h-48 rounded-3xl hidden lg:block" />
+        </div>
       </div>
     );
   }

@@ -5,6 +5,7 @@ import { fetchApi } from "@/lib/api";
 import Link from "next/link";
 import { Plus, MapPin, Calendar, Users, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function TripsPage() {
   const [trips, setTrips] = useState<any[]>([]);
@@ -27,8 +28,33 @@ export default function TripsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0EA5E9] border-t-transparent"></div>
+      <div className="space-y-10 animate-in fade-in duration-500">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <Skeleton className="h-10 w-48 mb-2" />
+            <Skeleton className="h-6 w-72" />
+          </div>
+          <Skeleton className="h-12 w-40 rounded-xl" />
+        </div>
+        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex h-[360px] flex-col overflow-hidden rounded-3xl border border-white/60 bg-white/40 backdrop-blur-md shadow-sm">
+              <Skeleton className="h-40 w-full rounded-none" />
+              <div className="flex flex-1 flex-col p-6 lg:p-8">
+                <Skeleton className="h-8 w-3/4 mb-4" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-5/6" />
+                <div className="mt-auto pt-8 flex flex-col gap-4">
+                  <Skeleton className="h-6 w-1/2" />
+                  <div className="border-t border-[#0EA5E9]/10 pt-4 mt-2 flex justify-between">
+                    <Skeleton className="h-6 w-1/3" />
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

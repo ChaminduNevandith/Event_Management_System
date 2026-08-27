@@ -2,13 +2,21 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/components/auth-provider";
 import { ArrowRight, Compass, Users, Wallet } from "lucide-react";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div></div>;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center space-y-8 p-8">
+        <Skeleton className="h-16 w-48 rounded-full" />
+        <Skeleton className="h-96 w-full max-w-4xl rounded-3xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-[#F0F9FF] text-[#0C4A6E]">

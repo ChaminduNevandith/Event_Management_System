@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchApi } from "@/lib/api";
 import { UserPlus, UserCheck, XCircle, CheckCircle, Search, Users } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function FriendsPage() {
   const [friends, setFriends] = useState<any[]>([]);
@@ -94,7 +95,17 @@ export default function FriendsPage() {
     }
   };
 
-  if (loading) return <div className="p-8 font-medium text-[#0C4A6E]/70">Loading friends...</div>;
+  if (loading) return <div className="space-y-6 w-full mt-4">
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-10 w-1/3 rounded-xl" />
+          <Skeleton className="h-10 w-32 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-48 rounded-3xl" />
+          <Skeleton className="h-48 rounded-3xl hidden md:block" />
+          <Skeleton className="h-48 rounded-3xl hidden lg:block" />
+        </div>
+      </div>;
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8">

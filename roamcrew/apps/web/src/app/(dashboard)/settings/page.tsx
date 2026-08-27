@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchApi } from "@/lib/api";
 import { ProfileForm } from "@/components/profile-form";
 import { PasswordForm } from "@/components/password-form";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SettingsPage() {
   const [user, setUser] = useState<any>(null);
@@ -24,7 +25,19 @@ export default function SettingsPage() {
   }, []);
 
   if (loading) {
-    return <div className="p-8 text-[#0C4A6E]/70 font-medium">Loading profile...</div>;
+    return (
+      <div className="space-y-6 w-full mt-4 p-8">
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-10 w-1/3 rounded-xl" />
+          <Skeleton className="h-10 w-32 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-48 rounded-3xl" />
+          <Skeleton className="h-48 rounded-3xl hidden md:block" />
+          <Skeleton className="h-48 rounded-3xl hidden lg:block" />
+        </div>
+      </div>
+    );
   }
 
   if (!user) {

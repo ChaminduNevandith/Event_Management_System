@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { fetchApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { Plane, Calendar, Users, ArrowRight } from "lucide-react";
+import {  Plane, Calendar, Users, ArrowRight  } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/components/auth-provider";
 import Link from "next/link";
 import { use } from "react";
@@ -52,7 +53,17 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
   if (status === "loading") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#E0F2FE] to-[#F0F9FF] flex items-center justify-center">
-        <p className="text-[#0C4A6E] font-medium animate-pulse">Loading invitation...</p>
+        <div className="space-y-6 w-full mt-4">
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-10 w-1/3 rounded-xl" />
+          <Skeleton className="h-10 w-32 rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-48 rounded-3xl" />
+          <Skeleton className="h-48 rounded-3xl hidden md:block" />
+          <Skeleton className="h-48 rounded-3xl hidden lg:block" />
+        </div>
+      </div>
       </div>
     );
   }
