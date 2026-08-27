@@ -18,8 +18,8 @@ export class FriendsController {
   }
 
   @Post('request')
-  async sendRequest(@Request() req: any, @Body() body: { targetUsername: string }) {
-    return this.friendsService.sendRequest(req.user.userId, body.targetUsername);
+  async sendRequest(@Request() req: any, @Body() body: { targetUsername?: string, targetUserId?: string }) {
+    return this.friendsService.sendRequest(req.user.userId, body.targetUsername, body.targetUserId);
   }
 
   @Post('accept/:id')

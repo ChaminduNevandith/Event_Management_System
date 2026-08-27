@@ -13,6 +13,10 @@ export default function FriendsPage() {
   const [newCircleName, setNewCircleName] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
@@ -34,6 +38,28 @@ export default function FriendsPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    const term = searchUsername || "";
+    if (term.length >= 2) {
+      setIsSearching(true);
+      setShowDropdown(true);
+      const debounce = setTimeout(async () => {
+        try {
+          const results = await fetchApi(`/users/search?q=${searchUsername}`);
+          setSearchResults(results);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 300);
+      return () => clearTimeout(debounce);
+    } else {
+      setSearchResults([]);
+      setShowDropdown(false);
+    }
+  }, [searchUsername]);
 
   const handleCreateCircle = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,10 +83,11 @@ export default function FriendsPage() {
     try {
       await fetchApi("/friends/request", {
         method: "POST",
-        body: JSON.stringify({ targetUsername: searchUsername }),
+        body: JSON.stringify(selectedUserId ? { targetUserId: selectedUserId } : { targetUsername: searchUsername }),
       });
       setStatus("Request sent successfully!");
       setSearchUsername("");
+      setSelectedUserId(null);
       setTimeout(() => setStatus(""), 3000);
     } catch (err: any) {
       setStatus(`Error: ${err.message}`);
@@ -198,12 +225,47 @@ export default function FriendsPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#0C4A6E]/40" />
                   <input 
-                    value={searchUsername} 
-                    onChange={e => setSearchUsername(e.target.value)} 
-                    placeholder="traveler123" 
+                    value={searchUsername || ""} 
+                    onChange={e => {
+                      setSearchUsername(e.target.value);
+                      setSelectedUserId(null);
+                    }} 
+                    onFocus={() => { if ((searchUsername || "").length >= 2) setShowDropdown(true); }}
+                    onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                    placeholder="Search users..." 
                     className="w-full h-10 rounded-xl border border-white/50 bg-white/70 pl-9 pr-4 text-sm focus:ring-2 focus:ring-[#0EA5E9]/50 outline-none transition-all" 
                     required 
                   />
+                  {showDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white/90 backdrop-blur-md rounded-xl border border-white/50 shadow-lg max-h-60 overflow-y-auto">
+                      {isSearching ? (
+                        <div className="p-3 text-xs text-center text-[#0C4A6E]/60">Searching...</div>
+                      ) : searchResults.length > 0 ? (
+                        searchResults.map(u => (
+                          <div 
+                            key={u.id} 
+                            className="p-2 hover:bg-white/50 cursor-pointer flex items-center gap-2 border-b border-white/30 last:border-0"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setSearchUsername(u.username || `${u.firstName} ${u.lastName}`);
+                              setSelectedUserId(u.id);
+                              setShowDropdown(false);
+                            }}
+                          >
+                            <div className="w-8 h-8 rounded-full bg-[#0EA5E9]/10 flex items-center justify-center text-[#0EA5E9] text-xs font-bold">
+                              {u.avatarUrl ? <img src={u.avatarUrl} className="w-full h-full rounded-full object-cover" /> : (u.firstName?.[0] || u.username[0].toUpperCase())}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-[#0C4A6E] leading-tight">{u.firstName} {u.lastName}</p>
+                              <p className="text-xs text-[#0C4A6E]/60">@{u.username}</p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-3 text-xs text-center text-[#0C4A6E]/60">No users found</div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               <button type="submit" className="w-full h-10 rounded-xl bg-[#0EA5E9] text-white font-semibold shadow hover:bg-[#0284C7] transition-all">
