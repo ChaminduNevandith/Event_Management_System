@@ -47,6 +47,7 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
     payerId: "",
     category: "OTHER"
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { socket } = useSocket();
 
@@ -89,6 +90,7 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newExpense.title || !newExpense.amount || !newExpense.payerId) return;
+    setIsSubmitting(true);
 
     try {
       const totalAmount = parseFloat(newExpense.amount);
@@ -122,10 +124,13 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
 
       setIsAddOpen(false);
       setNewExpense({ title: "", amount: "", currency: "USD", payerId: "", category: "OTHER" });
+      toast.success("Expense added successfully!");
       if (socket) socket.emit("clientDataUpdated", { tripId, eventType: 'expense' });
       loadData();
     } catch (err: any) {
       toast.error(err.message || "Failed to add expense");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -296,7 +301,7 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
-                <div className="flex justify-between">
+                <div className="flex justify-between pr-8">
                   <div>
                     <div className="font-semibold text-slate-800">{expense.title}</div>
                     <div className="text-xs text-slate-500 font-medium bg-slate-200/50 px-2 py-0.5 rounded-full inline-block mt-1">
@@ -412,11 +417,11 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-            <button type="button" onClick={() => setIsAddOpen(false)} className="px-4 py-2 hover:bg-slate-100 rounded-md text-slate-600">
+            <button type="button" onClick={() => setIsAddOpen(false)} disabled={isSubmitting} className="px-4 py-2 hover:bg-slate-100 rounded-md text-slate-600 disabled:opacity-50">
               Cancel
             </button>
-            <button type="submit" className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-full">
-              Save Expense
+            <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-full disabled:opacity-50 flex items-center">
+              {isSubmitting ? "Saving..." : "Save Expense"}
             </button>
           </div>
         </form>

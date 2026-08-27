@@ -83,6 +83,7 @@ export default function DecisionsPage() {
       setDescription("");
       setIsMultipleChoice(false);
       setOptions([{ text: "", imageUrl: "", isLoading: false }, { text: "", imageUrl: "", isLoading: false }]);
+      toast.success("Poll created successfully!");
       if (socket) socket.emit("clientDataUpdated", { tripId: params.id, eventType: 'poll' });
       loadData();
     } catch (err: any) {

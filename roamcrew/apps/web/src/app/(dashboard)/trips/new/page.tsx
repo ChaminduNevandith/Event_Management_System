@@ -5,6 +5,7 @@ import { fetchApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, Type, AlignLeft } from "lucide-react";
+import { toast } from "sonner";
 
 export default function NewTripPage() {
   const router = useRouter();
@@ -34,6 +35,7 @@ export default function NewTripPage() {
           timezone,
         }),
       });
+      toast.success("Trip created successfully!");
       router.push(`/trips/${response.id}`);
     } catch (err: any) {
       setError(err.message || "Failed to create trip");

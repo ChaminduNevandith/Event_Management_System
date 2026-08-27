@@ -57,8 +57,11 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
     loadData();
   }, [tripId]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       await fetchApi(`/trips/${tripId}/tasks`, {
         method: "POST",
@@ -78,9 +81,12 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
       setPriority("MEDIUM");
       setDueDate("");
       setAssigneeId("");
+      toast.success("Task created successfully!");
       loadData();
     } catch (err: any) {
       toast.error(err.message || "Failed to create task");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -372,11 +378,11 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
           </div>
 
           <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
-            <button type="button" onClick={() => setIsAddOpen(false)} className="px-5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-600 font-bold transition-colors">
+            <button type="button" disabled={isSubmitting} onClick={() => setIsAddOpen(false)} className="px-5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-600 font-bold transition-colors disabled:opacity-50">
               Cancel
             </button>
-            <button type="submit" className="px-5 py-2.5 bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] hover:scale-105 text-white font-bold rounded-xl shadow-md transition-all">
-              Create Task
+            <button type="submit" disabled={isSubmitting} className="px-5 py-2.5 bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] hover:scale-105 text-white font-bold rounded-xl shadow-md transition-all disabled:opacity-50">
+              {isSubmitting ? "Creating..." : "Create Task"}
             </button>
           </div>
         </form>
