@@ -17,7 +17,7 @@ export class ItineraryController {
     @Param('tripId') tripId: string,
     @Body() dto: CreateItineraryItemRequest
   ) {
-    return this.itineraryService.create(req.user.id, tripId, dto);
+    return this.itineraryService.create(req.user.userId, tripId, dto);
   }
 
   @Get()
@@ -25,7 +25,7 @@ export class ItineraryController {
     @Request() req: any,
     @Param('tripId') tripId: string
   ) {
-    return this.itineraryService.findAll(req.user.id, tripId);
+    return this.itineraryService.findAll(req.user.userId, tripId);
   }
 
   @Delete(':id')
@@ -34,7 +34,7 @@ export class ItineraryController {
     @Param('tripId') tripId: string,
     @Param('id') id: string
   ) {
-    return this.itineraryService.remove(req.user.id, tripId, id);
+    return this.itineraryService.remove(req.user.userId, tripId, id);
   }
 
   @Patch(':id')
@@ -45,6 +45,6 @@ export class ItineraryController {
     @Param('id') id: string,
     @Body() dto: UpdateItineraryItemRequest
   ) {
-    return this.itineraryService.update(req.user.id, tripId, id, dto);
+    return this.itineraryService.update(req.user.userId, tripId, id, dto);
   }
 }

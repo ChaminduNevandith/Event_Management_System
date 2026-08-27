@@ -1,9 +1,13 @@
 import { Injectable, BadRequestException, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class FriendsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService
+  ) {}
 
   async getFriends(userId: string) {
     // Get all friendships where user is involved and status is ACCEPTED
@@ -52,19 +56,43 @@ export class FriendsService {
       }
     });
 
+    let friendship;
     if (existing) {
       if (existing.status === 'PENDING') throw new ConflictException('Request already pending');
       if (existing.status === 'ACCEPTED') throw new ConflictException('Already friends');
       if (existing.status === 'BLOCKED') throw new ForbiddenException('Cannot send request');
+      
+      // If it was DECLINED, we update it to PENDING and swap IDs if necessary
+      friendship = await this.prisma.client.friendship.update({
+        where: { id: existing.id },
+        data: {
+          userId,
+          friendId: target.id,
+          status: 'PENDING'
+        }
+      });
+    } else {
+      friendship = await this.prisma.client.friendship.create({
+        data: {
+          userId,
+          friendId: target.id,
+          status: 'PENDING'
+        }
+      });
     }
 
-    return this.prisma.client.friendship.create({
-      data: {
-        userId,
-        friendId: target.id,
-        status: 'PENDING'
-      }
-    });
+    const sender = await this.prisma.client.user.findUnique({ where: { id: userId } });
+    if (sender) {
+      await this.notificationsService.create({
+        userId: target.id,
+        title: 'New Friend Request',
+        message: `${sender.firstName || sender.username} sent you a friend request.`,
+        type: 'SYSTEM',
+        link: '/friends',
+      });
+    }
+
+    return friendship;
   }
 
   async acceptRequest(userId: string, requestId: string) {
