@@ -2,11 +2,15 @@ import { Injectable, NotFoundException, ForbiddenException, BadRequestException 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTripRequest, UpdateTripRequest } from 'contracts';
 import { isSafeImageUrl } from '../common/utils/url-validator';
+import { NotificationsService } from '../notifications/notifications.service';
 
 
 @Injectable()
 export class TripsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async create(userId: string, createTripDto: CreateTripRequest) {
     return this.prisma.client.trip.create({
@@ -105,6 +109,27 @@ export class TripsService {
         timezone: updateTripDto.timezone,
       },
     });
+
+    // Check for schedule changes
+    const oldStartDate = trip.startDate?.getTime();
+    const newStartDate = updated.startDate?.getTime();
+    const oldEndDate = trip.endDate?.getTime();
+    const newEndDate = updated.endDate?.getTime();
+
+    if (oldStartDate !== newStartDate || oldEndDate !== newEndDate) {
+      for (const m of trip.members) {
+        if (m.userId !== userId) { // Don't notify the person making the change
+          await this.notificationsService.create({
+            userId: m.userId,
+            tripId: id,
+            title: 'Trip Schedule Updated',
+            message: `Dates for ${trip.title} have changed.`,
+            type: 'TRIP_UPDATE',
+            link: `/trips/${id}`,
+          });
+        }
+      }
+    }
 
     await this.logActivity(id, userId, 'UPDATED_TRIP', `Updated trip settings`);
     return updated;

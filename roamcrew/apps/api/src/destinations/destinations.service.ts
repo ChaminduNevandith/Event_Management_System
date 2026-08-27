@@ -7,13 +7,15 @@ import {
 } from 'contracts';
 import { TripsService } from '../trips/trips.service';
 import { DestinationStatus, VoteType } from 'database';
+import { NotificationsService } from '../notifications/notifications.service';
 // Force TS Cache refresh
 
 @Injectable()
 export class DestinationsService {
   constructor(
     private prisma: PrismaService,
-    private tripsService: TripsService
+    private tripsService: TripsService,
+    private notificationsService: NotificationsService
   ) {}
 
   async create(userId: string, tripId: string, createDestinationDto: CreateDestinationRequest) {
@@ -86,6 +88,32 @@ export class DestinationsService {
         orderIndex: updateDto.orderIndex,
       }
     });
+
+    const oldStartDate = dest.startDate?.getTime();
+    const newStartDate = updated.startDate?.getTime();
+    const oldEndDate = dest.endDate?.getTime();
+    const newEndDate = updated.endDate?.getTime();
+
+    if (oldStartDate !== newStartDate || oldEndDate !== newEndDate) {
+      const trip = await this.prisma.client.trip.findUnique({
+        where: { id: tripId },
+        include: { members: true }
+      });
+      if (trip) {
+        for (const m of trip.members) {
+          if (m.userId !== userId) {
+            await this.notificationsService.create({
+              userId: m.userId,
+              tripId: tripId,
+              title: 'Destination Schedule Updated',
+              message: `Dates for ${dest.name} in ${trip.title} have changed.`,
+              type: 'TRIP_UPDATE',
+              link: `/trips/${tripId}?tab=itinerary`,
+            });
+          }
+        }
+      }
+    }
 
     await this.tripsService.logActivity(tripId, userId, 'UPDATED_DESTINATION', `Updated destination: ${dest.name}`);
     return updated;

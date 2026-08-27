@@ -5,6 +5,7 @@ import { fetchApi } from "@/lib/api";
 import {  Plus, CheckSquare, Clock, AlertCircle, FileText, ShoppingBag, Briefcase, Trash2, Calendar as CalendarIcon, User as UserIcon  } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
+import { Modal } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
@@ -287,101 +288,99 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
         )}
       </div>
 
-      {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/40 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl my-8 relative animate-in zoom-in-95 duration-200">
-            <button type="button" onClick={() => setIsAddOpen(false)} className="absolute top-6 right-6 text-[#486581] hover:text-[#0EA5E9] bg-white/50 p-2 rounded-full transition-colors z-10">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-6 pr-8">New Task</h2>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Task Title</label>
-                <input
-                  required
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white"
-                  placeholder="e.g. Renew passport"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Description (Optional)</label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white min-h-[80px]"
-                  placeholder="Add details..."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Category</label>
-                  <select 
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white"
-                  >
-                    {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Priority</label>
-                  <select 
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white"
-                  >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                    <option value="URGENT">Urgent</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Due Date</label>
-                  <input
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Assignee</label>
-                  <select 
-                    value={assigneeId}
-                    onChange={(e) => setAssigneeId(e.target.value)}
-                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white"
-                  >
-                    <option value="">Anyone</option>
-                    {trip?.members?.map((m: any) => (
-                      <option key={m.user.id} value={m.user.id}>
-                        {m.user.firstName} {m.user.lastName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
-                <button type="button" onClick={() => setIsAddOpen(false)} className="px-5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-600 font-bold transition-colors">
-                  Cancel
-                </button>
-                <button type="submit" className="px-5 py-2.5 bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] hover:scale-105 text-white font-bold rounded-xl shadow-md transition-all">
-                  Create Task
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        title="New Task"
+        className="max-w-md my-8 p-6 md:p-8"
+      >
+        <h2 className="text-2xl font-bold text-[#0C4A6E] mb-6 pr-8">New Task</h2>
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Task Title</label>
+            <input
+              required
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white"
+              placeholder="e.g. Renew passport"
+            />
           </div>
-        </div>
-      )}
+          
+          <div>
+            <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Description (Optional)</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white min-h-[80px]"
+              placeholder="Add details..."
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Category</label>
+              <select 
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white"
+              >
+                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Priority</label>
+              <select 
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white"
+              >
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="URGENT">Urgent</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Due Date</label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Assignee</label>
+              <select 
+                value={assigneeId}
+                onChange={(e) => setAssigneeId(e.target.value)}
+                className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white"
+              >
+                <option value="">Anyone</option>
+                {trip?.members?.map((m: any) => (
+                  <option key={m.user.id} value={m.user.id}>
+                    {m.user.firstName} {m.user.lastName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
+            <button type="button" onClick={() => setIsAddOpen(false)} className="px-5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-600 font-bold transition-colors">
+              Cancel
+            </button>
+            <button type="submit" className="px-5 py-2.5 bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] hover:scale-105 text-white font-bold rounded-xl shadow-md transition-all">
+              Create Task
+            </button>
+          </div>
+        </form>
+      </Modal>
       <ConfirmationModal />
     </div>
   );

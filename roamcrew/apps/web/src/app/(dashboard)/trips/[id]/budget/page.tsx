@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { Modal } from "@/components/ui/modal";
 
 export default function BudgetPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
@@ -270,93 +271,91 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
       </div>
 
       {/* Add Expense Modal */}
-      {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white/90 backdrop-blur-xl border border-white shadow-2xl rounded-3xl p-6 w-full max-w-md animate-in zoom-in-95 duration-300 relative">
-            <button type="button" onClick={() => setIsAddOpen(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-white/50 p-2 rounded-full transition-colors z-10">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <h3 className="text-xl font-bold text-slate-800 mb-4 pr-8">Add Expense</h3>
-            
-            <form onSubmit={handleAddExpense} className="space-y-4">
-              
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Title</label>
-                <input 
-                  type="text" 
-                  value={newExpense.title}
-                  onChange={e => setNewExpense({...newExpense, title: e.target.value})}
-                  className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all"
-                  placeholder="e.g., Dinner at Mario's"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Amount (USD)</label>
-                <input 
-                  type="number" 
-                  step="0.01"
-                  value={newExpense.amount}
-                  onChange={e => setNewExpense({...newExpense, amount: e.target.value})}
-                  className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all"
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Paid By</label>
-                <select 
-                  value={newExpense.payerId}
-                  onChange={e => setNewExpense({...newExpense, payerId: e.target.value})}
-                  className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all"
-                  required
-                >
-                  <option value="">Select someone...</option>
-                  {trip?.members.map((m: any) => (
-                    <option key={m.userId} value={m.userId}>
-                      {m.user.firstName} {m.user.lastName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Category</label>
-                <select 
-                  value={newExpense.category}
-                  onChange={e => setNewExpense({...newExpense, category: e.target.value})}
-                  className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all"
-                >
-                  <option value="FOOD">Food & Dining</option>
-                  <option value="TRANSPORT">Transport</option>
-                  <option value="ACCOMMODATION">Accommodation</option>
-                  <option value="ACTIVITIES">Activities</option>
-                  <option value="SHOPPING">Shopping</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </div>
-
-              <div className="pt-2 bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-start gap-2">
-                <ArrowRight className="w-4 h-4 text-slate-400 mt-0.5" />
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  This expense will automatically be split equally among all {trip?.members.length} trip members.
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                <button type="button" onClick={() => setIsAddOpen(false)} className="px-4 py-2 hover:bg-slate-100 rounded-md text-slate-600">
-                  Cancel
-                </button>
-                <button type="submit" className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-full">
-                  Save Expense
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        title="Add Expense"
+        className="max-w-md my-8"
+      >
+        <h3 className="text-xl font-bold text-slate-800 mb-4 pr-8">Add Expense</h3>
+        
+        <form onSubmit={handleAddExpense} className="space-y-4">
+          
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-slate-700">Title</label>
+            <input 
+              type="text" 
+              value={newExpense.title}
+              onChange={e => setNewExpense({...newExpense, title: e.target.value})}
+              className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all"
+              placeholder="e.g., Dinner at Mario's"
+              required
+            />
           </div>
-        </div>
-      )}
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-slate-700">Amount (USD)</label>
+            <input 
+              type="number" 
+              step="0.01"
+              value={newExpense.amount}
+              onChange={e => setNewExpense({...newExpense, amount: e.target.value})}
+              className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all"
+              placeholder="0.00"
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-slate-700">Paid By</label>
+            <select 
+              value={newExpense.payerId}
+              onChange={e => setNewExpense({...newExpense, payerId: e.target.value})}
+              className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all"
+              required
+            >
+              <option value="">Select someone...</option>
+              {trip?.members.map((m: any) => (
+                <option key={m.userId} value={m.userId}>
+                  {m.user.firstName} {m.user.lastName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-slate-700">Category</label>
+            <select 
+              value={newExpense.category}
+              onChange={e => setNewExpense({...newExpense, category: e.target.value})}
+              className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all"
+            >
+              <option value="FOOD">Food & Dining</option>
+              <option value="TRANSPORT">Transport</option>
+              <option value="ACCOMMODATION">Accommodation</option>
+              <option value="ACTIVITIES">Activities</option>
+              <option value="SHOPPING">Shopping</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+
+          <div className="pt-2 bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-start gap-2">
+            <ArrowRight className="w-4 h-4 text-slate-400 mt-0.5" />
+            <p className="text-xs text-slate-500 leading-relaxed">
+              This expense will automatically be split equally among all {trip?.members.length} trip members.
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button type="button" onClick={() => setIsAddOpen(false)} className="px-4 py-2 hover:bg-slate-100 rounded-md text-slate-600">
+              Cancel
+            </button>
+            <button type="submit" className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-full">
+              Save Expense
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       <ConfirmationModal />
     </div>
