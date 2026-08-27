@@ -9,48 +9,48 @@ export class NotificationsController {
 
   @Get()
   async getUserNotifications(@Request() req: any) {
-    return this.notificationsService.getUserNotifications(req.user.id);
+    return this.notificationsService.getUserNotifications(req.user.userId);
   }
 
   @Get('unread-count')
   async getUnreadCount(@Request() req: any) {
-    const count = await this.notificationsService.getUnreadCount(req.user.id);
+    const count = await this.notificationsService.getUnreadCount(req.user.userId);
     return { count };
   }
 
   @Patch('read-all')
   @HttpCode(200)
   async markAllAsRead(@Request() req: any) {
-    await this.notificationsService.markAllAsRead(req.user.id);
+    await this.notificationsService.markAllAsRead(req.user.userId);
     return { success: true };
   }
 
   @Patch(':id/read')
   @HttpCode(200)
   async markAsRead(@Request() req: any, @Param('id') id: string) {
-    return this.notificationsService.markAsRead(req.user.id, id);
+    return this.notificationsService.markAsRead(req.user.userId, id);
   }
 
   // --- Settings ---
   @Get('settings')
   async getSettings(@Request() req: any) {
-    return this.notificationsService.getSettings(req.user.id);
+    return this.notificationsService.getSettings(req.user.userId);
   }
 
   @Patch('settings')
   async updateSettings(@Request() req: any, @Body() body: any) {
-    return this.notificationsService.updateSettings(req.user.id, body);
+    return this.notificationsService.updateSettings(req.user.userId, body);
   }
 
   // --- Push Subscriptions ---
   @Post('push/subscribe')
   async subscribePush(@Request() req: any, @Body() body: any) {
-    return this.notificationsService.subscribePush(req.user.id, body);
+    return this.notificationsService.subscribePush(req.user.userId, body);
   }
 
   @Post('push/unsubscribe')
   @HttpCode(200)
   async unsubscribePush(@Request() req: any, @Body('endpoint') endpoint: string) {
-    return this.notificationsService.unsubscribePush(req.user.id, endpoint);
+    return this.notificationsService.unsubscribePush(req.user.userId, endpoint);
   }
 }
