@@ -24,6 +24,9 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { SortableItem } from "./sortable-item";
+import dynamic from 'next/dynamic';
+
+const TripMap = dynamic(() => import('@/components/trip-map'), { ssr: false });
 
 const iconMap: Record<string, any> = {
   FLIGHT: Plane,
@@ -250,8 +253,11 @@ export default function ItineraryPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between">
+    <>
+    <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto h-[calc(100vh-8rem)]">
+      {/* Left Column: Itinerary List */}
+      <div className="flex-1 overflow-y-auto pr-2 space-y-8 pb-32 scrollbar-hide">
+        <div className="flex items-center justify-between sticky top-0 bg-[#F4F7FB]/90 backdrop-blur-md z-30 py-4">
         <div>
           <h2 className="text-2xl font-extrabold text-[#0C4A6E]">Daily Itinerary</h2>
           <p className="text-[#486581] font-medium text-sm mt-1">Your journey timeline</p>
@@ -385,8 +391,18 @@ export default function ItineraryPage() {
           )}
         </div>
       </DndContext>
+      </div>
 
-      {/* Create Modal */}
+      {/* Right Column: Sticky Map */}
+      <div className="hidden lg:block flex-1 sticky top-0 h-full">
+        <TripMap 
+          destinations={destinations}
+          itineraryItems={items}
+        />
+      </div>
+    </div>
+
+    {/* Create Modal */}
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
@@ -517,6 +533,6 @@ export default function ItineraryPage() {
         </form>
       </Modal>
       <ConfirmationModal />
-    </div>
+    </>
   );
 }
