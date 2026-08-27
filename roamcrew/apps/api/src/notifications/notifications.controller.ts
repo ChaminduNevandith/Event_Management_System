@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, UseGuards, Request, HttpCode } from '@nestjs/common';
+import { Controller, Get, Patch, Param, UseGuards, Request, HttpCode, Post, Body } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -29,5 +29,28 @@ export class NotificationsController {
   @HttpCode(200)
   async markAsRead(@Request() req: any, @Param('id') id: string) {
     return this.notificationsService.markAsRead(req.user.id, id);
+  }
+
+  // --- Settings ---
+  @Get('settings')
+  async getSettings(@Request() req: any) {
+    return this.notificationsService.getSettings(req.user.id);
+  }
+
+  @Patch('settings')
+  async updateSettings(@Request() req: any, @Body() body: any) {
+    return this.notificationsService.updateSettings(req.user.id, body);
+  }
+
+  // --- Push Subscriptions ---
+  @Post('push/subscribe')
+  async subscribePush(@Request() req: any, @Body() body: any) {
+    return this.notificationsService.subscribePush(req.user.id, body);
+  }
+
+  @Post('push/unsubscribe')
+  @HttpCode(200)
+  async unsubscribePush(@Request() req: any, @Body('endpoint') endpoint: string) {
+    return this.notificationsService.unsubscribePush(req.user.id, endpoint);
   }
 }
