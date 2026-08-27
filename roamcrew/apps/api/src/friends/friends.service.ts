@@ -33,8 +33,13 @@ export class FriendsService {
     });
   }
 
-  async sendRequest(userId: string, targetUsername: string) {
-    const target = await this.prisma.client.user.findUnique({ where: { username: targetUsername } });
+  async sendRequest(userId: string, targetUsername?: string, targetUserId?: string) {
+    let target;
+    if (targetUserId) {
+      target = await this.prisma.client.user.findUnique({ where: { id: targetUserId } });
+    } else if (targetUsername) {
+      target = await this.prisma.client.user.findUnique({ where: { username: targetUsername } });
+    }
     if (!target) throw new NotFoundException('User not found');
     if (target.id === userId) throw new BadRequestException('Cannot send friend request to yourself');
 

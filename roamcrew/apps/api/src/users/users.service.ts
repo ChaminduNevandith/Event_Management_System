@@ -26,6 +26,32 @@ export class UsersService {
     });
   }
 
+  async searchUsers(query: string, currentUserId: string) {
+    if (!query || query.length < 2) return [];
+    return this.prisma.client.user.findMany({
+      where: {
+        AND: [
+          { id: { not: currentUserId } },
+          {
+            OR: [
+              { username: { contains: query, mode: 'insensitive' } },
+              { firstName: { contains: query, mode: 'insensitive' } },
+              { lastName: { contains: query, mode: 'insensitive' } }
+            ]
+          }
+        ]
+      },
+      select: {
+        id: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        avatarUrl: true
+      },
+      take: 10
+    });
+  }
+
   async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
     const user = await this.findOne({ id: userId });
     if (!user || !user.passwordHash) {

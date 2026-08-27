@@ -1,4 +1,4 @@
-import { Controller, Get, Request, UseGuards, Patch, Body, Post, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Request, UseGuards, Patch, Body, Post, BadRequestException, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';
 
@@ -15,6 +15,13 @@ export class UsersController {
       return result;
     }
     return null;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('search')
+  async searchUsers(@Request() req: any, @Query('q') q: string) {
+    if (!q || q.length < 2) return [];
+    return this.usersService.searchUsers(q, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
