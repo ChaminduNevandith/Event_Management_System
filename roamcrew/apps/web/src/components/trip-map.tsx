@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { MapPin, Navigation, Radio } from "lucide-react";
 import { useSocket } from "./socket-provider";
 import { useParams, usePathname } from "next/navigation";
+import { toast } from "sonner";
 
 // Fix for default marker icons in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -134,8 +135,16 @@ export default function TripMap({
         (error) => {
           console.error("Error getting location", error);
           setIsBroadcasting(false);
+          setWatchId(null);
+          
+          let errorMessage = "Unable to access location.";
+          if (error.code === 1) errorMessage = "Location access denied. Please allow it in your browser.";
+          else if (error.code === 2) errorMessage = "Location is currently unavailable.";
+          else if (error.code === 3) errorMessage = "Location request timed out.";
+          
+          toast.error(errorMessage);
         },
-        { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
       );
       setWatchId(id);
     }
