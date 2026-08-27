@@ -1,132 +1,169 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { fetchApi } from "@/lib/api";
-import { Download, FileText, FileSpreadsheet, MapPin } from "lucide-react";
-import { exportExpensesToCSV, exportExpensesToPDF, exportItineraryToPDF } from "@/lib/exportUtils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { format, parseISO } from "date-fns";
+import { Download, Camera, MapPin, Users, Heart, ArrowLeft, Calendar } from "lucide-react";
+import Link from "next/link";
+import html2canvas from "html2canvas";
+import { toast } from "sonner";
 
-export default function ExportPage() {
+export default function ExportTripPage() {
   const params = useParams();
   const [trip, setTrip] = useState<any>(null);
-  const [expenses, setExpenses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+  const captureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    async function loadData() {
+    const loadTrip = async () => {
       try {
-        const [tripData, expensesData] = await Promise.all([
-          fetchApi(`/trips/${params.id}`),
-          fetchApi(`/trips/${params.id}/expenses`)
-        ]);
-        setTrip(tripData);
-        setExpenses(expensesData);
+        const data = await fetchApi(`/trips/${params.id}`);
+        setTrip(data);
       } catch (err) {
-        console.error("Failed to load export data", err);
+        console.error(err);
+        toast.error("Failed to load trip");
       } finally {
         setIsLoading(false);
       }
-    }
-    loadData();
+    };
+    loadTrip();
   }, [params.id]);
+
+  const handleExport = async () => {
+    if (!captureRef.current) return;
+    try {
+      setIsExporting(true);
+      const canvas = await html2canvas(captureRef.current, {
+        scale: 2, // High resolution
+        useCORS: true, // For external images
+        backgroundColor: '#F4F7FB'
+      });
+      
+      const image = canvas.toDataURL("image/png", 1.0);
+      const link = document.createElement("a");
+      link.href = image;
+      link.download = `${trip.title || "trip"}-recap.png`;
+      link.click();
+      
+      toast.success("Recap exported successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to export image");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-        <Skeleton className="h-40 rounded-3xl" />
-        <Skeleton className="h-40 rounded-3xl" />
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0EA5E9]" />
       </div>
     );
   }
 
   if (!trip) return <div>Trip not found</div>;
 
-  const handleExportItinerary = () => {
-    setIsExporting(true);
-    const allEvents = (trip.destinations || []).flatMap((d: any) => 
-      (d.itineraryItems || []).map((i: any) => ({ ...i, destinationName: d.name }))
-    );
-    exportItineraryToPDF(allEvents, trip.title);
-    setIsExporting(false);
-  };
-
-  const handleExportExpensesCSV = () => {
-    exportExpensesToCSV(expenses, trip.title);
-  };
-
-  const handleExportExpensesPDF = () => {
-    exportExpensesToPDF(expenses, trip.title);
-  };
+  const formattedDates = trip.startDate && trip.endDate 
+    ? `${format(parseISO(trip.startDate), 'MMM d')} - ${format(parseISO(trip.endDate), 'MMM d, yyyy')}`
+    : 'Dates TBD';
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-white/40 backdrop-blur-md rounded-3xl p-6 border border-white/50 shadow-sm">
-        <h2 className="text-2xl font-bold text-[#0C4A6E] flex items-center mb-6">
-          <Download className="mr-2 h-6 w-6 text-[#0EA5E9]" />
-          Export Data
-        </h2>
-        <p className="text-[#486581] mb-8 max-w-2xl">
-          Download your trip itinerary or financial records to easily share them with others, keep for your personal archives, or use offline.
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Itinerary Export */}
-          <div className="bg-white/70 p-6 rounded-2xl border border-white shadow-sm flex flex-col items-center text-center transition-transform hover:scale-105">
-            <div className="w-16 h-16 bg-[#0EA5E9]/10 rounded-2xl flex items-center justify-center mb-4 text-[#0EA5E9]">
-              <MapPin className="w-8 h-8" />
+    <div className="max-w-4xl mx-auto space-y-6 pb-20">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <Link href={`/trips/${params.id}`} className="text-[#0EA5E9] font-medium flex items-center hover:underline mb-2">
+            <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
+          </Link>
+          <h1 className="text-3xl font-black text-slate-900">Export Trip Recap</h1>
+          <p className="text-slate-500">Generate a beautiful image to share with your crew.</p>
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={isExporting}
+          className="flex items-center px-6 py-3 bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+        >
+          {isExporting ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
+          ) : (
+            <Download className="w-5 h-5 mr-2" />
+          )}
+          {isExporting ? "Exporting..." : "Save as Image"}
+        </button>
+      </div>
+
+      {/* The Printable Area */}
+      <div className="rounded-[2rem] overflow-hidden border-[8px] border-white shadow-2xl bg-white" style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div ref={captureRef} className="bg-[#F4F7FB] w-full min-h-[800px] relative">
+          {/* Header Image */}
+          <div className="h-80 w-full relative">
+            {trip.coverImageUrl ? (
+              <img src={trip.coverImageUrl} crossOrigin="anonymous" alt={trip.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-tr from-[#0EA5E9] to-[#38BDF8]" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+            
+            <div className="absolute bottom-0 left-0 w-full p-8 text-white">
+              <h2 className="text-5xl font-black mb-2">{trip.title}</h2>
+              <div className="flex items-center gap-6 text-white/90 font-medium text-lg">
+                <span className="flex items-center"><Calendar className="w-5 h-5 mr-2" /> {formattedDates}</span>
+                <span className="flex items-center"><Users className="w-5 h-5 mr-2" /> {trip.members.length} Travelers</span>
+              </div>
             </div>
-            <h3 className="font-bold text-lg text-[#0C4A6E] mb-2">Itinerary</h3>
-            <p className="text-sm text-[#486581] mb-6 flex-1">
-              Export the full trip schedule with times, locations, and notes.
-            </p>
-            <button 
-              onClick={handleExportItinerary}
-              disabled={isExporting || trip.destinations?.length === 0}
-              className="w-full flex items-center justify-center py-3 bg-[#0EA5E9] hover:bg-[#0284c7] text-white font-bold rounded-xl transition-colors disabled:opacity-50"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Download PDF
-            </button>
+            
+            {/* Logo/Watermark */}
+            <div className="absolute top-6 right-8 text-white font-black text-2xl drop-shadow-md">
+              RoamCrew
+            </div>
           </div>
 
-          {/* Expenses PDF */}
-          <div className="bg-white/70 p-6 rounded-2xl border border-white shadow-sm flex flex-col items-center text-center transition-transform hover:scale-105">
-            <div className="w-16 h-16 bg-[#10B981]/10 rounded-2xl flex items-center justify-center mb-4 text-[#10B981]">
-              <FileText className="w-8 h-8" />
+          <div className="p-8 space-y-8">
+            {/* Top Destinations */}
+            {trip.destinations?.length > 0 && (
+              <div className="bg-white p-6 rounded-3xl shadow-sm">
+                <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center">
+                  <MapPin className="w-5 h-5 mr-2 text-[#0EA5E9]" />
+                  Places We Visited
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {trip.destinations.map((d: any) => (
+                    <span key={d.id} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl border border-slate-200">
+                      {d.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Travel Crew */}
+            <div className="bg-white p-6 rounded-3xl shadow-sm">
+              <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center">
+                <Heart className="w-5 h-5 mr-2 text-pink-500" />
+                The Crew
+              </h3>
+              <div className="flex flex-wrap gap-4">
+                {trip.members.map((m: any) => (
+                  <div key={m.id} className="flex items-center bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0EA5E9] to-[#38BDF8] flex items-center justify-center text-white text-xs font-bold mr-3 overflow-hidden">
+                      {m.user.avatarUrl ? (
+                        <img src={m.user.avatarUrl} crossOrigin="anonymous" alt={m.user.firstName} className="w-full h-full object-cover" />
+                      ) : (
+                        m.user.firstName?.[0] || 'U'
+                      )}
+                    </div>
+                    <span className="font-bold text-slate-700">{m.user.firstName}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <h3 className="font-bold text-lg text-[#0C4A6E] mb-2">Expense Report</h3>
-            <p className="text-sm text-[#486581] mb-6 flex-1">
-              A beautifully formatted PDF of all recorded trip expenses.
-            </p>
-            <button 
-              onClick={handleExportExpensesPDF}
-              disabled={expenses.length === 0}
-              className="w-full flex items-center justify-center py-3 bg-[#10B981] hover:bg-[#059669] text-white font-bold rounded-xl transition-colors disabled:opacity-50"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Download PDF
-            </button>
-          </div>
 
-          {/* Expenses CSV */}
-          <div className="bg-white/70 p-6 rounded-2xl border border-white shadow-sm flex flex-col items-center text-center transition-transform hover:scale-105">
-            <div className="w-16 h-16 bg-[#F97316]/10 rounded-2xl flex items-center justify-center mb-4 text-[#F97316]">
-              <FileSpreadsheet className="w-8 h-8" />
+            {/* Optional Stats Footer */}
+            <div className="text-center pt-8 border-t border-slate-200">
+              <p className="text-slate-500 font-medium">Made with ❤️ using RoamCrew</p>
             </div>
-            <h3 className="font-bold text-lg text-[#0C4A6E] mb-2">Raw Expenses</h3>
-            <p className="text-sm text-[#486581] mb-6 flex-1">
-              Spreadsheet format (CSV) suitable for Excel or Google Sheets.
-            </p>
-            <button 
-              onClick={handleExportExpensesCSV}
-              disabled={expenses.length === 0}
-              className="w-full flex items-center justify-center py-3 bg-[#F97316] hover:bg-[#ea580c] text-white font-bold rounded-xl transition-colors disabled:opacity-50"
-            >
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Download CSV
-            </button>
           </div>
         </div>
       </div>

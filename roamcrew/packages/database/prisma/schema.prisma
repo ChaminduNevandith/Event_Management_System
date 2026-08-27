@@ -79,6 +79,7 @@ model Trip {
   coverImageUrl String?
   isTemplate    Boolean @default(false)
   publicToken   String? @unique
+  shareId       String? @unique // For public guest mode
   status        TripStatus @default(PLANNING)
 
   startDate  DateTime?
