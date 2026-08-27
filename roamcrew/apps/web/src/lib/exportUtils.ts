@@ -1,10 +1,11 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 export function exportExpensesToCSV(expenses: any[], tripName: string) {
   if (!expenses || expenses.length === 0) {
-    alert("No expenses to export.");
+    toast.error("No expenses to export.");
     return;
   }
 
@@ -31,11 +32,13 @@ export function exportExpensesToCSV(expenses: any[], tripName: string) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  
+  toast.success("CSV Downloaded");
 }
 
 export function exportExpensesToPDF(expenses: any[], tripName: string) {
   if (!expenses || expenses.length === 0) {
-    alert("No expenses to export.");
+    toast.error("No expenses to export.");
     return;
   }
 
@@ -74,11 +77,12 @@ export function exportExpensesToPDF(expenses: any[], tripName: string) {
   doc.text(`Total Expenses: $${totalAmount.toFixed(2)}`, 14, finalY + 10);
 
   doc.save(`${tripName.replace(/\s+/g, '_')}_Expenses.pdf`);
+  toast.success("PDF Downloaded");
 }
 
 export function exportItineraryToPDF(itinerary: any[], tripName: string) {
   if (!itinerary || itinerary.length === 0) {
-    alert("No itinerary events to export.");
+    toast.error("No itinerary events to export.");
     return;
   }
 
@@ -144,4 +148,5 @@ export function exportItineraryToPDF(itinerary: any[], tripName: string) {
   });
 
   doc.save(`${tripName.replace(/\s+/g, '_')}_Itinerary.pdf`);
+  toast.success("PDF Downloaded");
 }

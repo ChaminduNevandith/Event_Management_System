@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { fetchApi } from "@/lib/api";
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -60,7 +61,7 @@ export default function NotificationSettingsPage() {
 
   const togglePush = async () => {
     if (!("serviceWorker" in navigator && "PushManager" in window)) {
-      alert("Push notifications are not supported by this browser.");
+      toast.error("Push notifications are not supported by this browser.");
       return;
     }
 
@@ -103,7 +104,7 @@ export default function NotificationSettingsPage() {
           setIsSubscribed(true);
           await saveSettings({ ...settings, pushEnabled: true });
         } else {
-          alert("Permission for notifications was denied.");
+          toast.error("Permission for notifications was denied.");
         }
       }
     } catch (e) {

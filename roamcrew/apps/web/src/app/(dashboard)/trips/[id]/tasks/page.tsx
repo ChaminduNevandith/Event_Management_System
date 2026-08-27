@@ -3,6 +3,8 @@
 import { useState, useEffect, use } from "react";
 import { fetchApi } from "@/lib/api";
 import {  Plus, CheckSquare, Clock, AlertCircle, FileText, ShoppingBag, Briefcase, Trash2, Calendar as CalendarIcon, User as UserIcon  } from "lucide-react";
+import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
@@ -17,6 +19,7 @@ const CATEGORIES = [
 export default function TasksPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
   const tripId = unwrappedParams.id;
+  const { confirm, ConfirmationModal } = useConfirm();
 
   const [tasks, setTasks] = useState<any[]>([]);
   const [trip, setTrip] = useState<any>(null);
@@ -76,7 +79,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
       setAssigneeId("");
       loadData();
     } catch (err: any) {
-      alert(err.message || "Failed to create task");
+      toast.error(err.message || "Failed to create task");
     }
   };
 
@@ -96,12 +99,14 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
   };
 
   const handleDelete = async (taskId: string) => {
-    if (!confirm("Are you sure you want to delete this task?")) return;
+    const isConfirmed = await confirm("Are you sure you want to delete this task?");
+    if (!isConfirmed) return;
     try {
       await fetchApi(`/trips/${tripId}/tasks/${taskId}`, { method: "DELETE" });
+      toast.success("Item deleted successfully!");
       loadData();
     } catch (err: any) {
-      alert(err.message || "Failed to delete task");
+      toast.error(err.message || "Failed to delete task");
     }
   };
 
@@ -374,6 +379,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
           </div>
         </div>
       )}
+      <ConfirmationModal />
     </div>
   );
 }

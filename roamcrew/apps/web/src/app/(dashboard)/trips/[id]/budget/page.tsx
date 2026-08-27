@@ -3,12 +3,15 @@
 import { useState, useEffect, use } from "react";
 import { fetchApi } from "@/lib/api";
 import {  Plus, Receipt, User as UserIcon, Trash2, ArrowRight  } from "lucide-react";
+import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
 export default function BudgetPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
   const tripId = unwrappedParams.id;
+  const { confirm, ConfirmationModal } = useConfirm();
   
   const [trip, setTrip] = useState<any>(null);
   const [expenses, setExpenses] = useState<any[]>([]);
@@ -85,18 +88,20 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
       loadData();
     } catch (err) {
       console.error(err);
-      alert("Failed to add expense");
+      toast.error("Failed to add expense");
     }
   };
 
   const handleDeleteExpense = async (expenseId: string) => {
-    if (!confirm("Are you sure you want to delete this expense?")) return;
+    const isConfirmed = await confirm("Are you sure you want to delete this expense?");
+    if (!isConfirmed) return;
     try {
       await fetchApi(`/trips/${tripId}/expenses/${expenseId}`, { method: "DELETE" });
+      toast.success("Item deleted successfully!");
       loadData();
     } catch (err) {
       console.error(err);
-      alert("Failed to delete expense");
+      toast.error("Failed to delete expense");
     }
   };
 
@@ -350,6 +355,7 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
         </div>
       )}
 
+      <ConfirmationModal />
     </div>
   );
 }
