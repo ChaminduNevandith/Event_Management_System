@@ -72,7 +72,9 @@ export default function RegisterPage() {
                   </label>
                   <input
                     id="firstName"
+                    type="text"
                     required
+                    autoComplete="off"
                     className="h-12 w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-2 text-sm text-[#0C4A6E] placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] transition-all shadow-sm"
                     placeholder="Jane"
                     value={firstName}
@@ -85,7 +87,9 @@ export default function RegisterPage() {
                   </label>
                   <input
                     id="lastName"
+                    type="text"
                     required
+                    autoComplete="off"
                     className="h-12 w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-2 text-sm text-[#0C4A6E] placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] transition-all shadow-sm"
                     placeholder="Doe"
                     value={lastName}
@@ -102,6 +106,7 @@ export default function RegisterPage() {
                   id="email"
                   type="email"
                   required
+                  autoComplete="off"
                   className="h-12 w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-2 text-sm text-[#0C4A6E] placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] transition-all shadow-sm"
                   placeholder="name@example.com"
                   value={email}
@@ -118,6 +123,7 @@ export default function RegisterPage() {
                   type="password"
                   required
                   minLength={8}
+                  autoComplete="new-password"
                   className="h-12 w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-2 text-sm text-[#0C4A6E] placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316] transition-all shadow-sm"
                   placeholder="At least 8 characters"
                   value={password}
