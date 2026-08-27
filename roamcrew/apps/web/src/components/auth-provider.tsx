@@ -35,7 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const profile = await fetchApi("/users/me");
           setUser(profile);
         } catch (error) {
-          console.error("Session expired or invalid");
+          // Change to console.warn to prevent Next.js Turbopack from capturing it as a fatal error overlay
+          console.warn("Session expired or invalid");
           localStorage.removeItem("access_token");
           setUser(null);
         }
