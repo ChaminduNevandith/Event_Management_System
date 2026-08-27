@@ -74,7 +74,7 @@
 | 31.5.6 | Trip timezone | Done | |
 | 31.5.7 | Trip description | Done | |
 | 31.5.8 | Trip status | Done | |
-| 31.5.9 | Trip overview dashboard | Not started | |
+| 31.5.9 | Trip overview dashboard | Done | |
 | 31.5.10 | Trip readiness checklist | Not started | |
 | 31.5.11 | Trip progress indicator | Not started | |
 | 31.5.12 | Trip ownership | Done | |

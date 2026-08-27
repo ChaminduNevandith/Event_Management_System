@@ -6,7 +6,7 @@ export class ActivityLogsService {
   constructor(private prisma: PrismaService) {}
 
   async getTripActivityLogs(tripId: string) {
-    return this.prisma.tripActivityLog.findMany({
+    return this.prisma.client.tripActivityLog.findMany({
       where: { tripId },
       orderBy: { createdAt: 'desc' },
       take: 100,
@@ -20,7 +20,7 @@ export class ActivityLogsService {
     action: string;
     details?: string;
   }) {
-    return this.prisma.tripActivityLog.create({
+    return this.prisma.client.tripActivityLog.create({
       data: {
         ...data,
       },
