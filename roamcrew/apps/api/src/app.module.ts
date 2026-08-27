@@ -25,6 +25,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ActivityLogsModule } from './activity-logs/activity-logs.module';
 import { AdminModule } from './admin/admin.module';
+import { CalendarModule } from './calendar/calendar.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { AdminModule } from './admin/admin.module';
     NotificationsModule,
     ActivityLogsModule,
     AdminModule,
+    CalendarModule,
   ],
   controllers: [AppController],
   providers: [
