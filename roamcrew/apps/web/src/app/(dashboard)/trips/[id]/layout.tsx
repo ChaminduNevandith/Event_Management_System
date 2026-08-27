@@ -89,6 +89,33 @@ export default function TripLayout({ children, params }: { children: React.React
     }
   };
 
+  const handleGeneratePublicLink = async () => {
+    try {
+      const res = await fetchApi(`/trips/${tripId}/share`, { method: "POST" });
+      const fullUrl = `${window.location.origin}/p/${res.token}`;
+      navigator.clipboard.writeText(fullUrl);
+      toast.success("Public link generated and copied to clipboard!");
+      const data = await fetchApi(`/trips/${tripId}`);
+      setTrip(data);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate public link");
+    }
+  };
+
+  const handleSetTemplate = async (isTemplate: boolean) => {
+    try {
+      await fetchApi(`/trips/${tripId}/template`, {
+        method: "POST",
+        body: JSON.stringify({ isTemplate })
+      });
+      toast.success(isTemplate ? "Marked as template!" : "Removed from templates.");
+      const data = await fetchApi(`/trips/${tripId}`);
+      setTrip(data);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update template status");
+    }
+  };
+
   const handleArchive = async () => {
     const isConfirmed = await confirm(`Are you sure you want to ${trip.isArchived ? 'restore' : 'archive'} this trip?`);
     if (!isConfirmed) return;
@@ -185,6 +212,22 @@ export default function TripLayout({ children, params }: { children: React.React
   const myRole = trip.members.find((m: any) => m.user.id === user?.id)?.role || 'MEMBER';
   const canManage = myRole === 'OWNER' || myRole === 'ADMIN';
 
+  const handleCloneTrip = async () => {
+    try {
+      const newTitle = prompt("Enter a title for the new trip:", `Copy of ${trip.title}`);
+      if (!newTitle) return; // User cancelled
+      
+      const res = await fetchApi(`/trips/${tripId}/clone`, {
+        method: "POST",
+        body: JSON.stringify({ newTitle })
+      });
+      toast.success("Trip cloned successfully!");
+      router.push(`/trips/${res.id}`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to clone trip");
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {trip.isArchived && (
@@ -213,6 +256,12 @@ export default function TripLayout({ children, params }: { children: React.React
                 <div className="rounded-full bg-[#0EA5E9]/15 px-4 py-1.5 text-xs font-bold text-[#0EA5E9] uppercase tracking-wider border border-[#0EA5E9]/20 shadow-sm">
                   {trip.status}
                 </div>
+                {trip.isTemplate && (
+                  <div className="rounded-full bg-[#F97316]/15 px-4 py-1.5 text-xs font-bold text-[#ea580c] uppercase tracking-wider border border-[#F97316]/20 shadow-sm flex items-center">
+                    <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+                    Template
+                  </div>
+                )}
               </div>
               <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#0C4A6E] leading-tight">
                 {trip.title}
@@ -221,15 +270,27 @@ export default function TripLayout({ children, params }: { children: React.React
                 <p className="text-[#486581] mt-4 max-w-3xl text-lg leading-relaxed font-medium bg-white/40 p-4 rounded-xl backdrop-blur-sm border border-white/50">{trip.description}</p>
               )}
             </div>
-            {canManage && (
-              <button 
-                onClick={() => setShowSettingsModal(true)}
-                className="inline-flex h-12 items-center justify-center rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 backdrop-blur-md px-6 text-sm font-bold text-[#0C4A6E] shadow-sm transition-all hover:bg-white/80 hover:border-[#0EA5E9]/40 hover:-translate-y-0.5 shrink-0"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Manage Trip
-              </button>
-            )}
+            
+            <div className="flex items-center gap-3 shrink-0">
+              {trip.isTemplate && (
+                <button 
+                  onClick={handleCloneTrip}
+                  className="inline-flex h-12 items-center justify-center rounded-xl bg-[#F97316] px-6 text-sm font-bold text-white shadow-md shadow-[#F97316]/20 transition-all hover:bg-[#ea580c] hover:-translate-y-0.5 shrink-0"
+                >
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                  Use Template
+                </button>
+              )}
+              {canManage && (
+                <button 
+                  onClick={() => setShowSettingsModal(true)}
+                  className="inline-flex h-12 items-center justify-center rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 backdrop-blur-md px-6 text-sm font-bold text-[#0C4A6E] shadow-sm transition-all hover:bg-white/80 hover:border-[#0EA5E9]/40 hover:-translate-y-0.5 shrink-0"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Manage Trip
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-4 mt-8 pt-6 border-t border-[#0EA5E9]/10">
@@ -428,6 +489,58 @@ export default function TripLayout({ children, params }: { children: React.React
                 <button type="submit" disabled={isUpdating} className="px-8 py-2.5 rounded-xl bg-[#0EA5E9] text-white font-bold hover:bg-[#0284c7] shadow-md shadow-[#0EA5E9]/20 transition-all">{isUpdating ? 'Saving...' : 'Save Changes'}</button>
               </div>
             </form>
+
+            <div className="mt-8 pt-6 border-t border-[#0EA5E9]/10">
+              <h3 className="text-xl font-extrabold text-[#0C4A6E] mb-2 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-[#0EA5E9]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                Public Recap Link
+              </h3>
+              <p className="text-sm text-[#486581] font-medium mb-4">Generate a beautiful, read-only public page for this trip to share your memories with anyone.</p>
+              
+              {trip.publicToken ? (
+                <div className="p-4 bg-[#F0F9FF] border border-[#0EA5E9]/20 rounded-xl flex items-center justify-between">
+                  <span className="text-sm font-medium text-[#0C4A6E] truncate mr-4 select-all">
+                    {window.location.origin}/p/{trip.publicToken}
+                  </span>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/p/${trip.publicToken}`);
+                      toast.success("Copied to clipboard!");
+                    }}
+                    className="px-4 py-2 bg-white text-[#0EA5E9] border border-[#0EA5E9]/20 font-bold rounded-lg shadow-sm hover:bg-[#F0F9FF] transition-colors shrink-0"
+                  >
+                    Copy Link
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  type="button"
+                  onClick={handleGeneratePublicLink}
+                  className="px-6 py-2.5 rounded-xl bg-[#0C4A6E] text-white font-bold hover:bg-[#102a43] shadow-md transition-all flex items-center"
+                >
+                  Generate Public Link
+                </button>
+              )}
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-[#0EA5E9]/10">
+              <h3 className="text-xl font-extrabold text-[#0C4A6E] mb-2 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-[#0EA5E9]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+                Trip Template
+              </h3>
+              <p className="text-sm text-[#486581] font-medium mb-4">Marking this trip as a template allows you or anyone else to duplicate its destinations and places for their own trips.</p>
+              <button 
+                type="button"
+                onClick={() => handleSetTemplate(!trip.isTemplate)}
+                className={`px-6 py-2.5 rounded-xl font-bold shadow-md transition-all flex items-center ${
+                  trip.isTemplate 
+                  ? "bg-white text-[#0EA5E9] border border-[#0EA5E9]/20 hover:bg-[#F0F9FF]" 
+                  : "bg-[#0C4A6E] text-white hover:bg-[#102a43]"
+                }`}
+              >
+                {trip.isTemplate ? "Remove from Templates" : "Mark as Template"}
+              </button>
+            </div>
 
             <div className="mt-8 pt-6 border-t-2 border-red-100 bg-red-50/80 -mx-6 md:-mx-8 -mb-6 md:-mb-8 p-6 md:p-8 rounded-b-3xl">
               <h3 className="text-xl font-extrabold text-[#da2405] mb-2 flex items-center">

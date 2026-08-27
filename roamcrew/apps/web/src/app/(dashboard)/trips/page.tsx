@@ -11,11 +11,20 @@ export default function TripsPage() {
   const [trips, setTrips] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [viewMode, setViewMode] = useState<'active' | 'archived' | 'templates'>('active');
 
   useEffect(() => {
     async function loadTrips() {
+      setIsLoading(true);
       try {
-        const data = await fetchApi("/trips");
+        let endpoint = `/trips?isArchived=${viewMode === 'archived'}`;
+        if (viewMode === 'templates') {
+          endpoint = `/trips?isTemplate=true`;
+        } else {
+          endpoint += `&isTemplate=false`;
+        }
+        
+        const data = await fetchApi(endpoint);
         setTrips(data);
       } catch (err: any) {
         setError("Failed to load trips.");
@@ -24,7 +33,7 @@ export default function TripsPage() {
       }
     }
     loadTrips();
-  }, []);
+  }, [viewMode]);
 
   if (isLoading) {
     return (
@@ -74,6 +83,40 @@ export default function TripsPage() {
           Plan New Trip
         </Link>
       </div>
+      
+      {/* Tabs */}
+      <div className="flex items-center space-x-2 border-b border-[#0EA5E9]/10 pb-4">
+        <button
+          onClick={() => setViewMode('active')}
+          className={`px-4 py-2 text-sm font-bold rounded-full transition-all ${
+            viewMode === 'active' 
+              ? 'bg-[#0EA5E9] text-white shadow-md shadow-[#0EA5E9]/20' 
+              : 'text-[#486581] hover:bg-[#0EA5E9]/10 hover:text-[#0C4A6E]'
+          }`}
+        >
+          Active Trips
+        </button>
+        <button
+          onClick={() => setViewMode('templates')}
+          className={`px-4 py-2 text-sm font-bold rounded-full transition-all ${
+            viewMode === 'templates' 
+              ? 'bg-[#F97316] text-white shadow-md shadow-[#F97316]/20' 
+              : 'text-[#486581] hover:bg-[#F97316]/10 hover:text-[#ea580c]'
+          }`}
+        >
+          Templates
+        </button>
+        <button
+          onClick={() => setViewMode('archived')}
+          className={`px-4 py-2 text-sm font-bold rounded-full transition-all ${
+            viewMode === 'archived' 
+              ? 'bg-[#486581] text-white shadow-md shadow-[#486581]/20' 
+              : 'text-[#486581] hover:bg-[#486581]/10 hover:text-[#102a43]'
+          }`}
+        >
+          Archived
+        </button>
+      </div>
 
       {error && (
         <div className="rounded-xl bg-[#fa3c1b]/10 p-4 text-sm font-medium text-[#da2405] border border-[#fa3c1b]/20">
@@ -88,16 +131,24 @@ export default function TripsPage() {
           <div className="bg-white p-5 rounded-full shadow-sm mb-6 border border-white">
             <MapPin className="h-12 w-12 text-[#38BDF8]" />
           </div>
-          <h3 className="text-2xl font-extrabold text-[#0C4A6E]">No trips planned yet</h3>
+          <h3 className="text-2xl font-extrabold text-[#0C4A6E]">
+            {viewMode === 'archived' ? 'No archived trips' : viewMode === 'templates' ? 'No templates yet' : 'No trips planned yet'}
+          </h3>
           <p className="text-[#486581] mt-3 mb-8 max-w-md text-lg leading-relaxed">
-            You don't have any upcoming trips. Create your first itinerary to start collaborating with friends!
+            {viewMode === 'archived' 
+              ? "You haven't archived any trips yet. Archiving a trip hides it from your active list." 
+              : viewMode === 'templates'
+              ? "You haven't saved any trips as templates. Go to any trip's settings to mark it as a template."
+              : "You don't have any upcoming trips. Create your first itinerary to start collaborating with friends!"}
           </p>
-          <Link
+          {viewMode === 'active' && (
+            <Link
             href="/trips/new"
             className="inline-flex h-14 items-center justify-center rounded-xl bg-[#F97316] px-8 text-base font-bold text-white shadow-lg shadow-[#F97316]/20 transition-all hover:bg-[#ea580c] hover:-translate-y-1"
           >
             Create your first trip
           </Link>
+          )}
         </div>
       ) : (
         <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">

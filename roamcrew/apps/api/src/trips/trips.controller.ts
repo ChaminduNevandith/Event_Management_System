@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request, UsePipes, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request, UsePipes, Delete, Query } from '@nestjs/common';
 import { TripsService } from './trips.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
@@ -17,8 +17,12 @@ export class TripsController {
   }
 
   @Get()
-  findAll(@Request() req: any) {
-    return this.tripsService.findAll(req.user.userId);
+  findAll(@Request() req: any, @Query('isArchived') isArchived?: string, @Query('isTemplate') isTemplate?: string) {
+    return this.tripsService.findAll(
+      req.user.userId,
+      isArchived === 'true' ? true : isArchived === 'false' ? false : undefined,
+      isTemplate === 'true' ? true : isTemplate === 'false' ? false : undefined
+    );
   }
 
   @Get(':id')
@@ -40,6 +44,21 @@ export class TripsController {
   @Post(':id/restore')
   restore(@Request() req: any, @Param('id') id: string) {
     return this.tripsService.setArchiveStatus(req.user.userId, id, false);
+  }
+
+  @Post(':id/share')
+  generateShareLink(@Request() req: any, @Param('id') id: string) {
+    return this.tripsService.generatePublicToken(req.user.userId, id);
+  }
+
+  @Post(':id/template')
+  setTemplate(@Request() req: any, @Param('id') id: string, @Body('isTemplate') isTemplate: boolean) {
+    return this.tripsService.setTemplateStatus(req.user.userId, id, isTemplate);
+  }
+
+  @Post(':id/clone')
+  clone(@Request() req: any, @Param('id') id: string, @Body('newTitle') newTitle: string) {
+    return this.tripsService.cloneTrip(req.user.userId, id, newTitle);
   }
 
   @Delete(':id')
