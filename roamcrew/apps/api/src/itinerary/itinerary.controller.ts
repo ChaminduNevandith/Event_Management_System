@@ -20,6 +20,14 @@ export class ItineraryController {
     return this.itineraryService.create(req.user.userId, tripId, dto);
   }
 
+  @Post('auto-schedule')
+  autoSchedule(
+    @Request() req: any,
+    @Param('tripId') tripId: string
+  ) {
+    return this.itineraryService.autoSchedule(req.user.userId, tripId);
+  }
+
   @Get()
   findAll(
     @Request() req: any,

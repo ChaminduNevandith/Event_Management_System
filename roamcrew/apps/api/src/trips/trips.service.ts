@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTripRequest, UpdateTripRequest } from 'contracts';
 import { isSafeImageUrl } from '../common/utils/url-validator';
 import { NotificationsService } from '../notifications/notifications.service';
+import { randomUUID } from 'crypto';
 
 
 @Injectable()
@@ -21,6 +22,7 @@ export class TripsService {
         startDate: createTripDto.startDate ? new Date(createTripDto.startDate) : undefined,
         endDate: createTripDto.endDate ? new Date(createTripDto.endDate) : undefined,
         timezone: createTripDto.timezone,
+        shareId: randomUUID(),
         members: {
           create: {
             userId: userId,
@@ -225,6 +227,27 @@ export class TripsService {
   async getPublicTrip(token: string) {
     const trip = await this.prisma.client.trip.findUnique({
       where: { publicToken: token },
+      include: {
+        destinations: {
+          orderBy: { orderIndex: 'asc' },
+          include: { itineraryItems: true, places: true },
+        },
+        members: {
+          include: { user: { select: { firstName: true, avatarUrl: true } } }
+        }
+      }
+    });
+
+    if (!trip) {
+      throw new NotFoundException('Trip not found or link has expired');
+    }
+
+    return trip;
+  }
+
+  async getTripByShareId(shareId: string) {
+    const trip = await this.prisma.client.trip.findUnique({
+      where: { shareId },
       include: {
         destinations: {
           orderBy: { orderIndex: 'asc' },

@@ -3,8 +3,10 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { useEffect } from "react";
-import { MapPin, Navigation } from "lucide-react";
+import { useEffect, useState } from "react";
+import { MapPin, Navigation, Radio } from "lucide-react";
+import { useSocket } from "./socket-provider";
+import { useParams, usePathname } from "next/navigation";
 
 // Fix for default marker icons in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -33,7 +35,16 @@ const placeIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-import { usePathname } from "next/navigation";
+const liveUserIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// usePathname already imported above
 
 function MapBounds({ positions }: { positions: [number, number][] }) {
   const map = useMap();
@@ -77,6 +88,59 @@ export default function TripMap({
   itineraryItems?: any[]
 }) {
   const pathname = usePathname();
+  const params = useParams();
+  const { socket, activeUsers } = useSocket();
+  const [liveLocations, setLiveLocations] = useState<Record<string, { lat: number, lng: number, timestamp: string }>>({});
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [watchId, setWatchId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    const handleLocationUpdate = (data: { userId: string, lat: number, lng: number, timestamp: string }) => {
+      setLiveLocations(prev => ({
+        ...prev,
+        [data.userId]: { lat: data.lat, lng: data.lng, timestamp: data.timestamp }
+      }));
+    };
+    
+    socket.on('locationUpdated', handleLocationUpdate);
+    return () => {
+      socket.off('locationUpdated', handleLocationUpdate);
+    };
+  }, [socket]);
+
+  const toggleBroadcasting = () => {
+    if (isBroadcasting && watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      setWatchId(null);
+      setIsBroadcasting(false);
+    } else {
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser");
+        return;
+      }
+      setIsBroadcasting(true);
+      const id = navigator.geolocation.watchPosition(
+        (position) => {
+          if (socket && params?.id) {
+            socket.emit("updateLocation", {
+              tripId: params.id,
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            });
+          }
+        },
+        (error) => {
+          console.error("Error getting location", error);
+          setIsBroadcasting(false);
+        },
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+      );
+      setWatchId(id);
+    }
+  };
+
   
   // Filter out items without coordinates or invalid numbers
   const validDestinations = destinations
@@ -115,7 +179,29 @@ export default function TripMap({
     ? allPositions[0] 
     : [0, 0]; // Default center if no pins
 
+  // Filter out expired live locations (older than 10 mins)
+  const activeLiveLocations = Object.entries(liveLocations).filter(([_, data]) => {
+    const age = new Date().getTime() - new Date(data.timestamp).getTime();
+    return age < 10 * 60 * 1000;
+  });
+
   return (
+    <div className="space-y-4">
+      {/* Broadcast Toggle */}
+      <div className="flex justify-end">
+        <button
+          onClick={toggleBroadcasting}
+          className={`flex items-center px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-all ${
+            isBroadcasting 
+            ? "bg-red-500 hover:bg-red-600 text-white shadow-red-500/20 animate-pulse" 
+            : "bg-white text-[#0EA5E9] border border-[#0EA5E9]/20 hover:bg-[#0EA5E9]/5 shadow-sm"
+          }`}
+        >
+          <Radio className="w-4 h-4 mr-2" />
+          {isBroadcasting ? "Broadcasting Live Location..." : "Broadcast My Location"}
+        </button>
+      </div>
+
     <div className="w-full rounded-3xl overflow-hidden border-2 border-white shadow-xl shadow-[#102a43]/10 relative z-0" style={{ height: "600px" }}>
       <MapContainer 
         key={pathname || "map"}
@@ -213,6 +299,30 @@ export default function TripMap({
             </Popup>
           </Marker>
         ))}
+
+        {/* Live Users */}
+        {activeLiveLocations.map(([userId, loc]) => {
+          const user = activeUsers.find(u => u.sub === userId || u.id === userId);
+          return (
+            <Marker
+              key={`live-${userId}`}
+              position={[loc.lat, loc.lng]}
+              icon={liveUserIcon}
+            >
+              <Popup className="rounded-xl">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-red-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
+                    {user?.firstName?.[0] || 'U'}
+                  </div>
+                  <div>
+                    <div className="font-bold text-[#0C4A6E] text-sm">{user?.firstName || 'User'}</div>
+                    <div className="text-[10px] text-red-500 font-bold animate-pulse">Live Now</div>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
       
       {allPositions.length === 0 && (
@@ -224,6 +334,7 @@ export default function TripMap({
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

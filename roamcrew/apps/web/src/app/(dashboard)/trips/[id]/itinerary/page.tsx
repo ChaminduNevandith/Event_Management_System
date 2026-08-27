@@ -66,6 +66,7 @@ export default function ItineraryPage() {
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAutoScheduling, setIsAutoScheduling] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -158,6 +159,22 @@ export default function ItineraryPage() {
       toast.error(err.message || "Failed to create item");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleAutoSchedule = async () => {
+    try {
+      setIsAutoScheduling(true);
+      await fetchApi(`/trips/${params.id}/itinerary/auto-schedule`, {
+        method: "POST"
+      });
+      toast.success("Itinerary automatically scheduled!");
+      if (socket) socket.emit("clientDataUpdated", { tripId: params.id, eventType: 'itinerary' });
+      loadData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to auto-schedule. Have you added destinations with coordinates?");
+    } finally {
+      setIsAutoScheduling(false);
     }
   };
 
@@ -277,18 +294,27 @@ export default function ItineraryPage() {
       {/* Left Column: Itinerary List */}
       <div className="flex-1 overflow-y-auto pr-4 space-y-8 pb-32 custom-scrollbar">
         <div className="flex items-center justify-between sticky top-0 bg-[#F4F7FB]/95 backdrop-blur-xl z-30 py-6 border-b border-[#0EA5E9]/10 mb-6">
-        <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Daily Itinerary</h2>
-          <p className="text-slate-500 font-medium text-sm mt-1">Your journey timeline</p>
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Daily Itinerary</h2>
+            <p className="text-slate-500 font-medium text-sm mt-1">Your journey timeline</p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleAutoSchedule}
+              disabled={isAutoScheduling}
+              className="inline-flex items-center rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#F97316] border-2 border-[#F97316]/20 shadow-sm transition-all hover:bg-[#F97316]/10 disabled:opacity-50"
+            >
+              {isAutoScheduling ? "Scheduling..." : "Auto-Schedule"}
+            </button>
+            <button
+              onClick={() => setShowModal(true)}
+              className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Event
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Event
-        </button>
-      </div>
 
       <DndContext 
         sensors={sensors}

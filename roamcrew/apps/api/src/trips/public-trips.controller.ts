@@ -9,4 +9,9 @@ export class PublicTripsController {
   getPublicTrip(@Param('token') token: string) {
     return this.tripsService.getPublicTrip(token);
   }
+
+  @Get('share/:shareId')
+  getTripByShareId(@Param('shareId') shareId: string) {
+    return this.tripsService.getTripByShareId(shareId);
+  }
 }

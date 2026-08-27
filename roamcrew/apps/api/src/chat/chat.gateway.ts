@@ -105,6 +105,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.to(payload.tripId).emit('dataUpdated', payload.eventType);
   }
 
+  @SubscribeMessage('updateLocation')
+  async handleUpdateLocation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { tripId: string; lat: number; lng: number }
+  ) {
+    const userId = client.data.user?.sub;
+    if (!userId || !payload.tripId) return;
+    
+    // Broadcast location to everyone else in the trip
+    client.to(payload.tripId).emit('locationUpdated', {
+      userId,
+      lat: payload.lat,
+      lng: payload.lng,
+      timestamp: new Date().toISOString()
+    });
+  }
+
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
