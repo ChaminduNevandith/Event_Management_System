@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, LayoutDashboard, Settings, Users } from "lucide-react";
+import { LogOut, LayoutDashboard, Settings, Users, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -80,11 +80,23 @@ export default function DashboardLayout({
               <span>Friends</span>
             </Link>
             <Link
+              href="/calendar"
+              className={`flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${
+                pathname.startsWith("/calendar") 
+                  ? "bg-[#0EA5E9] text-white shadow-md shadow-[#0EA5E9]/20" 
+                  : "text-[#486581] hover:bg-[#F0F9FF] hover:text-[#0EA5E9]"
+              }`}
+            >
+              <Calendar className="h-5 w-5" />
+              <span>Calendar</span>
+            </Link>
+
+            <Link
               href="/settings"
-              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
+              className={`flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${
                 pathname.startsWith("/settings") 
-                  ? "bg-[#0EA5E9] text-white font-bold shadow-md shadow-[#0EA5E9]/20" 
-                  : "text-[#486581] hover:bg-white/80 hover:text-[#0C4A6E] font-medium"
+                  ? "bg-[#0EA5E9] text-white shadow-md shadow-[#0EA5E9]/20" 
+                  : "text-[#486581] hover:bg-[#F0F9FF] hover:text-[#0EA5E9]"
               }`}
             >
               <Settings className="h-5 w-5" />
