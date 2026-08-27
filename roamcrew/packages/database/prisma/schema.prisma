@@ -76,6 +76,8 @@ model Trip {
   title         String
   description   String?
   coverImageUrl String?
+  isTemplate    Boolean @default(false)
+  publicToken   String? @unique
   status        TripStatus @default(PLANNING)
 
   startDate  DateTime?
