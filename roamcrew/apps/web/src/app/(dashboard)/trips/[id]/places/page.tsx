@@ -226,8 +226,11 @@ export default function PlacesPage() {
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/40 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 my-8">
-            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2">Save a Place</h2>
+          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 my-8 relative">
+            <button type="button" onClick={() => setShowAddModal(false)} className="absolute top-6 right-6 text-[#486581] hover:text-[#0EA5E9] bg-white/50 p-2 rounded-full transition-colors z-10">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2 pr-8">Save a Place</h2>
             <p className="text-[#486581] text-sm mb-6">Add a restaurant, hotel, or attraction to your list.</p>
             
             <form onSubmit={handleAdd} className="space-y-4">

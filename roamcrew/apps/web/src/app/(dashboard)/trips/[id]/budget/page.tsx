@@ -272,8 +272,11 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
       {/* Add Expense Modal */}
       {isAddOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white/90 backdrop-blur-xl border border-white shadow-2xl rounded-3xl p-6 w-full max-w-md animate-in zoom-in-95 duration-300">
-            <h3 className="text-xl font-bold text-slate-800 mb-4">Add Expense</h3>
+          <div className="bg-white/90 backdrop-blur-xl border border-white shadow-2xl rounded-3xl p-6 w-full max-w-md animate-in zoom-in-95 duration-300 relative">
+            <button type="button" onClick={() => setIsAddOpen(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-white/50 p-2 rounded-full transition-colors z-10">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <h3 className="text-xl font-bold text-slate-800 mb-4 pr-8">Add Expense</h3>
             
             <form onSubmit={handleAddExpense} className="space-y-4">
               
