@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { fetchApi } from "@/lib/api";
 import { UserPlus, UserCheck, XCircle, CheckCircle, Search, Users } from "lucide-react";
+import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function FriendsPage() {
+  const { confirm, ConfirmationModal } = useConfirm();
   const [friends, setFriends] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
   const [circles, setCircles] = useState<any[]>([]);
@@ -72,7 +75,7 @@ export default function FriendsPage() {
       setNewCircleName("");
       loadData();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -97,28 +100,32 @@ export default function FriendsPage() {
   const handleAccept = async (id: string) => {
     try {
       await fetchApi(`/friends/accept/${id}`, { method: "POST" });
+      toast.success("Added successfully!");
       loadData();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
   const handleDecline = async (id: string) => {
     try {
       await fetchApi(`/friends/decline/${id}`, { method: "POST" });
+      toast.success("Added successfully!");
       loadData();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
   const handleRemove = async (friendId: string) => {
-    if (!confirm("Are you sure you want to remove this friend?")) return;
+    const isConfirmed = await confirm("Are you sure you want to remove this friend?");
+    if (!isConfirmed) return;
     try {
       await fetchApi(`/friends/${friendId}`, { method: "DELETE" });
+      toast.success("Item deleted successfully!");
       loadData();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -311,6 +318,7 @@ export default function FriendsPage() {
           </div>
         </div>
       </div>
+      <ConfirmationModal />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { OfflineIndicator } from "@/components/offline-indicator";
+import { Toaster } from "@/components/ui/toaster";
 
 const dmSans = DM_Sans({ subsets: ["latin"] });
 
@@ -38,6 +39,7 @@ export default function RootLayout({
           <AuthProvider>
             <OfflineIndicator />
             {children}
+            <Toaster />
           </AuthProvider>
         </ThemeProvider>
       </body>

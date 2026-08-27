@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { fetchApi } from "@/lib/api";
 import { Plus, Calendar, Clock, MapPin, Plane, Train, Bus, Car, Home, Camera, Utensils, Users, Hash, Trash2, GripVertical } from "lucide-react";
+import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import { format, parseISO, isSameDay, addMinutes, differenceInMinutes } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -41,6 +43,7 @@ const colorMap: Record<string, string> = {
 };
 
 export default function ItineraryPage() {
+  const { confirm, ConfirmationModal } = useConfirm();
   const params = useParams();
   const [items, setItems] = useState<any[]>([]);
   const [destinations, setDestinations] = useState<any[]>([]);
@@ -90,12 +93,14 @@ export default function ItineraryPage() {
   }, [params.id]);
 
   const handleDelete = async (itemId: string) => {
-    if (!confirm("Remove this item from the itinerary?")) return;
+    const isConfirmed = await confirm("Remove this item from the itinerary?");
+    if (!isConfirmed) return;
     try {
       await fetchApi(`/trips/${params.id}/itinerary/${itemId}`, { method: "DELETE" });
+      toast.success("Item deleted successfully!");
       loadData();
     } catch (err) {
-      alert("Failed to delete");
+      toast.error("Failed to delete");
     }
   };
 
@@ -128,7 +133,7 @@ export default function ItineraryPage() {
       setEndTime("");
       loadData();
     } catch (err: any) {
-      alert(err.message || "Failed to create item");
+      toast.error(err.message || "Failed to create item");
     } finally {
       setIsSubmitting(false);
     }
@@ -508,6 +513,7 @@ export default function ItineraryPage() {
           </div>
         </div>
       )}
+      <ConfirmationModal />
     </div>
   );
 }

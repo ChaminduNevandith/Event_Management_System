@@ -3,13 +3,16 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { fetchApi } from "@/lib/api";
-import {  MapPin, Plus, ThumbsUp, ThumbsDown, Calendar, Image as ImageIcon  } from "lucide-react";
+import {  MapPin, Plus, ThumbsUp, ThumbsDown, Calendar, Image as ImageIcon, Edit2, Trash2  } from "lucide-react";
+import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
 type DestinationStatus = "PROPOSED" | "APPROVED" | "REJECTED";
 
 export default function DestinationsPage() {
+  const { confirm, ConfirmationModal } = useConfirm();
   const params = useParams();
   const [destinations, setDestinations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -18,9 +21,21 @@ export default function DestinationsPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Form State
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
+
+  const resetForm = () => {
+    setName("");
+    setDescription("");
+    setImageUrl("");
+    setLatitude("");
+    setLongitude("");
+    setEditingId(null);
+  };
 
   const loadDestinations = async () => {
     try {
@@ -38,28 +53,55 @@ export default function DestinationsPage() {
     loadDestinations();
   }, [params.id]);
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await fetchApi(`/trips/${params.id}/destinations`, {
-        method: "POST",
-        body: JSON.stringify({
-          name,
-          description: description || undefined,
-          imageUrl: imageUrl || undefined,
-        })
-      });
+      const payload: any = {
+        name,
+        description: description || undefined,
+        imageUrl: imageUrl || undefined,
+      };
+      
+      if (latitude && !isNaN(parseFloat(latitude))) {
+        payload.latitude = parseFloat(latitude);
+      }
+      if (longitude && !isNaN(parseFloat(longitude))) {
+        payload.longitude = parseFloat(longitude);
+      }
+
+      if (editingId) {
+        await fetchApi(`/trips/${params.id}/destinations/${editingId}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload)
+        });
+        toast.success("Destination updated successfully");
+      } else {
+        await fetchApi(`/trips/${params.id}/destinations`, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        toast.success("Destination proposed successfully");
+      }
+
       setShowAddModal(false);
-      setName("");
-      setDescription("");
-      setImageUrl("");
+      resetForm();
       loadDestinations();
     } catch (err: any) {
-      alert(err.message || "Failed to add destination");
+      toast.error(err.message || "Failed to save destination");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const openEditModal = (dest: any) => {
+    setName(dest.name);
+    setDescription(dest.description || "");
+    setImageUrl(dest.imageUrl || "");
+    setLatitude(dest.latitude ? dest.latitude.toString() : "");
+    setLongitude(dest.longitude ? dest.longitude.toString() : "");
+    setEditingId(dest.id);
+    setShowAddModal(true);
   };
 
   const handleVote = async (id: string, voteType: "UP" | "DOWN") => {
@@ -70,7 +112,7 @@ export default function DestinationsPage() {
       });
       loadDestinations();
     } catch (err: any) {
-      alert(err.message || "Failed to vote");
+      toast.error(err.message || "Failed to vote");
     }
   };
 
@@ -82,19 +124,20 @@ export default function DestinationsPage() {
       });
       loadDestinations();
     } catch (err: any) {
-      alert(err.message || "Failed to update status");
+      toast.error(err.message || "Failed to update status");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to remove this destination?")) return;
+    const isConfirmed = await confirm("Are you sure you want to remove this destination?");
+    if (!isConfirmed) return;
     try {
       await fetchApi(`/trips/${params.id}/destinations/${id}`, {
         method: "DELETE"
       });
       loadDestinations();
     } catch (err: any) {
-      alert(err.message || "Failed to delete");
+      toast.error(err.message || "Failed to delete");
     }
   };
 
@@ -125,11 +168,14 @@ export default function DestinationsPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-extrabold text-[#0C4A6E]">Destination Candidates</h2>
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => {
+            resetForm();
+            setShowAddModal(true);
+          }}
           className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg"
         >
           <Plus className="mr-2 h-4 w-4" />
-          Add Destination
+          Propose Destination
         </button>
       </div>
 
@@ -161,17 +207,23 @@ export default function DestinationsPage() {
                         </div>
                       )}
                       
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-bold text-[#0C4A6E] text-lg leading-tight group-hover:text-[#0EA5E9] transition-colors flex items-center">
-                          <MapPin className="mr-1.5 h-4 w-4 text-[#F97316]" />
-                          {dest.name}
+                      <div className="flex justify-between items-start mb-2 gap-2">
+                        <h4 className="flex-1 min-w-0 font-bold text-[#0C4A6E] text-lg leading-tight group-hover:text-[#0EA5E9] transition-colors relative cursor-default pl-6 group/tooltip">
+                          <MapPin className="absolute left-0 top-[2px] h-[18px] w-[18px] text-[#F97316]" />
+                          <span className="block truncate">{dest.name}</span>
+                          
+                          {/* Custom Tooltip */}
+                          <div className="absolute left-0 top-full mt-2 hidden group-hover/tooltip:block w-max max-w-[250px] bg-[#0C4A6E] text-white text-sm font-medium px-3 py-2 rounded-lg shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 pointer-events-none">
+                            {dest.name}
+                            <div className="absolute -top-1 left-4 w-2 h-2 bg-[#0C4A6E] rotate-45"></div>
+                          </div>
                         </h4>
                         
                         {/* Status Select for moving cards */}
                         <select 
                           value={dest.status}
                           onChange={(e) => handleChangeStatus(dest.id, e.target.value as DestinationStatus)}
-                          className="text-xs bg-[#f0f9ff] text-[#0284c7] border border-[#bae6fd] rounded-lg px-2 py-1 font-bold outline-none cursor-pointer hover:bg-[#e0f2fe]"
+                          className="shrink-0 text-xs bg-[#f0f9ff] text-[#0284c7] border border-[#bae6fd] rounded-lg px-2 py-1 font-bold outline-none cursor-pointer hover:bg-[#e0f2fe] max-w-[90px]"
                         >
                           <option value="PROPOSED">Proposed</option>
                           <option value="APPROVED">Approved</option>
@@ -185,29 +237,39 @@ export default function DestinationsPage() {
 
                       <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
                         {/* Voting */}
-                        <div className="flex space-x-2 bg-gray-50 rounded-lg p-1 border border-gray-100">
+                        <div className="flex space-x-1.5 bg-gray-50 rounded-lg p-1 border border-gray-100 shrink-0">
                           <button 
                             onClick={() => handleVote(dest.id, "UP")}
-                            className={`flex items-center space-x-1 px-2.5 py-1 rounded-md text-xs font-bold transition-colors ${myVote === "UP" ? "bg-green-100 text-green-700" : "text-gray-500 hover:bg-gray-200"}`}
+                            className={`flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-bold transition-colors ${myVote === "UP" ? "bg-green-100 text-green-700" : "text-gray-500 hover:bg-gray-200"}`}
                           >
                             <ThumbsUp className="h-3.5 w-3.5" />
                             <span>{upvotes.length}</span>
                           </button>
                           <button 
                             onClick={() => handleVote(dest.id, "DOWN")}
-                            className={`flex items-center space-x-1 px-2.5 py-1 rounded-md text-xs font-bold transition-colors ${myVote === "DOWN" ? "bg-red-100 text-red-700" : "text-gray-500 hover:bg-gray-200"}`}
+                            className={`flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-bold transition-colors ${myVote === "DOWN" ? "bg-red-100 text-red-700" : "text-gray-500 hover:bg-gray-200"}`}
                           >
                             <ThumbsDown className="h-3.5 w-3.5" />
                             <span>{downvotes.length}</span>
                           </button>
                         </div>
 
-                        <button 
-                          onClick={() => handleDelete(dest.id)}
-                          className="text-xs text-red-400 hover:text-red-600 font-medium px-2"
-                        >
-                          Remove
-                        </button>
+                        <div className="flex items-center space-x-0.5 shrink-0 ml-2">
+                          <button 
+                            onClick={() => openEditModal(dest)}
+                            className="p-1.5 text-blue-500 hover:bg-blue-50 hover:text-blue-700 rounded-md transition-colors"
+                            title="Edit Destination"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(dest.id)}
+                            className="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors"
+                            title="Remove Destination"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -226,12 +288,12 @@ export default function DestinationsPage() {
       </div>
 
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/40 backdrop-blur-sm">
-          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2">Propose Destination</h2>
-            <p className="text-[#486581] text-sm mb-6">Suggest a place for your crew to visit.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0C4A6E]/40 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white/90 backdrop-blur-xl border border-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 my-8">
+            <h2 className="text-2xl font-bold text-[#0C4A6E] mb-2">{editingId ? "Edit Destination" : "Propose Destination"}</h2>
+            <p className="text-[#486581] text-sm mb-6">{editingId ? "Update details or add map coordinates." : "Suggest a place for your crew to visit."}</p>
             
-            <form onSubmit={handleAdd} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Destination Name</label>
                 <div className="relative">
@@ -274,27 +336,53 @@ export default function DestinationsPage() {
                   />
                 </div>
               </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Latitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={latitude}
+                    onChange={(e) => setLatitude(e.target.value)}
+                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-2.5 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+                    placeholder="e.g. 35.6764"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-[#486581] mb-1.5 ml-1">Longitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={longitude}
+                    onChange={(e) => setLongitude(e.target.value)}
+                    className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-2.5 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
+                    placeholder="e.g. 139.6500"
+                  />
+                </div>
+              </div>
 
-              <div className="pt-4 flex space-x-3">
+              <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 rounded-xl border-2 border-white bg-white/50 px-4 py-3 text-sm font-bold text-[#486581] transition-all hover:bg-white hover:text-[#0C4A6E] shadow-sm"
+                  className="flex-1 px-4 py-3 bg-white text-[#486581] border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] px-4 py-3 text-sm font-bold text-white transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50"
+                  className="flex-1 px-4 py-3 bg-[#0EA5E9] text-white rounded-xl font-bold hover:bg-[#0284c7] transition-colors disabled:opacity-50"
                 >
-                  {isSubmitting ? "Adding..." : "Propose"}
+                  {isSubmitting ? "Saving..." : (editingId ? "Save Changes" : "Propose")}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+      <ConfirmationModal />
     </div>
   );
 }

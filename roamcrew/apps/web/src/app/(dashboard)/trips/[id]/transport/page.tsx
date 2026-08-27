@@ -5,12 +5,15 @@ import { fetchApi } from "@/lib/api";
 import {  Plus, Plane, Train, Bus, Ship, Car, Calendar, Clock, MapPin, Trash2  } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export default function TransportPage({ params }: { params: { id: string } }) {
   const [transports, setTransports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { confirm, ConfirmationModal } = useConfirm();
 
   // Form State
   const [type, setType] = useState("FLIGHT");
@@ -56,21 +59,24 @@ export default function TransportPage({ params }: { params: { id: string } }) {
       });
       setShowAddModal(false);
       resetForm();
+      toast.success("Transport added successfully!");
       loadData();
     } catch (err: any) {
-      alert(err.message || "Failed to add transport");
+      toast.error(err.message || "Failed to add transport");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this transport?")) return;
+    const isConfirmed = await confirm("Delete this transport?");
+    if (!isConfirmed) return;
     try {
       await fetchApi(`/trips/${params.id}/transport/${id}`, { method: "DELETE" });
+      toast.success("Transport deleted!");
       loadData();
     } catch (err: any) {
-      alert(err.message || "Failed to delete");
+      toast.error(err.message || "Failed to delete");
     }
   };
 
@@ -246,6 +252,7 @@ export default function TransportPage({ params }: { params: { id: string } }) {
           </div>
         </div>
       )}
+      <ConfirmationModal />
     </div>
   );
 }

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { fetchApi } from "@/lib/api";
 import {  Plus, Home, MapPin, Calendar, Clock, Edit2, Trash2  } from "lucide-react";
+import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
@@ -11,6 +13,7 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { confirm, ConfirmationModal } = useConfirm();
 
   // Form State
   const [name, setName] = useState("");
@@ -54,19 +57,21 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
       resetForm();
       loadData();
     } catch (err: any) {
-      alert(err.message || "Failed to add accommodation");
+      toast.error(err.message || "Failed to add accommodation");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this accommodation?")) return;
+    const isConfirmed = await confirm("Delete this accommodation?");
+    if (!isConfirmed) return;
     try {
       await fetchApi(`/trips/${params.id}/accommodations/${id}`, { method: "DELETE" });
+      toast.success("Item deleted successfully!");
       loadData();
     } catch (err: any) {
-      alert(err.message || "Failed to delete");
+      toast.error(err.message || "Failed to delete");
     }
   };
 
@@ -215,6 +220,7 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
           </div>
         </div>
       )}
+      <ConfirmationModal />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { fetchApi } from "@/lib/api";
 import {  Plus, MessageSquare, CheckSquare, Clock, User, CheckCircle2  } from "lucide-react";
+import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 
@@ -46,7 +47,7 @@ export default function DecisionsPage() {
     try {
       const validOptions = options.filter(o => o.text.trim().length > 0);
       if (validOptions.length < 2) {
-        alert("Please provide at least two options.");
+        toast.error("Please provide at least two options.");
         setIsSubmitting(false);
         return;
       }
@@ -68,7 +69,7 @@ export default function DecisionsPage() {
       setOptions([{ text: "" }, { text: "" }]);
       loadData();
     } catch (err: any) {
-      alert(err.message || "Failed to create poll");
+      toast.error(err.message || "Failed to create poll");
     } finally {
       setIsSubmitting(false);
     }
@@ -82,7 +83,7 @@ export default function DecisionsPage() {
       });
       loadData();
     } catch (err: any) {
-      alert(err.message || "Failed to vote");
+      toast.error(err.message || "Failed to vote");
     }
   };
 

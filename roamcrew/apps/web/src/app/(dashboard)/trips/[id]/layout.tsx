@@ -1,16 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect, use } from "react";
 import { fetchApi } from "@/lib/api";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Users, Settings } from "lucide-react";
+import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/components/auth-provider";
 
-export default function TripLayout({ children }: { children: React.ReactNode }) {
-  const params = useParams();
+export default function TripLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
+  const unwrappedParams = use(params);
+  const tripId = unwrappedParams.id;
+
+  const { confirm, ConfirmationModal } = useConfirm();
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
@@ -46,7 +51,7 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     async function loadTrip() {
       try {
-        const data = await fetchApi(`/trips/${params.id}`);
+        const data = await fetchApi(`/trips/${tripId}`);
         setTrip(data);
       } catch (err: any) {
         setError(err.message || "Failed to load trip.");
@@ -55,13 +60,13 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
       }
     }
     loadTrip();
-  }, [params.id]);
+  }, [tripId]);
 
   const handleUpdateTrip = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdating(true);
     try {
-      await fetchApi(`/trips/${params.id}`, {
+      await fetchApi(`/trips/${tripId}`, {
         method: "PATCH",
         body: JSON.stringify({
           title,
@@ -73,47 +78,50 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
           timezone,
         })
       });
-      const data = await fetchApi(`/trips/${params.id}`);
+      const data = await fetchApi(`/trips/${tripId}`);
       setTrip(data);
       setShowSettingsModal(false);
+      toast.success("Trip updated successfully!");
     } catch (err: any) {
-      alert(err.message || "Failed to update trip");
+      toast.error(err.message || "Failed to update trip");
     } finally {
       setIsUpdating(false);
     }
   };
 
   const handleArchive = async () => {
-    if (!confirm(`Are you sure you want to ${trip.isArchived ? 'restore' : 'archive'} this trip?`)) return;
+    const isConfirmed = await confirm(`Are you sure you want to ${trip.isArchived ? 'restore' : 'archive'} this trip?`);
+    if (!isConfirmed) return;
     try {
-      await fetchApi(`/trips/${params.id}/${trip.isArchived ? 'restore' : 'archive'}`, { method: "POST" });
-      const data = await fetchApi(`/trips/${params.id}`);
+      await fetchApi(`/trips/${tripId}/${trip.isArchived ? 'restore' : 'archive'}`, { method: "POST" });
+      const data = await fetchApi(`/trips/${tripId}`);
       setTrip(data);
     } catch (err: any) {
-      alert(err.message || "Failed to archive/restore trip");
+      toast.error(err.message || "Failed to archive/restore trip");
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you absolutely sure you want to delete this trip? This action cannot be undone.")) return;
+    const isConfirmed = await confirm("Are you absolutely sure you want to delete this trip? This action cannot be undone.");
+    if (!isConfirmed) return;
     try {
-      await fetchApi(`/trips/${params.id}`, { method: "DELETE" });
+      await fetchApi(`/trips/${tripId}`, { method: "DELETE" });
       router.push("/trips");
     } catch (err: any) {
-      alert(err.message || "Failed to delete trip");
+      toast.error(err.message || "Failed to delete trip");
     }
   };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
-      await fetchApi(`/trips/${params.id}/members/${userId}/role`, {
+      await fetchApi(`/trips/${tripId}/members/${userId}/role`, {
         method: "PATCH",
         body: JSON.stringify({ role: newRole })
       });
-      const data = await fetchApi(`/trips/${params.id}`);
+      const data = await fetchApi(`/trips/${tripId}`);
       setTrip(data);
     } catch (err: any) {
-      alert(err.message || "Failed to change role");
+      toast.error(err.message || "Failed to change role");
     }
   };
 
@@ -158,20 +166,20 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
   }
 
   const tabs = [
-    { name: "Overview", href: `/trips/${params.id}` },
-    { name: "Itinerary", href: `/trips/${params.id}/itinerary` },
-    { name: "Map", href: `/trips/${params.id}/map` },
-    { name: "Destinations", href: `/trips/${params.id}/destinations` },
-    { name: "Accommodations", href: `/trips/${params.id}/accommodations` },
-    { name: "Transport", href: `/trips/${params.id}/transport` },
-    { name: "Places", href: `/trips/${params.id}/places` },
-    { name: "Decisions", href: `/trips/${params.id}/decisions` },
-    { name: "Tasks", href: `/trips/${params.id}/tasks` },
-    { name: "Budget", href: `/trips/${params.id}/budget` },
-    { name: "Chat", href: `/trips/${params.id}/chat` },
-    { name: "Activity", href: `/trips/${params.id}/activity` },
-    { name: "Memories", href: `/trips/${params.id}/memories` },
-    { name: "Export", href: `/trips/${params.id}/export` },
+    { name: "Overview", href: `/trips/${tripId}` },
+    { name: "Itinerary", href: `/trips/${tripId}/itinerary` },
+    { name: "Map", href: `/trips/${tripId}/map` },
+    { name: "Destinations", href: `/trips/${tripId}/destinations` },
+    { name: "Accommodations", href: `/trips/${tripId}/accommodations` },
+    { name: "Transport", href: `/trips/${tripId}/transport` },
+    { name: "Places", href: `/trips/${tripId}/places` },
+    { name: "Decisions", href: `/trips/${tripId}/decisions` },
+    { name: "Tasks", href: `/trips/${tripId}/tasks` },
+    { name: "Budget", href: `/trips/${tripId}/budget` },
+    { name: "Chat", href: `/trips/${tripId}/chat` },
+    { name: "Activity", href: `/trips/${tripId}/activity` },
+    { name: "Memories", href: `/trips/${tripId}/memories` },
+    { name: "Export", href: `/trips/${tripId}/export` },
   ];
 
   const myRole = trip.members.find((m: any) => m.user.id === user?.id)?.role || 'MEMBER';
@@ -317,7 +325,7 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
             <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
             <h3 className="font-extrabold text-xl mb-2 relative z-10">Trip Budget</h3>
             <p className="text-white/80 text-sm font-medium relative z-10">You can now track shared expenses on the Budget tab.</p>
-            <Link href={`/trips/${params.id}/budget`} className="mt-4 block text-center bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md px-4 py-2 rounded-xl text-sm font-bold w-full border border-white/20">
+            <Link href={`/trips/${tripId}/budget`} className="mt-4 block text-center bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md px-4 py-2 rounded-xl text-sm font-bold w-full border border-white/20">
               View Budget Ledger
             </Link>
           </div>
@@ -337,9 +345,9 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
               <button 
                 onClick={async () => {
                   try {
-                    const inv = await fetchApi(`/invitations/trip/${params.id}`, { method: 'POST', body: JSON.stringify({}) });
+                    const inv = await fetchApi(`/invitations/trip/${tripId}`, { method: 'POST', body: JSON.stringify({}) });
                     setInviteLink(`${window.location.origin}/invite/${inv.token}`);
-                  } catch (err: any) { alert(err.message); }
+                  } catch (err: any) { toast.error(err.message); }
                 }}
                 className="w-full py-3 rounded-xl bg-[#0EA5E9] text-white font-bold hover:bg-[#0284C7] transition-all shadow-sm border border-[#0EA5E9]"
               >
@@ -352,7 +360,7 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
                   <button 
                     onClick={() => {
                       navigator.clipboard.writeText(inviteLink);
-                      alert("Copied to clipboard!");
+                      toast.error("Copied to clipboard!");
                     }}
                     className="text-xs font-bold bg-[#0EA5E9]/10 text-[#0EA5E9] hover:bg-[#0EA5E9]/20 px-4 py-2 rounded-lg shadow-sm shrink-0 transition-colors"
                   >
@@ -441,6 +449,7 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       )}
+      <ConfirmationModal />
     </div>
   );
 }

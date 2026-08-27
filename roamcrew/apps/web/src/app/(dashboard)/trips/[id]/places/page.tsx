@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { fetchApi } from "@/lib/api";
 import {  MapPin, Plus, List, Image as ImageIcon, Tag, Link as LinkIcon, Navigation  } from "lucide-react";
+import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type PlaceCategory = "ACCOMMODATION" | "FOOD" | "ATTRACTION" | "ACTIVITY" | "TRANSPORT" | "OTHER";
 
 export default function PlacesPage() {
+  const { confirm, ConfirmationModal } = useConfirm();
   const params = useParams();
   const [places, setPlaces] = useState<any[]>([]);
   const [destinations, setDestinations] = useState<any[]>([]);
@@ -70,19 +73,21 @@ export default function PlacesPage() {
       setTagsStr("");
       loadData();
     } catch (err: any) {
-      alert(err.message || "Failed to add place");
+      toast.error(err.message || "Failed to add place");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Remove this place from your saved list?")) return;
+    const isConfirmed = await confirm("Remove this place from your saved list?");
+    if (!isConfirmed) return;
     try {
       await fetchApi(`/trips/${params.id}/places/${id}`, { method: "DELETE" });
+      toast.success("Item deleted successfully!");
       loadData();
     } catch (err: any) {
-      alert(err.message || "Failed to delete");
+      toast.error(err.message || "Failed to delete");
     }
   };
 
@@ -161,7 +166,15 @@ export default function PlacesPage() {
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wider mb-2 border ${getCategoryColor(place.category)}`}>
                   {place.category}
                 </span>
-                <h3 className="text-xl font-bold text-[#0C4A6E] leading-tight group-hover:text-[#0EA5E9] transition-colors">{place.name}</h3>
+                <h3 className="text-xl font-bold text-[#0C4A6E] leading-tight group-hover:text-[#0EA5E9] transition-colors group/tooltip relative cursor-default">
+                  <span className="line-clamp-2 break-words">{place.name}</span>
+                  
+                  {/* Custom Tooltip */}
+                  <div className="absolute left-0 top-full mt-2 hidden group-hover/tooltip:block w-max max-w-[250px] bg-[#0C4A6E] text-white text-sm font-medium px-3 py-2 rounded-lg shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 pointer-events-none">
+                    {place.name}
+                    <div className="absolute -top-1 left-4 w-2 h-2 bg-[#0C4A6E] rotate-45"></div>
+                  </div>
+                </h3>
               </div>
             </div>
 
@@ -328,6 +341,7 @@ export default function PlacesPage() {
           </div>
         </div>
       )}
+      <ConfirmationModal />
     </div>
   );
 }
