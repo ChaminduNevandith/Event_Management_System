@@ -3,7 +3,12 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'rea
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { fetchApi } from '../../../../lib/api';
 type Trip = any;
-import { Map, Calendar as CalendarIcon, Wallet, ArrowLeft } from 'lucide-react-native';
+import { Map, Calendar as CalendarIcon, Wallet, ArrowLeft, Share2 } from 'lucide-react-native';
+import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
+import * as Location from 'expo-location';
+import ViewShot from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
+import { useRef } from 'react';
 
 export default function TripDetails() {
   const { id } = useLocalSearchParams();
@@ -12,6 +17,56 @@ export default function TripDetails() {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [activeTab, setActiveTab] = useState<'itinerary' | 'budget' | 'map'>('itinerary');
   const [isLoading, setIsLoading] = useState(true);
+  const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
+  
+  const viewShotRef = useRef<any>(null);
+
+  const handleShare = async () => {
+    try {
+      if (viewShotRef.current && viewShotRef.current.capture) {
+        const uri = await viewShotRef.current.capture();
+        const isAvailable = await Sharing.isAvailableAsync();
+        if (isAvailable) {
+          await Sharing.shareAsync(uri, {
+            mimeType: 'image/jpeg',
+            dialogTitle: `Share ${trip?.title || 'Trip'} Itinerary`,
+            UTI: 'public.jpeg',
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to capture and share:', error);
+    }
+  };
+
+  useEffect(() => {
+    let locationSubscription: Location.LocationSubscription | null = null;
+    
+    const startTracking = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+
+      locationSubscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.Balanced,
+          timeInterval: 5000,
+          distanceInterval: 10,
+        },
+        (loc) => {
+          setUserLocation(loc);
+          // In a real app, we'd emit this location over WebSockets to other users
+        }
+      );
+    };
+
+    startTracking();
+
+    return () => {
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const loadTrip = async () => {
@@ -45,6 +100,7 @@ export default function TripDetails() {
 
   return (
     <View className="flex-1 bg-[#F8FAFC]">
+      <ViewShot ref={viewShotRef} options={{ format: 'jpg', quality: 0.9 }} style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
       {/* Header */}
       <View className="pt-14 pb-4 px-6 bg-[#0EA5E9] rounded-b-3xl shadow-sm z-10">
         <View className="flex-row items-center mb-4">
@@ -52,6 +108,9 @@ export default function TripDetails() {
             <ArrowLeft color="white" size={20} />
           </TouchableOpacity>
           <Text className="text-2xl font-black font-serif text-white flex-1" numberOfLines={1}>{trip.title}</Text>
+          <TouchableOpacity onPress={handleShare} className="p-2 bg-white/20 rounded-full">
+            <Share2 color="white" size={20} />
+          </TouchableOpacity>
         </View>
 
         {/* Custom Tabs */}
@@ -117,14 +176,55 @@ export default function TripDetails() {
         )}
 
         {activeTab === 'map' && (
-          <View>
-             <Text className="text-xl font-black font-serif text-[#0C4A6E] mb-4">Live Map</Text>
-             <View className="p-8 bg-white rounded-3xl items-center border border-[#0EA5E9]/10">
-                <Text className="text-[#486581] text-center font-medium">Native Map loading...</Text>
-             </View>
+          <View className="flex-1 min-h-[500px] bg-white rounded-3xl overflow-hidden border border-[#0EA5E9]/10">
+            {trip.itinerary && trip.itinerary.length > 0 ? (
+              <MapView
+                provider={PROVIDER_DEFAULT}
+                style={{ flex: 1 }}
+                initialRegion={{
+                  latitude: trip.itinerary[0]?.place?.latitude || 37.78825,
+                  longitude: trip.itinerary[0]?.place?.longitude || -122.4324,
+                  latitudeDelta: 0.0922,
+                  longitudeDelta: 0.0421,
+                }}
+              >
+                {/* Destination Markers */}
+                {trip.itinerary.map((item: any) => {
+                  if (item.place?.latitude && item.place?.longitude) {
+                    return (
+                      <Marker
+                        key={item.id}
+                        coordinate={{ latitude: item.place.latitude, longitude: item.place.longitude }}
+                        title={item.place.name}
+                        description={item.place.address}
+                        pinColor="#0EA5E9"
+                      />
+                    );
+                  }
+                  return null;
+                })}
+
+                {/* Live User Location */}
+                {userLocation && (
+                  <Marker
+                    coordinate={{
+                      latitude: userLocation.coords.latitude,
+                      longitude: userLocation.coords.longitude,
+                    }}
+                    title="You"
+                    pinColor="#E11D48" // Red marker for user
+                  />
+                )}
+              </MapView>
+            ) : (
+              <View className="flex-1 items-center justify-center p-8">
+                 <Text className="text-[#486581] text-center font-medium">Add places with coordinates to see them on the map.</Text>
+              </View>
+            )}
           </View>
         )}
       </ScrollView>
+      </ViewShot>
     </View>
   );
 }
