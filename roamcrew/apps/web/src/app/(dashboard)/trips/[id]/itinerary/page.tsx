@@ -384,9 +384,9 @@ export default function ItineraryPage() {
                               {format(parseISO(item.startTime), "HH:mm")} - {format(parseISO(item.endTime), "HH:mm")}
                             </div>
                           </div>
-                          <h4 className="text-lg font-bold text-[#0C4A6E] leading-tight mb-1">{item.title}</h4>
+                          <h4 className="text-lg font-bold text-[#0C4A6E] leading-tight mb-1 break-words">{item.title}</h4>
                           {item.description && (
-                            <p className="text-sm text-[#486581] leading-relaxed">{item.description}</p>
+                            <p className="text-sm text-[#486581] leading-relaxed break-words whitespace-pre-wrap">{item.description}</p>
                           )}
                           
                           {item.destination && (
@@ -474,6 +474,7 @@ export default function ItineraryPage() {
               onChange={(e) => setTitle(e.target.value)}
               className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
               placeholder="e.g. Flight to Paris, Dinner at Louie's"
+              maxLength={100}
               required
             />
           </div>
@@ -549,6 +550,7 @@ export default function ItineraryPage() {
               onChange={(e) => setDescription(e.target.value)}
               className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white min-h-[80px]"
               placeholder="Booking references, meeting points..."
+              maxLength={300}
             />
           </div>
 

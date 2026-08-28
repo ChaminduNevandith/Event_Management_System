@@ -50,7 +50,7 @@ export default async function GuestTripPage({ params }: { params: { shareId: str
             <span className="inline-flex w-fit items-center rounded-full bg-white/20 backdrop-blur-md px-3 py-1 text-sm font-medium">
               Guest View
             </span>
-            <h1 className="text-4xl md:text-6xl font-black">{title}</h1>
+            <h1 className="text-4xl md:text-6xl font-black break-words">{title}</h1>
             <div className="flex flex-wrap items-center gap-6 mt-2 text-white/90">
               <div className="flex items-center">
                 <Calendar className="w-5 h-5 mr-2" />
@@ -69,7 +69,7 @@ export default async function GuestTripPage({ params }: { params: { shareId: str
         {description && (
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
             <h2 className="text-2xl font-bold text-slate-900 mb-4">About this trip</h2>
-            <p className="text-slate-600 leading-relaxed text-lg">{description}</p>
+            <p className="text-slate-600 leading-relaxed text-lg break-words whitespace-pre-wrap">{description}</p>
           </div>
         )}
 
@@ -88,8 +88,8 @@ export default async function GuestTripPage({ params }: { params: { shareId: str
                       {index + 1}
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900 text-lg">{dest.name}</h3>
-                      {dest.description && <p className="text-slate-500 text-sm mt-1">{dest.description}</p>}
+                      <h3 className="font-bold text-slate-900 text-lg break-words">{dest.name}</h3>
+                      {dest.description && <p className="text-slate-500 text-sm mt-1 break-words whitespace-pre-wrap">{dest.description}</p>}
                     </div>
                   </div>
                 ))}

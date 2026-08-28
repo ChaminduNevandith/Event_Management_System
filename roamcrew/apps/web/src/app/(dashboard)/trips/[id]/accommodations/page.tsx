@@ -122,9 +122,9 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
                   <Home className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-[#0C4A6E]">{acc.name}</h3>
+                  <h3 className="font-bold text-lg text-[#0C4A6E] break-words">{acc.name}</h3>
                   {acc.bookingRef && (
-                    <span className="text-xs font-semibold text-[#0EA5E9] bg-[#0EA5E9]/10 px-2 py-0.5 rounded-full">Ref: {acc.bookingRef}</span>
+                    <span className="text-xs font-semibold text-[#0EA5E9] bg-[#0EA5E9]/10 px-2 py-0.5 rounded-full inline-block max-w-full break-all">Ref: {acc.bookingRef}</span>
                   )}
                 </div>
               </div>
@@ -138,7 +138,7 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
             {acc.address && (
               <div className="flex items-start space-x-2 text-sm text-[#486581] mt-3">
                 <MapPin className="h-4 w-4 mt-0.5 text-[#F97316] shrink-0" />
-                <span>{acc.address}</span>
+                <span className="break-words whitespace-pre-wrap">{acc.address}</span>
               </div>
             )}
 
@@ -166,7 +166,7 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
             </div>
 
             {acc.notes && (
-              <p className="mt-4 text-sm text-[#486581] bg-white/50 p-3 rounded-xl border border-white/50 italic">
+              <p className="mt-4 text-sm text-[#486581] bg-white/50 p-3 rounded-xl border border-white/50 italic break-words whitespace-pre-wrap">
                 {acc.notes}
               </p>
             )}
@@ -191,11 +191,11 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-sm font-bold text-[#243b53]">Place Name</label>
-            <input required className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={name} onChange={(e) => setName(e.target.value)} />
+            <input required maxLength={100} className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div>
             <label className="text-sm font-bold text-[#243b53]">Address</label>
-            <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={address} onChange={(e) => setAddress(e.target.value)} />
+            <input maxLength={255} className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={address} onChange={(e) => setAddress(e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -209,11 +209,11 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
           </div>
           <div>
             <label className="text-sm font-bold text-[#243b53]">Booking Reference</label>
-            <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={bookingRef} onChange={(e) => setBookingRef(e.target.value)} />
+            <input maxLength={50} className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={bookingRef} onChange={(e) => setBookingRef(e.target.value)} />
           </div>
           <div>
             <label className="text-sm font-bold text-[#243b53]">Notes</label>
-            <textarea className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none" value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <textarea maxLength={500} className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#0EA5E9] outline-none min-h-[80px]" value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
 
           <div className="flex justify-end gap-3 pt-4">

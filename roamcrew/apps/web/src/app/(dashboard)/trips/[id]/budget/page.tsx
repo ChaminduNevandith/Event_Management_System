@@ -302,8 +302,8 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
                   <Trash2 className="w-4 h-4" />
                 </button>
                 <div className="flex justify-between pr-8">
-                  <div>
-                    <div className="font-semibold text-slate-800">{expense.title}</div>
+                  <div className="min-w-0 pr-4">
+                    <div className="font-semibold text-slate-800 break-words break-all">{expense.title}</div>
                     <div className="text-xs text-slate-500 font-medium bg-slate-200/50 px-2 py-0.5 rounded-full inline-block mt-1">
                       {expense.category}
                     </div>
@@ -348,6 +348,7 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
               onChange={e => setNewExpense({...newExpense, title: e.target.value})}
               className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all"
               placeholder="e.g., Dinner at Mario's"
+              maxLength={100}
               required
             />
           </div>

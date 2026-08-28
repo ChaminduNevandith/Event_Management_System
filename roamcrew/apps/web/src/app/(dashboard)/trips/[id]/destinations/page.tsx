@@ -234,7 +234,7 @@ export default function DestinationsPage() {
                       </div>
 
                       {dest.description && (
-                        <p className="text-sm text-[#486581] line-clamp-2 mb-4 leading-relaxed">{dest.description}</p>
+                        <p className="text-sm text-[#486581] line-clamp-2 mb-4 leading-relaxed break-all whitespace-pre-wrap">{dest.description}</p>
                       )}
 
                       <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
@@ -311,6 +311,7 @@ export default function DestinationsPage() {
                 onChange={(e) => setName(e.target.value)}
                 className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 pl-11 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
                 placeholder="e.g. Kyoto, Japan"
+                maxLength={50}
                 required
               />
             </div>
@@ -323,6 +324,7 @@ export default function DestinationsPage() {
               onChange={(e) => setDescription(e.target.value)}
               className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white min-h-[100px]"
               placeholder="It has great food and temples..."
+              maxLength={300}
             />
           </div>
 
@@ -338,6 +340,7 @@ export default function DestinationsPage() {
                 onChange={(e) => setImageUrl(e.target.value)}
                 className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 pl-11 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
                 placeholder="https://example.com/image.jpg"
+                maxLength={255}
               />
             </div>
           </div>

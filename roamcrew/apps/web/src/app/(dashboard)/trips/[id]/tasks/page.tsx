@@ -236,13 +236,13 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h4 className={`text-lg font-bold transition-all ${
+                    <h4 className={`text-lg font-bold transition-all break-words break-all ${
                       task.status === "COMPLETED" ? "text-slate-500 line-through decoration-2 decoration-slate-300" : "text-[#0C4A6E]"
                     }`}>
                       {task.title}
                     </h4>
                     {task.description && (
-                      <p className={`text-sm mt-1 ${task.status === "COMPLETED" ? "text-slate-400" : "text-[#486581]"}`}>
+                      <p className={`text-sm mt-1 break-words whitespace-pre-wrap ${task.status === "COMPLETED" ? "text-slate-400" : "text-[#486581]"}`}>
                         {task.description}
                       </p>
                     )}
@@ -311,6 +311,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
               onChange={(e) => setTitle(e.target.value)}
               className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white"
               placeholder="e.g. Renew passport"
+              maxLength={100}
             />
           </div>
           
@@ -321,6 +322,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
               onChange={(e) => setDescription(e.target.value)}
               className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 outline-none focus:border-[#0EA5E9] focus:bg-white min-h-[80px]"
               placeholder="Add details..."
+              maxLength={300}
             />
           </div>
 
