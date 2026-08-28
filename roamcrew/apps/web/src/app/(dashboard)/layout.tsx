@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/auth-provider";
-import { LogOut, LayoutDashboard, Settings, Users, Calendar } from "lucide-react";
+import { LogOut, LayoutDashboard, Settings, Users, Calendar, BookOpen } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -101,6 +101,18 @@ export default function DashboardLayout({
             >
               <Settings className="h-5 w-5" />
               <span>Settings</span>
+            </Link>
+
+            <Link
+              href="/guide"
+              className={`flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${
+                pathname.startsWith("/guide") 
+                  ? "bg-[#0EA5E9] text-white shadow-md shadow-[#0EA5E9]/20" 
+                  : "text-[#486581] hover:bg-[#F0F9FF] hover:text-[#0EA5E9]"
+              }`}
+            >
+              <BookOpen className="h-5 w-5" />
+              <span>Guide</span>
             </Link>
           </div>
         </div>
