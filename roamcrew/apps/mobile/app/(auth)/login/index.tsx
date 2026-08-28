@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform
 import { useAuth } from "../../../components/auth-provider";
 import { fetchApi } from "../../../lib/api";
 import { LogIn } from "lucide-react-native";
+import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -10,6 +11,7 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const { login } = useAuth();
+  const router = useRouter();
 
   const handleLogin = async () => {
     setError("");
@@ -87,6 +89,12 @@ export default function LoginScreen() {
               <Text className="text-white font-bold text-lg">Sign In</Text>
             )}
           </TouchableOpacity>
+            <View className="flex-row justify-center mt-6">
+              <Text className="text-[#486581]">Don't have an account? </Text>
+              <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
+                <Text className="text-[#0EA5E9] font-bold">Sign up</Text>
+              </TouchableOpacity>
+            </View>
         </View>
       </View>
     </KeyboardAvoidingView>
