@@ -168,7 +168,7 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
       
       <div className="flex justify-between items-center bg-white/40 backdrop-blur-md border border-white/40 shadow-sm rounded-2xl p-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2 font-serif tracking-tight">
             <Receipt className="text-orange-500" />
             Budget & Ledger
           </h1>
@@ -184,7 +184,7 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
         {/* Balances View */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-slate-800">Overview</h2>
+            <h2 className="text-lg font-semibold text-slate-800 font-serif tracking-tight">Overview</h2>
             <div className="bg-slate-100 rounded-lg p-1 flex items-center">
               <button 
                 onClick={() => setActiveTab('balances')}
@@ -288,7 +288,7 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
 
         {/* Ledger View */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-slate-800">Recent Expenses</h2>
+          <h2 className="text-lg font-semibold text-slate-800 font-serif tracking-tight">Recent Expenses</h2>
           <div className="bg-white/40 backdrop-blur-md border border-white/40 shadow-sm rounded-2xl p-6 space-y-4">
             {expenses.length === 0 && (
               <div className="text-slate-500 text-center py-4 text-sm">No expenses recorded.</div>

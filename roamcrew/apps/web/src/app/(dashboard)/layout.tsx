@@ -27,7 +27,7 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-[#F0F9FF] items-center justify-center p-8">
+      <div className="flex min-h-screen bg-aurora items-center justify-center p-8">
         <div className="w-full max-w-4xl space-y-6">
           <Skeleton className="h-12 w-full rounded-2xl" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -42,7 +42,7 @@ export default function DashboardLayout({
   if (!user) return null;
 
   return (
-    <div className="flex min-h-[100dvh] bg-[#F0F9FF] text-[#0C4A6E]">
+    <div className="flex min-h-[100dvh] bg-aurora text-[#0C4A6E]">
       {/* Sidebar Navigation */}
       <aside className="w-64 border-r border-[#0EA5E9]/10 bg-white/50 backdrop-blur-md hidden md:flex flex-col relative z-20">
         <div className="h-20 flex items-center justify-between px-6 border-b border-[#0EA5E9]/10">

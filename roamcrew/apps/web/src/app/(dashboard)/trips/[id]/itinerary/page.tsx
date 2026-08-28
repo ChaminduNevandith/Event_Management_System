@@ -384,7 +384,7 @@ export default function ItineraryPage() {
                               {format(parseISO(item.startTime), "HH:mm")} - {format(parseISO(item.endTime), "HH:mm")}
                             </div>
                           </div>
-                          <h4 className="text-lg font-bold text-[#0C4A6E] leading-tight mb-1 break-words">{item.title}</h4>
+                          <h4 className="text-lg font-bold text-[#0C4A6E] leading-tight mb-1 break-words font-serif tracking-tight">{item.title}</h4>
                           {item.description && (
                             <p className="text-sm text-[#486581] leading-relaxed break-words whitespace-pre-wrap">{item.description}</p>
                           )}
@@ -423,7 +423,7 @@ export default function ItineraryPage() {
           {items.length === 0 && (
             <div className="py-20 text-center bg-white/40 backdrop-blur-sm rounded-3xl border border-white/60">
               <Calendar className="h-16 w-16 text-[#0EA5E9]/30 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-[#0C4A6E] mb-2">No itinerary yet</h3>
+              <h3 className="text-2xl font-bold text-[#0C4A6E] mb-2 font-serif tracking-tight">No itinerary yet</h3>
               <p className="text-[#486581] font-medium max-w-md mx-auto mb-8">Start adding flights, activities, and accommodations to build your daily schedule.</p>
               <button
                 onClick={() => setShowModal(true)}

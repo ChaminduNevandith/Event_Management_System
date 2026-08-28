@@ -131,7 +131,7 @@ export default function TripsPage() {
           <div className="bg-white p-5 rounded-full shadow-sm mb-6 border border-white">
             <MapPin className="h-12 w-12 text-[#38BDF8]" />
           </div>
-          <h3 className="text-2xl font-extrabold text-[#0C4A6E]">
+          <h3 className="text-2xl font-extrabold text-[#0C4A6E] font-serif tracking-tight">
             {viewMode === 'archived' ? 'No archived trips' : viewMode === 'templates' ? 'No templates yet' : 'No trips planned yet'}
           </h3>
           <p className="text-[#486581] mt-3 mb-8 max-w-md text-lg leading-relaxed">
@@ -171,7 +171,7 @@ export default function TripsPage() {
                 </div>
 
                 <div className="flex flex-1 flex-col p-6 lg:p-8">
-                  <h3 className="text-2xl font-extrabold leading-tight text-[#0C4A6E] group-hover:text-[#0EA5E9] transition-colors line-clamp-1 break-all">
+                  <h3 className="text-2xl font-extrabold leading-tight text-[#0C4A6E] group-hover:text-[#0EA5E9] transition-colors line-clamp-1 break-all font-serif tracking-tight">
                     {trip.title}
                   </h3>
                   

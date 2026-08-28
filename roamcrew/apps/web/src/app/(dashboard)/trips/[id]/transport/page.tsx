@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { fetchApi } from "@/lib/api";
 import { Plane, Train, Bus, Ship, Car, Plus, Trash2, Calendar, MapPin } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
 import { Modal } from "@/components/ui/modal";
 
-export default function TransportPage({ params }: { params: { id: string } }) {
+export default function TransportPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [transports, setTransports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -28,7 +29,7 @@ export default function TransportPage({ params }: { params: { id: string } }) {
 
   const loadData = async () => {
     try {
-      const data = await fetchApi(`/trips/${params.id}/transport`);
+      const data = await fetchApi(`/trips/${id}/transport`);
       setTransports(data);
     } catch (error) {
       console.error(error);
@@ -39,13 +40,13 @@ export default function TransportPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await fetchApi(`/trips/${params.id}/transport`, {
+      await fetchApi(`/trips/${id}/transport`, {
         method: "POST",
         body: JSON.stringify({
           type,
@@ -69,11 +70,11 @@ export default function TransportPage({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (transportId: string) => {
     const isConfirmed = await confirm("Delete this transport?");
     if (!isConfirmed) return;
     try {
-      await fetchApi(`/trips/${params.id}/transport/${id}`, { method: "DELETE" });
+      await fetchApi(`/trips/${id}/transport/${transportId}`, { method: "DELETE" });
       toast.success("Transport deleted!");
       loadData();
     } catch (err: any) {
@@ -122,7 +123,7 @@ export default function TransportPage({ params }: { params: { id: string } }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-extrabold text-[#0C4A6E]">Transport</h2>
+        <h2 className="text-2xl font-extrabold text-[#0C4A6E] font-serif tracking-tight">Transport</h2>
         <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center px-4 py-2 bg-[#F97316] text-white font-bold rounded-xl hover:bg-[#ea580c] transition-colors shadow-sm"
@@ -140,7 +141,7 @@ export default function TransportPage({ params }: { params: { id: string } }) {
                   {getIcon(t.type)}
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-[#0C4A6E] capitalize">{t.type.toLowerCase()}</h3>
+                  <h3 className="font-bold text-lg text-[#0C4A6E] capitalize font-serif tracking-tight">{t.type.toLowerCase()}</h3>
                   <div className="flex flex-wrap gap-2 mt-1">
                     {t.bookingRef && <span className="text-xs font-semibold text-[#F97316] bg-[#F97316]/10 px-2 py-0.5 rounded-full break-all">Ref: {t.bookingRef}</span>}
                     {t.seatNumber && <span className="text-xs font-semibold text-[#0EA5E9] bg-[#0EA5E9]/10 px-2 py-0.5 rounded-full break-all">Seat: {t.seatNumber}</span>}
@@ -189,7 +190,7 @@ export default function TransportPage({ params }: { params: { id: string } }) {
         {transports.length === 0 && (
           <div className="text-center py-12 bg-white/40 rounded-2xl border border-dashed border-white/80">
             <Plane className="mx-auto h-12 w-12 text-[#F97316]/40 mb-3" />
-            <h3 className="text-lg font-bold text-[#0C4A6E]">No transport booked</h3>
+            <h3 className="text-lg font-bold text-[#0C4A6E] font-serif tracking-tight">No transport booked</h3>
             <p className="text-[#486581] mt-1">Add your flights, trains, or buses here.</p>
           </div>
         )}

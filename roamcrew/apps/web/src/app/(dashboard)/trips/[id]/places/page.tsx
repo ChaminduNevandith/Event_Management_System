@@ -127,7 +127,7 @@ export default function PlacesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-[#0C4A6E]">Saved Places</h2>
+          <h2 className="text-2xl font-extrabold text-[#0C4A6E] font-serif tracking-tight">Saved Places</h2>
           <p className="text-[#486581] font-medium text-sm mt-1">Bookmarked spots, restaurants, and sights</p>
         </div>
         <button
@@ -167,7 +167,7 @@ export default function PlacesPage() {
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wider mb-2 border ${getCategoryColor(place.category)}`}>
                   {place.category}
                 </span>
-                <h3 className="text-xl font-bold text-[#0C4A6E] leading-tight group-hover:text-[#0EA5E9] transition-colors group/tooltip relative cursor-default">
+                <h3 className="text-xl font-bold text-[#0C4A6E] leading-tight group-hover:text-[#0EA5E9] transition-colors group/tooltip relative cursor-default font-serif tracking-tight">
                   <span className="line-clamp-2 break-words">{place.name}</span>
                   
                   {/* Custom Tooltip */}
@@ -212,7 +212,7 @@ export default function PlacesPage() {
         {filteredPlaces.length === 0 && (
           <div className="col-span-full py-16 text-center bg-white/40 backdrop-blur-sm rounded-3xl border border-white/60">
             <MapPin className="h-12 w-12 text-[#0EA5E9]/30 mx-auto mb-3" />
-            <h3 className="text-xl font-bold text-[#0C4A6E] mb-1">No places saved yet</h3>
+            <h3 className="text-xl font-bold text-[#0C4A6E] mb-1 font-serif tracking-tight">No places saved yet</h3>
             <p className="text-[#486581] font-medium">Keep track of spots you want to visit here.</p>
             <button
               onClick={() => setShowAddModal(true)}
