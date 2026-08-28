@@ -145,7 +145,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                     )}
                     
                     <div 
-                      className={`px-4 py-2.5 rounded-2xl shadow-sm text-sm ${
+                      className={`px-4 py-2.5 rounded-2xl shadow-sm text-sm break-words whitespace-pre-wrap ${
                         isMe 
                           ? 'bg-gradient-to-r from-[#0EA5E9] to-[#38BDF8] text-white rounded-br-sm' 
                           : 'bg-white border border-white/60 text-[#0C4A6E] rounded-bl-sm'
@@ -179,6 +179,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type your message..."
+              maxLength={1000}
               className="w-full bg-white/70 border border-white focus:border-[#0EA5E9]/30 rounded-2xl py-3 pl-4 pr-10 text-sm text-[#0C4A6E] placeholder-[#486581]/50 outline-none shadow-inner"
             />
             <button type="button" className="absolute right-3 top-3 text-[#486581]/50 hover:text-[#F97316] transition-colors">

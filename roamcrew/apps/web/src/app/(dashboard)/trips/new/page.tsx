@@ -72,6 +72,7 @@ export default function NewTripPage() {
                 required
                 className="flex h-14 w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-2 text-base text-[#0C4A6E] font-medium placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/50 focus:border-[#0EA5E9] transition-all shadow-sm"
                 placeholder="e.g. Summer in Japan"
+                maxLength={50}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -85,6 +86,7 @@ export default function NewTripPage() {
                 id="description"
                 className="flex min-h-[100px] w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-3 text-base text-[#0C4A6E] font-medium placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/50 focus:border-[#0EA5E9] transition-all shadow-sm resize-y"
                 placeholder="What's the vibe? Share some thoughts with your crew..."
+                maxLength={500}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -99,6 +101,7 @@ export default function NewTripPage() {
                 type="url"
                 className="flex h-14 w-full rounded-xl border border-white bg-white/50 backdrop-blur-sm px-4 py-2 text-base text-[#0C4A6E] font-medium placeholder:text-[#829ab1] focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/50 focus:border-[#0EA5E9] transition-all shadow-sm"
                 placeholder="Leave blank for a beautiful default image..."
+                maxLength={255}
                 value={coverImageUrl}
                 onChange={(e) => setCoverImageUrl(e.target.value)}
               />

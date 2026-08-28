@@ -171,12 +171,12 @@ export default function TripsPage() {
                 </div>
 
                 <div className="flex flex-1 flex-col p-6 lg:p-8">
-                  <h3 className="text-2xl font-extrabold leading-tight text-[#0C4A6E] group-hover:text-[#0EA5E9] transition-colors line-clamp-1">
+                  <h3 className="text-2xl font-extrabold leading-tight text-[#0C4A6E] group-hover:text-[#0EA5E9] transition-colors line-clamp-1 break-all">
                     {trip.title}
                   </h3>
                   
                   {trip.description ? (
-                    <p className="mt-3 text-[#486581] line-clamp-2 leading-relaxed">
+                    <p className="mt-3 text-[#486581] line-clamp-2 leading-relaxed break-all whitespace-pre-wrap">
                       {trip.description}
                     </p>
                   ) : (

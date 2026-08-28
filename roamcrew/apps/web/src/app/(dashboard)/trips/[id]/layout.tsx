@@ -306,11 +306,11 @@ export default function TripLayout({ children, params }: { children: React.React
                   </div>
                 )}
               </div>
-              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#0C4A6E] leading-tight">
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#0C4A6E] leading-tight break-words">
                 {trip.title}
               </h1>
               {trip.description && (
-                <p className="text-[#486581] mt-4 max-w-3xl text-lg leading-relaxed font-medium bg-white/40 p-4 rounded-xl backdrop-blur-sm border border-white/50">{trip.description}</p>
+                <p className="text-[#486581] mt-4 max-w-3xl text-lg leading-relaxed font-medium bg-white/40 p-4 rounded-xl backdrop-blur-sm border border-white/50 break-words whitespace-pre-wrap">{trip.description}</p>
               )}
             </div>
             
@@ -396,9 +396,9 @@ export default function TripLayout({ children, params }: { children: React.React
                       <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#0EA5E9] to-[#38BDF8] text-white flex items-center justify-center font-bold shadow-md">
                         {member.user.firstName.charAt(0)}{member.user.lastName.charAt(0)}
                       </div>
-                      <div>
-                        <p className="font-bold text-sm text-[#0C4A6E]">{member.user.firstName} {member.user.lastName}</p>
-                        <p className="text-xs font-bold text-[#F97316] mt-0.5 uppercase tracking-wide">{member.role}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-sm text-[#0C4A6E] truncate">{member.user.firstName} {member.user.lastName}</p>
+                        <p className="text-xs font-bold text-[#F97316] mt-0.5 uppercase tracking-wide truncate">{member.role}</p>
                       </div>
                     </div>
                     {canManage && member.role !== 'OWNER' && (
@@ -487,15 +487,15 @@ export default function TripLayout({ children, params }: { children: React.React
           <div className="grid md:grid-cols-2 gap-5 bg-white/40 p-6 rounded-2xl border border-white/60">
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-bold text-[#243b53]">Title</label>
-              <input required className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={title} onChange={(e) => setTitle(e.target.value)} />
+              <input required maxLength={50} className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={title} onChange={(e) => setTitle(e.target.value)} />
             </div>
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-bold text-[#243b53]">Description</label>
-              <textarea className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] min-h-[100px] font-medium text-[#0C4A6E] shadow-sm transition-all" value={description} onChange={(e) => setDescription(e.target.value)} />
+              <textarea maxLength={500} className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] min-h-[100px] font-medium text-[#0C4A6E] shadow-sm transition-all" value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-bold text-[#243b53]">Cover Image URL</label>
-              <input type="url" className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} placeholder="https://..." />
+              <input type="url" maxLength={255} className="w-full rounded-xl border border-[#0C4A6E]/10 bg-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-[#0EA5E9] font-medium text-[#0C4A6E] shadow-sm transition-all" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} placeholder="https://..." />
             </div>
             
             <div className="space-y-2">

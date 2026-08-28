@@ -182,12 +182,12 @@ export default function PlacesPage() {
             {place.address && (
               <div className="flex items-start mt-2 text-sm text-[#486581] font-medium">
                 <Navigation className="mr-1.5 h-4 w-4 mt-0.5 text-[#0EA5E9] shrink-0" />
-                <span className="leading-relaxed">{place.address}</span>
+                <span className="leading-relaxed break-words whitespace-pre-wrap">{place.address}</span>
               </div>
             )}
 
             {place.notes && (
-              <div className="mt-4 p-3 bg-white/50 rounded-xl text-sm text-[#0C4A6E] border border-white/80 leading-relaxed italic">
+              <div className="mt-4 p-3 bg-white/50 rounded-xl text-sm text-[#0C4A6E] border border-white/80 leading-relaxed italic break-words whitespace-pre-wrap">
                 "{place.notes}"
               </div>
             )}
@@ -247,6 +247,7 @@ export default function PlacesPage() {
                 onChange={(e) => setName(e.target.value)}
                 className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 pl-11 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
                 placeholder="e.g. The Louvre"
+                maxLength={50}
                 required
               />
             </div>
@@ -295,6 +296,7 @@ export default function PlacesPage() {
                 onChange={(e) => setAddress(e.target.value)}
                 className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 pl-11 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
                 placeholder="Address or Google Maps link"
+                maxLength={255}
               />
             </div>
           </div>
@@ -306,6 +308,7 @@ export default function PlacesPage() {
               onChange={(e) => setNotes(e.target.value)}
               className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white min-h-[80px]"
               placeholder="Must try the croissants..."
+              maxLength={500}
             />
           </div>
 
@@ -321,6 +324,7 @@ export default function PlacesPage() {
                 onChange={(e) => setTagsStr(e.target.value)}
                 className="w-full rounded-xl border-2 border-[#0EA5E9]/20 bg-white/50 pl-11 px-4 py-3 text-[#0C4A6E] outline-none transition-all focus:border-[#0EA5E9] focus:bg-white"
                 placeholder="e.g. coffee, views, cheap (comma separated)"
+                maxLength={100}
               />
             </div>
           </div>

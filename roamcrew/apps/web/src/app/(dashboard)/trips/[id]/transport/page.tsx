@@ -141,9 +141,9 @@ export default function TransportPage({ params }: { params: { id: string } }) {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-[#0C4A6E] capitalize">{t.type.toLowerCase()}</h3>
-                  <div className="flex space-x-2 mt-1">
-                    {t.bookingRef && <span className="text-xs font-semibold text-[#F97316] bg-[#F97316]/10 px-2 py-0.5 rounded-full">Ref: {t.bookingRef}</span>}
-                    {t.seatNumber && <span className="text-xs font-semibold text-[#0EA5E9] bg-[#0EA5E9]/10 px-2 py-0.5 rounded-full">Seat: {t.seatNumber}</span>}
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {t.bookingRef && <span className="text-xs font-semibold text-[#F97316] bg-[#F97316]/10 px-2 py-0.5 rounded-full break-all">Ref: {t.bookingRef}</span>}
+                    {t.seatNumber && <span className="text-xs font-semibold text-[#0EA5E9] bg-[#0EA5E9]/10 px-2 py-0.5 rounded-full break-all">Seat: {t.seatNumber}</span>}
                   </div>
                 </div>
               </div>
@@ -159,7 +159,7 @@ export default function TransportPage({ params }: { params: { id: string } }) {
                 <p className="text-xs font-bold text-[#486581] uppercase tracking-wider mb-1 flex items-center">
                   <MapPin className="mr-1 h-3 w-3" /> Origin
                 </p>
-                <p className="text-sm font-bold text-[#0C4A6E]">{t.origin || "TBD"}</p>
+                <p className="text-sm font-bold text-[#0C4A6E] break-words break-all">{t.origin || "TBD"}</p>
                 {t.departureTime && (
                   <p className="text-xs text-[#0EA5E9] mt-1 font-semibold flex items-center">
                     <Calendar className="mr-1 h-3 w-3" /> {format(new Date(t.departureTime), "MMM d, h:mm a")}
@@ -170,7 +170,7 @@ export default function TransportPage({ params }: { params: { id: string } }) {
                 <p className="text-xs font-bold text-[#486581] uppercase tracking-wider mb-1 flex items-center">
                   <MapPin className="mr-1 h-3 w-3" /> Destination
                 </p>
-                <p className="text-sm font-bold text-[#0C4A6E]">{t.destination || "TBD"}</p>
+                <p className="text-sm font-bold text-[#0C4A6E] break-words break-all">{t.destination || "TBD"}</p>
                 {t.arrivalTime && (
                   <p className="text-xs text-[#0EA5E9] mt-1 font-semibold flex items-center">
                     <Calendar className="mr-1 h-3 w-3" /> {format(new Date(t.arrivalTime), "MMM d, h:mm a")}
@@ -180,7 +180,7 @@ export default function TransportPage({ params }: { params: { id: string } }) {
             </div>
 
             {t.notes && (
-              <p className="mt-4 text-sm text-[#486581] bg-white/50 p-3 rounded-xl border border-white/50 italic">
+              <p className="mt-4 text-sm text-[#486581] bg-white/50 p-3 rounded-xl border border-white/50 italic break-words whitespace-pre-wrap">
                 {t.notes}
               </p>
             )}
@@ -216,11 +216,11 @@ export default function TransportPage({ params }: { params: { id: string } }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-bold text-[#243b53]">Origin</label>
-              <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={origin} onChange={(e) => setOrigin(e.target.value)} />
+              <input maxLength={100} className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={origin} onChange={(e) => setOrigin(e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-bold text-[#243b53]">Destination</label>
-              <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={destination} onChange={(e) => setDestination(e.target.value)} />
+              <input maxLength={100} className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={destination} onChange={(e) => setDestination(e.target.value)} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -236,16 +236,16 @@ export default function TransportPage({ params }: { params: { id: string } }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-bold text-[#243b53]">Booking Reference</label>
-              <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={bookingRef} onChange={(e) => setBookingRef(e.target.value)} />
+              <input maxLength={50} className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={bookingRef} onChange={(e) => setBookingRef(e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-bold text-[#243b53]">Seat Number</label>
-              <input className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={seatNumber} onChange={(e) => setSeatNumber(e.target.value)} />
+              <input maxLength={20} className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={seatNumber} onChange={(e) => setSeatNumber(e.target.value)} />
             </div>
           </div>
           <div>
             <label className="text-sm font-bold text-[#243b53]">Notes</label>
-            <textarea className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none" value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <textarea maxLength={500} className="w-full rounded-xl border border-white bg-white/50 px-4 py-2 mt-1 focus:ring-2 focus:ring-[#F97316] outline-none min-h-[80px]" value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
