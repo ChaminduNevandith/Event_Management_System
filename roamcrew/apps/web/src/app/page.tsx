@@ -124,8 +124,16 @@ export default function Home() {
         </div>
       </main>
       
-      <footer className="flex flex-col items-center justify-center py-8 w-full shrink-0 border-t border-[#0EA5E9]/10 bg-white/30 backdrop-blur-md">
+      <footer className="flex flex-col md:flex-row items-center justify-between py-8 px-8 w-full shrink-0 border-t border-[#0EA5E9]/10 bg-white/30 backdrop-blur-md">
         <p className="text-sm font-medium text-[#627d98]">© 2026 RoamCrew. All rights reserved.</p>
+        <div className="flex gap-6 mt-4 md:mt-0">
+          <Link href="/terms" className="text-sm font-medium text-[#627d98] hover:text-[#0C4A6E] transition-colors">
+            Terms & Conditions
+          </Link>
+          <Link href="/privacy" className="text-sm font-medium text-[#627d98] hover:text-[#0C4A6E] transition-colors">
+            Privacy Policy
+          </Link>
+        </div>
       </footer>
     </div>
   );
