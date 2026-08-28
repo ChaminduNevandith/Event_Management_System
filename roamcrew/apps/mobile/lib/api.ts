@@ -1,8 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
 
-// On mobile, you can't use localhost for Android emulator (you'd need 10.0.2.2). 
-// But Expo can fetch from your local machine IP if configured correctly.
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3001';
+// Use the host computer's Wi-Fi IP address instead of 10.0.2.2 
+// because you are testing on a physical Xiaomi device, not an emulator!
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.4:3001';
 
 export async function fetchApi(endpoint: string, options: RequestInit = {}) {
   const token = await SecureStore.getItemAsync('access_token');
