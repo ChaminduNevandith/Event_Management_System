@@ -55,6 +55,27 @@ export default function DashboardLayout() {
           tabBarIcon: ({ color }) => <User color={color} size={24} />,
         }}
       />
+      <Tabs.Screen
+        name="trip"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="create-trip"
+        options={{
+          href: null,
+          title: 'Create Trip',
+        }}
+      />
+      <Tabs.Screen
+        name="guide"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
     </Tabs>
   );
 }
