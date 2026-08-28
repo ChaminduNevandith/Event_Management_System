@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Image, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { fetchApi } from '../../lib/api';
-import { Calendar, Users } from 'lucide-react-native';
+import { Calendar, Users, Plus } from 'lucide-react-native';
 
 type Trip = any;
 import { format, parseISO } from 'date-fns';
@@ -19,17 +19,21 @@ export default function TripsDashboard() {
       setTrips(data);
     } catch (error) {
       console.error('Failed to load trips:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTrips();
+    }, [])
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadTrips();
     setRefreshing(false);
-  }, []);
-
-  useEffect(() => {
-    loadTrips().finally(() => setIsLoading(false));
   }, []);
 
   const renderTripCard = ({ item }: { item: Trip }) => {
@@ -104,6 +108,14 @@ export default function TripsDashboard() {
           }
         />
       )}
+
+      {/* FAB */}
+      <TouchableOpacity 
+        onPress={() => router.push('/(dashboard)/create-trip')}
+        className="absolute bottom-6 right-6 w-16 h-16 bg-[#0EA5E9] rounded-full items-center justify-center shadow-lg shadow-[#0EA5E9]/50"
+      >
+        <Plus color="white" size={32} />
+      </TouchableOpacity>
     </View>
   );
 }
