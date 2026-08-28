@@ -141,7 +141,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold text-[#0C4A6E]">Tasks & Checklists</h2>
+          <h2 className="text-2xl font-extrabold text-[#0C4A6E] font-serif tracking-tight">Tasks & Checklists</h2>
           <p className="text-[#486581] font-medium text-sm mt-1">Keep track of everything you need to do before you go.</p>
         </div>
         <button
@@ -154,7 +154,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
       </div>
 
       {/* Tabs */}
-      <div className="flex overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar gap-2">
+      <div className="flex flex-nowrap overflow-x-auto pb-4 pt-1 gap-3 hide-scrollbar">
         {CATEGORIES.map(cat => {
           const catTasks = tasks.filter(t => t.category === cat.id);
           const active = activeTab === cat.id;
