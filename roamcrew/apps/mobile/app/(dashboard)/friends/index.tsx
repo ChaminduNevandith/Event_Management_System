@@ -112,7 +112,7 @@ export default function FriendsScreen() {
                 <View className="w-10 h-10 bg-yellow-100 rounded-full items-center justify-center mr-3">
                   <UserPlus color="#EAB308" size={20} />
                 </View>
-                <Text className="font-bold text-[#0C4A6E]">{req.requester.firstName} {req.requester.lastName}</Text>
+                <Text className="font-bold text-[#0C4A6E]">{req.user.firstName} {req.user.lastName}</Text>
               </View>
               <View className="flex-row">
                 <TouchableOpacity onPress={() => handleAccept(req.id)} className="p-2 bg-green-100 rounded-full mr-2">
@@ -137,11 +137,11 @@ export default function FriendsScreen() {
           friends.map(friend => (
             <View key={friend.id} className="bg-white p-4 rounded-2xl flex-row items-center mb-3 shadow-sm border border-[#0EA5E9]/10">
               <View className="w-12 h-12 bg-[#F0F9FF] rounded-full items-center justify-center mr-3">
-                <Text className="text-[#0EA5E9] font-bold text-lg">{friend.friend.firstName[0]}</Text>
+                <Text className="text-[#0EA5E9] font-bold text-lg">{friend.firstName[0]}</Text>
               </View>
               <View>
-                <Text className="font-bold text-[#0C4A6E] text-lg">{friend.friend.firstName} {friend.friend.lastName}</Text>
-                <Text className="text-[#486581]">@{friend.friend.username || friend.friend.email.split('@')[0]}</Text>
+                <Text className="font-bold text-[#0C4A6E] text-lg">{friend.firstName} {friend.lastName}</Text>
+                <Text className="text-[#486581]">@{friend.username || friend.email?.split('@')[0] || friend.firstName.toLowerCase()}</Text>
               </View>
             </View>
           ))
