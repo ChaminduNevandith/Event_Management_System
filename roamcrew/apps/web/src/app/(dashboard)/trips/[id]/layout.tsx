@@ -192,7 +192,7 @@ export default function TripLayout({ children, params }: { children: React.React
 
   if (isLoading) {
     return (
-      <div className="flex-1 overflow-auto bg-[#F0F9FF]">
+      <div className="flex-1 overflow-auto bg-aurora">
         <div className="min-h-full">
           {/* Hero Image Skeleton */}
           <Skeleton className="h-64 md:h-80 w-full rounded-none" />
@@ -221,7 +221,7 @@ export default function TripLayout({ children, params }: { children: React.React
   if (error || !trip) {
     return (
       <div className="text-center py-20 bg-white/40 backdrop-blur-md rounded-3xl border border-white/60 shadow-xl shadow-[#102a43]/5 max-w-2xl mx-auto mt-10">
-        <h2 className="text-3xl font-extrabold text-[#0C4A6E]">Oops!</h2>
+        <h2 className="text-3xl font-extrabold text-[#0C4A6E] font-serif tracking-tight">Oops!</h2>
         <p className="text-[#486581] mt-3 text-lg">{error || "Trip not found"}</p>
         <button onClick={() => router.push("/trips")} className="mt-8 text-white font-bold bg-[#0EA5E9] hover:bg-[#0284c7] px-8 py-3 rounded-xl transition-colors shadow-md">
           Return to Trips
@@ -306,7 +306,7 @@ export default function TripLayout({ children, params }: { children: React.React
                   </div>
                 )}
               </div>
-              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#0C4A6E] leading-tight break-words">
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#0C4A6E] leading-tight break-words font-serif text-shadow-glow">
                 {trip.title}
               </h1>
               {trip.description && (
@@ -383,7 +383,7 @@ export default function TripLayout({ children, params }: { children: React.React
           {/* Members Card */}
           <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl shadow-lg shadow-[#102a43]/5 overflow-hidden">
             <div className="px-6 py-5 border-b border-white/50 bg-white/40">
-              <h3 className="font-extrabold text-xl text-[#0C4A6E] flex items-center">
+              <h3 className="font-extrabold text-xl text-[#0C4A6E] flex items-center font-serif tracking-tight">
                 <Users className="mr-2 h-6 w-6 text-[#38BDF8]" />
                 The Crew <span className="ml-2 bg-[#0EA5E9] text-white text-xs px-2 py-0.5 rounded-full">{trip.members.length}</span>
               </h3>

@@ -168,7 +168,7 @@ export default function DestinationsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-extrabold text-[#0C4A6E]">Destination Candidates</h2>
+        <h2 className="text-2xl font-extrabold text-[#0C4A6E] font-serif tracking-tight">Destination Candidates</h2>
         <button
           onClick={() => {
             resetForm();
@@ -210,7 +210,7 @@ export default function DestinationsPage() {
                       )}
                       
                       <div className="flex justify-between items-start mb-2 gap-2">
-                        <h4 className="flex-1 min-w-0 font-bold text-[#0C4A6E] text-lg leading-tight group-hover:text-[#0EA5E9] transition-colors relative cursor-default pl-6 group/tooltip">
+                        <h4 className="flex-1 min-w-0 font-bold text-[#0C4A6E] text-lg leading-tight group-hover:text-[#0EA5E9] transition-colors relative cursor-default pl-6 group/tooltip font-serif tracking-tight">
                           <MapPin className="absolute left-0 top-[2px] h-[18px] w-[18px] text-[#F97316]" />
                           <span className="block truncate">{dest.name}</span>
                           

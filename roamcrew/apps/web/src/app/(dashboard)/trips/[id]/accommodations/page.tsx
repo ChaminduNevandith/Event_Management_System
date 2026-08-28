@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { fetchApi } from "@/lib/api";
 import {  Plus, Home, MapPin, Calendar, Clock, Edit2, Trash2  } from "lucide-react";
 import { toast } from "sonner";
@@ -9,7 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { Modal } from "@/components/ui/modal";
 
-export default function AccommodationsPage({ params }: { params: { id: string } }) {
+export default function AccommodationsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [accommodations, setAccommodations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -26,7 +27,7 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
 
   const loadData = async () => {
     try {
-      const data = await fetchApi(`/trips/${params.id}/accommodations`);
+      const data = await fetchApi(`/trips/${id}/accommodations`);
       setAccommodations(data);
     } catch (error) {
       console.error(error);
@@ -37,13 +38,13 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await fetchApi(`/trips/${params.id}/accommodations`, {
+      await fetchApi(`/trips/${id}/accommodations`, {
         method: "POST",
         body: JSON.stringify({
           name,
@@ -64,11 +65,11 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (accId: string) => {
     const isConfirmed = await confirm("Delete this accommodation?");
     if (!isConfirmed) return;
     try {
-      await fetchApi(`/trips/${params.id}/accommodations/${id}`, { method: "DELETE" });
+      await fetchApi(`/trips/${id}/accommodations/${accId}`, { method: "DELETE" });
       toast.success("Item deleted successfully!");
       loadData();
     } catch (err: any) {
@@ -104,7 +105,7 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-extrabold text-[#0C4A6E]">Accommodations</h2>
+        <h2 className="text-2xl font-extrabold text-[#0C4A6E] font-serif tracking-tight">Accommodations</h2>
         <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center px-4 py-2 bg-[#0EA5E9] text-white font-bold rounded-xl hover:bg-[#0284c7] transition-colors shadow-sm"
@@ -122,7 +123,7 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
                   <Home className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-[#0C4A6E] break-words">{acc.name}</h3>
+                  <h3 className="font-bold text-lg text-[#0C4A6E] break-words font-serif tracking-tight">{acc.name}</h3>
                   {acc.bookingRef && (
                     <span className="text-xs font-semibold text-[#0EA5E9] bg-[#0EA5E9]/10 px-2 py-0.5 rounded-full inline-block max-w-full break-all">Ref: {acc.bookingRef}</span>
                   )}
@@ -175,7 +176,7 @@ export default function AccommodationsPage({ params }: { params: { id: string } 
         {accommodations.length === 0 && (
           <div className="md:col-span-2 text-center py-12 bg-white/40 rounded-2xl border border-dashed border-white/80">
             <Home className="mx-auto h-12 w-12 text-[#0EA5E9]/40 mb-3" />
-            <h3 className="text-lg font-bold text-[#0C4A6E]">No accommodations yet</h3>
+            <h3 className="text-lg font-bold text-[#0C4A6E] font-serif tracking-tight">No accommodations yet</h3>
             <p className="text-[#486581] mt-1">Add your hotels, Airbnbs, or hostels here.</p>
           </div>
         )}

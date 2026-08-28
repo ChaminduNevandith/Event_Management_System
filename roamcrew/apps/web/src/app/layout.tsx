@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans } from "next/font/google";
+import { Cormorant, Montserrat } from "next/font/google";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -8,7 +8,17 @@ import { OfflineIndicator } from "@/components/offline-indicator";
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
 import { Toaster } from "@/components/ui/toaster";
 
-const dmSans = DM_Sans({ subsets: ["latin"] });
+const cormorant = Cormorant({ 
+  subsets: ["latin"],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-cormorant',
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-montserrat',
+});
 
 export const metadata: Metadata = {
   title: "RoamCrew - The group trip operating system",
@@ -32,7 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="h-full antialiased">
-      <body suppressHydrationWarning className={`min-h-full flex flex-col bg-background text-foreground ${dmSans.className}`}>
+      <body suppressHydrationWarning className={`min-h-full flex flex-col bg-background text-foreground ${montserrat.className} ${cormorant.variable} ${montserrat.variable} font-sans`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
