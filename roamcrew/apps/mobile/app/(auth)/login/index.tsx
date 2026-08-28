@@ -79,7 +79,7 @@ export default function LoginScreen() {
           <TouchableOpacity
             onPress={handleLogin}
             disabled={isLoading || !email || !password}
-            className={`w-full p-4 rounded-xl items-center justify-center flex-row ${
+            className={`w-full p-4 rounded-xl items-center justify-center flex-row mt-6 ${
               isLoading || !email || !password ? 'bg-[#0EA5E9]/50' : 'bg-[#0EA5E9]'
             }`}
           >
